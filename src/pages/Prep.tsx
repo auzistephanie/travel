@@ -4,8 +4,10 @@ import { PackingChecklist } from '../components/PackingChecklist'
 import { SubTabs } from '../components/SubTabs'
 import { AddWishlistForm } from '../components/AddWishlistForm'
 import { ConfirmPurchaseCard } from '../components/ConfirmPurchaseCard'
+import { DestinationIllustration } from '../components/DestinationIllustration'
 import { useWishlist } from '../hooks/useWishlist'
 import { useItinerary } from '../hooks/useItinerary'
+import { useDestinationCountry } from '../hooks/useDestinationCountry'
 import { inclusiveDayCount } from '../lib/tripDays'
 import type { WishlistItem } from '../types/models'
 import type { TripPageProps } from '../types/props'
@@ -18,6 +20,7 @@ const TABS = [
 function WishlistView({ trip, members }: TripPageProps) {
   const { items, loading, error, addItem, deleteItem, confirmBought, undoBought } = useWishlist(trip.id)
   const { days } = useItinerary(trip.id, trip.start_date, trip.end_date)
+  const countryCode = useDestinationCountry(trip.id)
   const [showAdd, setShowAdd] = useState(false)
   const [confirming, setConfirming] = useState<WishlistItem | null>(null)
 
@@ -31,7 +34,11 @@ function WishlistView({ trip, members }: TripPageProps) {
       <ul>
         {items.map((item) => (
           <li key={item.id}>
-            {item.photo_url && <img src={item.photo_url} alt={item.name} width={60} />}
+            {item.photo_url ? (
+              <img src={item.photo_url} alt={item.name} width={60} />
+            ) : (
+              <DestinationIllustration countryCode={countryCode} width={60} />
+            )}
             <span>{item.name}</span>
             <span>買俾：{item.to_member ?? '未指定'}</span>
             <span>

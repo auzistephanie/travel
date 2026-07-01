@@ -20,6 +20,7 @@ const useFlights = vi.fn()
 vi.mock('../hooks/useFlights', () => ({ useFlights: () => useFlights() }))
 
 const { Prep } = await import('./Prep')
+const { ThemeProvider } = await import('../theme/ThemeContext')
 
 const trip: Trip = {
   id: 't1',
@@ -30,6 +31,14 @@ const trip: Trip = {
   created_at: '2026-01-01T00:00:00Z',
 }
 const members: TripMember[] = []
+
+function renderPrep() {
+  return render(
+    <ThemeProvider themeId="cartography">
+      <Prep trip={trip} members={members} />
+    </ThemeProvider>,
+  )
+}
 
 describe('Prep', () => {
   beforeEach(() => {
@@ -42,14 +51,14 @@ describe('Prep', () => {
   })
 
   it('shows packing content by default', () => {
-    render(<Prep trip={trip} members={members} />)
+    renderPrep()
     expect(screen.getByText('PackingSmartCard')).toBeInTheDocument()
     expect(screen.getByText('PackingChecklist')).toBeInTheDocument()
   })
 
   it('switches to the wishlist sub-tab when clicked', async () => {
     const user = userEvent.setup()
-    render(<Prep trip={trip} members={members} />)
+    renderPrep()
     await user.click(screen.getByRole('tab', { name: '心願' }))
     expect(screen.queryByText('PackingSmartCard')).not.toBeInTheDocument()
   })
@@ -82,7 +91,7 @@ describe('Prep', () => {
     })
     useItinerary.mockReturnValue({ days: [{ id: 'd1', trip_id: 't1', date: '2026-08-01', order_index: 0 }] })
 
-    render(<Prep trip={trip} members={members} />)
+    renderPrep()
     await user.click(screen.getByRole('tab', { name: '心願' }))
 
     expect(screen.getByText('曲奇')).toBeInTheDocument()
@@ -95,7 +104,7 @@ describe('Prep', () => {
     const addItem = vi.fn()
     useWishlist.mockReturnValue({ items: [], loading: false, error: null, addItem, deleteItem: vi.fn(), confirmBought: vi.fn(), undoBought: vi.fn() })
 
-    render(<Prep trip={trip} members={members} />)
+    renderPrep()
     await user.click(screen.getByRole('tab', { name: '心願' }))
     await user.click(screen.getByRole('button', { name: '＋加心願' }))
     await user.type(screen.getByLabelText('想買嘅嘢'), '曲奇')
@@ -133,7 +142,7 @@ describe('Prep', () => {
       undoBought: vi.fn(),
     })
 
-    render(<Prep trip={trip} members={members} />)
+    renderPrep()
     await user.click(screen.getByRole('tab', { name: '心願' }))
     await user.click(screen.getByRole('button', { name: '✓ 買咗' }))
 
@@ -173,7 +182,7 @@ describe('Prep', () => {
       undoBought,
     })
 
-    render(<Prep trip={trip} members={members} />)
+    renderPrep()
     await user.click(screen.getByRole('tab', { name: '心願' }))
     await user.click(screen.getByRole('button', { name: '撤銷買咗' }))
 

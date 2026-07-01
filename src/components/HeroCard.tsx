@@ -1,11 +1,15 @@
 import { inclusiveDayCount } from '../lib/tripDays'
+import { useDestinationCountry } from '../hooks/useDestinationCountry'
+import { DestinationIllustration } from './DestinationIllustration'
 import type { TripPageProps } from '../types/props'
 
 export function HeroCard({ trip, members }: TripPageProps) {
   const days = inclusiveDayCount(trip.start_date, trip.end_date)
+  const countryCode = useDestinationCountry(trip.id)
 
   return (
     <section>
+      <DestinationIllustration countryCode={countryCode} />
       <h1>{trip.name}</h1>
       <p>
         {trip.start_date} – {trip.end_date}

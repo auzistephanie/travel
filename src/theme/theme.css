@@ -88,3 +88,16 @@
 .theme-root nav[role='tablist'] button[aria-selected='true'] {
   color: var(--color-accent);
 }
+
+.destination-illustration {
+  line-height: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: filter 0.4s ease;
+}
+
+.destination-illustration svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}

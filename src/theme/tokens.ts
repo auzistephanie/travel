@@ -12,6 +12,7 @@ export interface ThemeTokens {
   defaultAccent: string
   fontHeading: string
   fontBody: string
+  illustrationFilter: string
 }
 
 export const THEMES: Record<ThemeId, ThemeTokens> = {
@@ -27,6 +28,7 @@ export const THEMES: Record<ThemeId, ThemeTokens> = {
     defaultAccent: '#2f4a3e',
     fontHeading: "'Playfair Display', Georgia, serif",
     fontBody: "'Special Elite', 'Courier New', monospace",
+    illustrationFilter: 'sepia(0.5) contrast(1.1) saturate(0.9)',
   },
   neon: {
     id: 'neon',
@@ -40,6 +42,7 @@ export const THEMES: Record<ThemeId, ThemeTokens> = {
     defaultAccent: '#ff3ec9',
     fontHeading: "'Share Tech Mono', 'Consolas', monospace",
     fontBody: "'Share Tech Mono', 'Consolas', monospace",
+    illustrationFilter: 'contrast(1.3) hue-rotate(280deg) saturate(1.6) brightness(0.9)',
   },
   scrapbook: {
     id: 'scrapbook',
@@ -53,6 +56,7 @@ export const THEMES: Record<ThemeId, ThemeTokens> = {
     defaultAccent: '#c2434a',
     fontHeading: "'Caveat', cursive",
     fontBody: "'Merriweather', Georgia, serif",
+    illustrationFilter: 'saturate(0.75) brightness(1.08) contrast(0.95)',
   },
   indigo: {
     id: 'indigo',
@@ -66,6 +70,7 @@ export const THEMES: Record<ThemeId, ThemeTokens> = {
     defaultAccent: '#d4af37',
     fontHeading: "'Noto Serif JP', serif",
     fontBody: "'Noto Serif JP', serif",
+    illustrationFilter: 'hue-rotate(200deg) saturate(1.3) brightness(0.85)',
   },
 }
 

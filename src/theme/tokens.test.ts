@@ -8,6 +8,7 @@ describe('THEMES', () => {
     for (const theme of Object.values(THEMES)) {
       expect(theme.accentSwatches).toHaveLength(4)
       expect(theme.accentSwatches).toContain(theme.defaultAccent)
+      expect(theme.illustrationFilter).toBeTruthy()
     }
   })
 })

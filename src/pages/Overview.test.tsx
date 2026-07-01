@@ -16,6 +16,15 @@ const useExchangeRates = vi.fn()
 vi.mock('../hooks/useExchangeRates', () => ({ useExchangeRates: (...a: unknown[]) => useExchangeRates(...a) }))
 
 const { Overview } = await import('./Overview')
+const { ThemeProvider } = await import('../theme/ThemeContext')
+
+function renderOverview() {
+  return render(
+    <ThemeProvider themeId="cartography">
+      <Overview trip={trip} members={members} />
+    </ThemeProvider>,
+  )
+}
 
 const trip: Trip = {
   id: 't1',
@@ -63,7 +72,7 @@ describe('Overview', () => {
       addFlight: vi.fn(),
     })
 
-    render(<Overview trip={trip} members={members} />)
+    renderOverview()
     expect(screen.getByText('CX123')).toBeInTheDocument()
   })
 
@@ -71,7 +80,7 @@ describe('Overview', () => {
     const user = userEvent.setup()
     useFlights.mockReturnValue({ flights: [], loading: false, error: null, addFlight: vi.fn() })
 
-    render(<Overview trip={trip} members={members} />)
+    renderOverview()
     await user.click(screen.getByRole('button', { name: '＋加入航班' }))
     expect(screen.getByRole('heading', { name: '加入航班' })).toBeInTheDocument()
   })
