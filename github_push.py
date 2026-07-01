@@ -1,48 +1,45 @@
 #!/usr/bin/env python3
 """
-github_push.py — 直接經 GitHub API commit + push 整個 working tree 的改動。
+github_push.py — 直接經 GitHub API 把整個 working tree 同步上 GitHub main。
 
 點解唔用 git CLI：
   Cowork sandbox 跑 `git add/commit/push` 會留低 stale `.git/index.lock` /
   `HEAD.lock`，之後所有 commit 都被擋。呢個 script 完全繞過 git CLI，
   用 GitHub Git Data API（blobs / trees / commits / refs）直接寫上 GitHub。
-  偵測改動只用唯讀嘅 `git status`（唔會整 lock）。
+
+偵測方式（重要）：
+  同 **遠端 origin/main 的實際 tree** 比對，而唔係本地 HEAD——
+  計每個工作檔的 git blob sha，只上傳有差異的檔，並刪除遠端多出的檔。
+  所以就算本地有未 push 的 commit，一樣會正確同步，且可重複執行（idempotent）。
 
 用法：
   python3 github_push.py "你的 commit message"
 
-Token 來源（順序）：
-  1. remote URL 內嵌：https://<user>:<TOKEN>@github.com/owner/repo.git
-  2. 環境變數 GITHUB_TOKEN / GH_TOKEN
-  3. 檔案 .gh-token（同層，已 gitignore）
-Token 只喺本機讀取，唔會 print 出嚟。
+Token 來源：remote URL 內嵌 → GITHUB_TOKEN/GH_TOKEN → .gh-token 檔。Token 只喺本機讀，唔會 print。
 """
 import base64
+import hashlib
 import json
 import os
 import re
 import subprocess
 import sys
-import urllib.request
 import urllib.error
+import urllib.request
 
 API = "https://api.github.com"
+REPO = os.path.dirname(os.path.abspath(__file__))
 
 
 def run(args):
     return subprocess.run(args, cwd=REPO, capture_output=True, text=True)
 
 
-REPO = os.path.dirname(os.path.abspath(__file__))
-
-
 def get_remote_url():
-    r = run(["git", "config", "--get", "remote.origin.url"])
-    return r.stdout.strip()
+    return run(["git", "config", "--get", "remote.origin.url"]).stdout.strip()
 
 
 def parse_remote(url):
-    # https://[user[:token]@]github.com/OWNER/REPO(.git)
     m = re.match(r"https://(?:([^@/]+)@)?github\.com/([^/]+)/([^/]+?)(?:\.git)?/?$", url)
     if not m:
         return None, None, None
@@ -79,81 +76,83 @@ def api(method, path, token, body=None):
         with urllib.request.urlopen(req) as resp:
             return json.loads(resp.read().decode())
     except urllib.error.HTTPError as e:
-        msg = e.read().decode()
-        raise SystemExit(f"❌ GitHub API {method} {path} -> {e.code}\n{msg}")
+        raise SystemExit(f"❌ GitHub API {method} {path} -> {e.code}\n{e.read().decode()}")
 
 
-def changed_files():
-    # 唯讀偵測；porcelain 已自動排除 .gitignore（node_modules/dist 等）
-    r = run(["git", "status", "--porcelain=v1", "--untracked-files=all"])
-    updates, deletes = [], []
-    for line in r.stdout.splitlines():
-        if not line.strip():
-            continue
-        status, path = line[:2], line[3:]
-        if "->" in path:  # rename
-            old, new = [p.strip().strip('"') for p in path.split("->")]
-            deletes.append(old)
-            updates.append(new)
-            continue
-        path = path.strip().strip('"')
-        if "D" in status:
-            deletes.append(path)
-        else:
-            updates.append(path)
-    return sorted(set(updates)), sorted(set(deletes))
+def git_blob_sha(data: bytes) -> str:
+    h = hashlib.sha1()
+    h.update(b"blob %d\0" % len(data))
+    h.update(data)
+    return h.hexdigest()
+
+
+def working_files():
+    # 追蹤中 + 未追蹤但唔喺 .gitignore（自動排除 node_modules/dist）；唯讀
+    out = run(["git", "ls-files", "-c", "-o", "--exclude-standard"]).stdout
+    seen, files = set(), []
+    for p in out.splitlines():
+        p = p.strip()
+        if p and p not in seen and os.path.isfile(os.path.join(REPO, p)):
+            seen.add(p)
+            files.append(p)
+    return files
+
+
+def remote_tree_map(base, tree_sha, token):
+    data = api("GET", f"{base}/trees/{tree_sha}?recursive=1", token)
+    return {e["path"]: e["sha"] for e in data.get("tree", []) if e["type"] == "blob"}
 
 
 def main():
     if len(sys.argv) < 2 or not sys.argv[1].strip():
-        raise SystemExit("用法：python3 github_push.py \"commit message\"")
+        raise SystemExit('用法：python3 github_push.py "commit message"')
     message = sys.argv[1]
 
     remote_token, owner, repo = parse_remote(get_remote_url())
     if not owner:
-        raise SystemExit("❌ 讀唔到 remote.origin.url（應為 github.com/owner/repo）")
+        raise SystemExit("❌ 讀唔到 remote.origin.url")
     token = get_token(remote_token)
     if not token:
-        raise SystemExit(
-            "❌ 揾唔到 GitHub token。請喺 remote URL 內嵌，或設 GITHUB_TOKEN，或建 .gh-token 檔。"
-        )
-
-    updates, deletes = changed_files()
-    if not updates and not deletes:
-        print("Nothing to commit — 已同步。")
-        return
+        raise SystemExit("❌ 揾唔到 GitHub token（remote URL 內嵌 / GITHUB_TOKEN / .gh-token）")
 
     base = f"/repos/{owner}/{repo}/git"
     ref = api("GET", f"{base}/ref/heads/main", token)
     base_sha = ref["object"]["sha"]
-    base_commit = api("GET", f"{base}/commits/{base_sha}", token)
-    base_tree = base_commit["tree"]["sha"]
+    base_tree = api("GET", f"{base}/commits/{base_sha}", token)["tree"]["sha"]
+    remote = remote_tree_map(base, base_tree, token)
 
-    tree = []
-    for path in updates:
-        full = os.path.join(REPO, path)
-        if not os.path.isfile(full):
-            continue
-        with open(full, "rb") as f:
+    local = working_files()
+    local_set = set(local)
+
+    tree, uploaded = [], 0
+    for path in local:
+        with open(os.path.join(REPO, path), "rb") as f:
             content = f.read()
+        if remote.get(path) == git_blob_sha(content):
+            continue  # 遠端已一致，唔使上
         blob = api("POST", f"{base}/blobs", token, {
             "content": base64.b64encode(content).decode(),
             "encoding": "base64",
         })
         tree.append({"path": path, "mode": "100644", "type": "blob", "sha": blob["sha"]})
-    for path in deletes:
+        uploaded += 1
+
+    deletions = [p for p in remote if p not in local_set]
+    for path in deletions:
         tree.append({"path": path, "mode": "100644", "type": "blob", "sha": None})
+
+    if not tree:
+        print("Nothing to push — 遠端已同步。")
+        return
 
     new_tree = api("POST", f"{base}/trees", token, {"base_tree": base_tree, "tree": tree})
     commit = api("POST", f"{base}/commits", token, {
-        "message": message,
-        "tree": new_tree["sha"],
-        "parents": [base_sha],
+        "message": message, "tree": new_tree["sha"], "parents": [base_sha],
     })
     api("PATCH", f"{base}/refs/heads/main", token, {"sha": commit["sha"]})
 
     print(f"✅ Pushed to GitHub — {message}")
-    print(f"   {len(updates)} 更新 / {len(deletes)} 刪除 · commit {commit['sha'][:7]}")
+    print(f"   {uploaded} 更新 / {len(deletions)} 刪除 · commit {commit['sha'][:7]}")
 
 
 if __name__ == "__main__":
