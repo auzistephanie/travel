@@ -19,6 +19,11 @@ vi.mock('../lib/facilitiesApi', () => ({
   findNearbyConvenienceStore: (...a: unknown[]) => findNearbyConvenienceStore(...a),
 }))
 
+const fetchTransportEstimate = vi.fn()
+vi.mock('../lib/directionsApi', () => ({
+  fetchTransportEstimate: (...a: unknown[]) => fetchTransportEstimate(...a),
+}))
+
 const { Itinerary } = await import('./Itinerary')
 
 const trip: Trip = {
@@ -47,6 +52,8 @@ describe('Itinerary', () => {
     findNearbyRestroom.mockResolvedValue(null)
     findNearbyConvenienceStore.mockReset()
     findNearbyConvenienceStore.mockResolvedValue(null)
+    fetchTransportEstimate.mockReset()
+    fetchTransportEstimate.mockResolvedValue(null)
   })
 
   it('shows facility chips for stops that have coordinates', async () => {
@@ -68,6 +75,55 @@ describe('Itinerary', () => {
 
     expect(await screen.findByRole('link', { name: /🚻/ })).toBeInTheDocument()
     expect(findNearbyRestroom).toHaveBeenCalledWith(35.71, 139.79)
+  })
+
+  it('shows a transport estimate between two adjacent located stops', async () => {
+    useItinerary.mockReturnValue({
+      days,
+      stopsByDay: {
+        d1: [
+          { id: 's1', day_id: 'd1', time: null, title: '淺草寺', place_name: null, lat: 35.71, lng: 139.79, order_index: 0, transport_mode_to_next: null, icon: null },
+          { id: 's2', day_id: 'd1', time: null, title: '晴空塔', place_name: null, lat: 35.71, lng: 139.81, order_index: 1, transport_mode_to_next: null, icon: null },
+        ],
+        d2: [],
+      },
+      loading: false,
+      error: null,
+      addStop: vi.fn(),
+      deleteStop: vi.fn(),
+      reorderStops: vi.fn(),
+    })
+    fetchTransportEstimate.mockResolvedValue({ mode: 'WALK', durationMinutes: 15 })
+
+    render(<Itinerary trip={trip} members={members} />)
+
+    expect(await screen.findByText('15 分鐘')).toBeInTheDocument()
+    expect(fetchTransportEstimate).toHaveBeenCalledWith(
+      { lat: 35.71, lng: 139.79 },
+      { lat: 35.71, lng: 139.81 },
+      'WALK',
+    )
+  })
+
+  it('does not show a transport estimate when a stop has no coordinates', () => {
+    useItinerary.mockReturnValue({
+      days,
+      stopsByDay: {
+        d1: [
+          { id: 's1', day_id: 'd1', time: null, title: '淺草寺', place_name: null, lat: null, lng: null, order_index: 0, transport_mode_to_next: null, icon: null },
+          { id: 's2', day_id: 'd1', time: null, title: '晴空塔', place_name: null, lat: 35.71, lng: 139.81, order_index: 1, transport_mode_to_next: null, icon: null },
+        ],
+        d2: [],
+      },
+      loading: false,
+      error: null,
+      addStop: vi.fn(),
+      deleteStop: vi.fn(),
+      reorderStops: vi.fn(),
+    })
+
+    render(<Itinerary trip={trip} members={members} />)
+    expect(fetchTransportEstimate).not.toHaveBeenCalled()
   })
 
   it('does not show facility chips for stops without coordinates', () => {

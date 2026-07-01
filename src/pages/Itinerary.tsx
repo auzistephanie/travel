@@ -5,6 +5,7 @@ import { DayTabs } from '../components/DayTabs'
 import { WeatherCard } from '../components/WeatherCard'
 import { IndoorSuggestionCard } from '../components/IndoorSuggestionCard'
 import { FacilityChips } from '../components/FacilityChips'
+import { TransportSegment } from '../components/TransportSegment'
 import { googleMapsUrl } from '../lib/mapsLink'
 import { shouldSuggestIndoor } from '../lib/weatherApi'
 import { averageCoordinates } from '../lib/stopGeo'
@@ -64,32 +65,44 @@ export function Itinerary({ trip }: TripPageProps) {
         <IndoorSuggestionCard lat={dayCenter.lat} lng={dayCenter.lng} />
       )}
       <ul>
-        {stops.map((stop, index) => (
-          <li
-            key={stop.id}
-            draggable
-            onDragStart={() => setDraggedIndex(index)}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => {
-              e.preventDefault()
-              handleDrop(index)
-            }}
-          >
-            {stop.time && <span>{stop.time} </span>}
-            <span>{stop.title}</span>
-            <a href={googleMapsUrl(stop)} target="_blank" rel="noreferrer">
-              🧭
-            </a>
-            {stop.lat != null && stop.lng != null && <FacilityChips lat={stop.lat} lng={stop.lng} />}
-            <button
-              type="button"
-              onClick={() => deleteStop(currentDayId, stop.id)}
-              aria-label={`刪除 ${stop.title}`}
+        {stops.map((stop, index) => {
+          const next = stops[index + 1]
+          const showTransport =
+            next && stop.lat != null && stop.lng != null && next.lat != null && next.lng != null
+
+          return (
+            <li
+              key={stop.id}
+              draggable
+              onDragStart={() => setDraggedIndex(index)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault()
+                handleDrop(index)
+              }}
             >
-              刪除
-            </button>
-          </li>
-        ))}
+              {stop.time && <span>{stop.time} </span>}
+              <span>{stop.title}</span>
+              <a href={googleMapsUrl(stop)} target="_blank" rel="noreferrer">
+                🧭
+              </a>
+              {stop.lat != null && stop.lng != null && <FacilityChips lat={stop.lat} lng={stop.lng} />}
+              <button
+                type="button"
+                onClick={() => deleteStop(currentDayId, stop.id)}
+                aria-label={`刪除 ${stop.title}`}
+              >
+                刪除
+              </button>
+              {showTransport && next && (
+                <TransportSegment
+                  from={{ lat: stop.lat as number, lng: stop.lng as number }}
+                  to={{ lat: next.lat as number, lng: next.lng as number }}
+                />
+              )}
+            </li>
+          )
+        })}
       </ul>
       <form onSubmit={handleAddStop}>
         <label htmlFor="stop-title">景點名稱</label>
