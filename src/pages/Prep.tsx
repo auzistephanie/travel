@@ -45,7 +45,7 @@ function WishlistView({ trip, members }: TripPageProps) {
       </button>
       {showAdd && (
         <AddWishlistForm
-          tripId={trip.id}
+          trip={trip}
           members={members}
           days={days}
           onAdd={(input) => {

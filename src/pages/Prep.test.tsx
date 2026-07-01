@@ -16,6 +16,9 @@ vi.mock('../hooks/useWishlist', () => ({ useWishlist: () => useWishlist() }))
 const useItinerary = vi.fn()
 vi.mock('../hooks/useItinerary', () => ({ useItinerary: () => useItinerary() }))
 
+const useFlights = vi.fn()
+vi.mock('../hooks/useFlights', () => ({ useFlights: () => useFlights() }))
+
 const { Prep } = await import('./Prep')
 
 const trip: Trip = {
@@ -34,6 +37,8 @@ describe('Prep', () => {
     useWishlist.mockReturnValue({ items: [], loading: false, error: null, addItem: vi.fn(), deleteItem: vi.fn() })
     useItinerary.mockReset()
     useItinerary.mockReturnValue({ days: [] })
+    useFlights.mockReset()
+    useFlights.mockReturnValue({ flights: [] })
   })
 
   it('shows packing content by default', () => {
