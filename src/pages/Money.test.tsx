@@ -9,6 +9,9 @@ vi.mock('../hooks/useExpenses', () => ({ useExpenses: () => useExpenses() }))
 const useExchangeRates = vi.fn()
 vi.mock('../hooks/useExchangeRates', () => ({ useExchangeRates: (...a: unknown[]) => useExchangeRates(...a) }))
 
+const useGifts = vi.fn()
+vi.mock('../hooks/useGifts', () => ({ useGifts: () => useGifts() }))
+
 const { Money } = await import('./Money')
 
 const trip: Trip = {
@@ -30,6 +33,8 @@ describe('Money', () => {
     useExpenses.mockReturnValue({ expenses: [], loading: false, error: null, addExpense: vi.fn() })
     useExchangeRates.mockReset()
     useExchangeRates.mockReturnValue({})
+    useGifts.mockReset()
+    useGifts.mockReturnValue({ gifts: [], loading: false, error: null, addGift: vi.fn() })
   })
 
   it('shows the 夾錢 sub-tab by default', () => {
@@ -87,5 +92,40 @@ describe('Money', () => {
   it('shows the settlement summary', () => {
     render(<Money trip={trip} members={members} />)
     expect(screen.getByText('結算：大家清晒數')).toBeInTheDocument()
+  })
+
+  it('groups gifts by recipient with a subtotal, including 自己', async () => {
+    const user = userEvent.setup()
+    useGifts.mockReturnValue({
+      gifts: [
+        { id: 'g1', trip_id: 't1', item: '曲奇', store: null, amount: 100, to_member: '自己', source: 'manual' },
+        { id: 'g2', trip_id: 't1', item: '手信糖', store: null, amount: 50, to_member: '阿珍', source: 'manual' },
+      ],
+      loading: false,
+      error: null,
+      addGift: vi.fn(),
+    })
+
+    render(<Money trip={trip} members={members} />)
+    await user.click(screen.getByRole('tab', { name: '手信' }))
+
+    expect(screen.getByRole('heading', { name: '自己（小計 100）' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '阿珍（小計 50）' })).toBeInTheDocument()
+  })
+
+  it('adds a new gift via the form', async () => {
+    const user = userEvent.setup()
+    const addGift = vi.fn()
+    useGifts.mockReturnValue({ gifts: [], loading: false, error: null, addGift })
+
+    render(<Money trip={trip} members={members} />)
+    await user.click(screen.getByRole('tab', { name: '手信' }))
+    await user.click(screen.getByRole('button', { name: '＋加手信' }))
+    await user.type(screen.getByLabelText('品項'), '曲奇')
+    await user.click(screen.getByRole('button', { name: '加入手信' }))
+
+    expect(addGift).toHaveBeenCalledWith(
+      expect.objectContaining({ item: '曲奇', toMember: '自己', source: 'manual' }),
+    )
   })
 })

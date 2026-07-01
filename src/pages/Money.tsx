@@ -2,7 +2,10 @@ import { useState } from 'react'
 import { SubTabs } from '../components/SubTabs'
 import { AddExpenseForm } from '../components/AddExpenseForm'
 import { SettlementCard } from '../components/SettlementCard'
+import { AddGiftForm } from '../components/AddGiftForm'
 import { useExpenses } from '../hooks/useExpenses'
+import { useGifts } from '../hooks/useGifts'
+import { groupGiftsByRecipient } from '../lib/giftGrouping'
 import type { TripPageProps } from '../types/props'
 
 const TABS = [
@@ -47,6 +50,49 @@ function SplitView({ trip, members }: TripPageProps) {
   )
 }
 
+function GiftView({ trip, members }: TripPageProps) {
+  const { gifts, loading, error, addGift } = useGifts(trip.id)
+  const [showAdd, setShowAdd] = useState(false)
+
+  if (loading) return <p>載入緊…</p>
+  if (error) return <p role="alert">{error}</p>
+
+  const groups = groupGiftsByRecipient(gifts)
+
+  return (
+    <div>
+      {groups.map((group) => (
+        <section key={group.recipient} aria-label={`手信：${group.recipient}`}>
+          <h3>
+            {group.recipient}（小計 {group.subtotal}）
+          </h3>
+          <ul>
+            {group.gifts.map((gift) => (
+              <li key={gift.id}>
+                {gift.item}
+                {gift.store && `（${gift.store}）`}
+                {gift.amount != null && ` — ${gift.amount}`}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+      <button type="button" onClick={() => setShowAdd(true)}>
+        ＋加手信
+      </button>
+      {showAdd && (
+        <AddGiftForm
+          members={members}
+          onAdd={(input) => {
+            addGift({ ...input, source: 'manual' })
+            setShowAdd(false)
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
 export function Money({ trip, members }: TripPageProps) {
   const [subTab, setSubTab] = useState('split')
 
@@ -54,7 +100,7 @@ export function Money({ trip, members }: TripPageProps) {
     <div>
       <SubTabs tabs={TABS} active={subTab} onChange={setSubTab} />
       {subTab === 'split' && <SplitView trip={trip} members={members} />}
-      {subTab === 'gift' && <p>手信 — 即將推出</p>}
+      {subTab === 'gift' && <GiftView trip={trip} members={members} />}
     </div>
   )
 }
