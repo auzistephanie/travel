@@ -21,7 +21,7 @@ describe('FacilityChips', () => {
 
     render(<FacilityChips lat={35.71} lng={139.79} />)
 
-    const link = await screen.findByRole('link', { name: /🚻/ })
+    const link = await screen.findByRole('link', { name: /公共洗手間/ })
     expect(link).toHaveAttribute('href', 'https://www.google.com/maps/search/?api=1&query=35.712,139.795')
   })
 
@@ -31,7 +31,7 @@ describe('FacilityChips', () => {
 
     render(<FacilityChips lat={35.71} lng={139.79} />)
 
-    const link = await screen.findByRole('link', { name: /🏪/ })
+    const link = await screen.findByRole('link', { name: /7-Eleven/ })
     expect(link).toHaveAttribute('href', 'https://www.google.com/maps/search/?api=1&query=35.713,139.796')
   })
 

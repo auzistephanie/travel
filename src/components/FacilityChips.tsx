@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Store, Toilet } from 'lucide-react'
 import { findNearbyConvenienceStore, findNearbyRestroom, type FacilityResult } from '../lib/facilitiesApi'
 
 function facilityMapsUrl(facility: FacilityResult): string {
@@ -22,15 +23,17 @@ export function FacilityChips({ lat, lng }: FacilityChipsProps) {
   if (!restroom && !store) return null
 
   return (
-    <span>
+    <span className="facility-chips">
       {restroom && (
         <a href={facilityMapsUrl(restroom)} target="_blank" rel="noreferrer">
-          🚻 {restroom.name}
+          <Toilet size={12} aria-hidden="true" />
+          {restroom.name}
         </a>
       )}
       {store && (
         <a href={facilityMapsUrl(store)} target="_blank" rel="noreferrer">
-          🏪 {store.name}
+          <Store size={12} aria-hidden="true" />
+          {store.name}
         </a>
       )}
     </span>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Umbrella } from 'lucide-react'
 import { searchIndoorPlaces, type PlaceResult } from '../lib/placesApi'
 
 interface IndoorSuggestionCardProps {
@@ -17,7 +18,10 @@ export function IndoorSuggestionCard({ lat, lng }: IndoorSuggestionCardProps) {
 
   return (
     <section aria-label="室內好去處推介">
-      <h3>☔ 可能落雨，室內好去處推介</h3>
+      <h3>
+        <Umbrella size={16} aria-hidden="true" />
+        下午有雨，轉室內較好
+      </h3>
       <ul>
         {places.map((place, i) => (
           <li key={`${place.name}-${i}`}>

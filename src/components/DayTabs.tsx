@@ -14,7 +14,7 @@ interface DayTabsProps {
 export function DayTabs({ days, activeDayId, onChange }: DayTabsProps) {
   return (
     <nav role="tablist" aria-label="日程">
-      {days.map((day) => (
+      {days.map((day, index) => (
         <button
           key={day.id}
           type="button"
@@ -22,7 +22,10 @@ export function DayTabs({ days, activeDayId, onChange }: DayTabsProps) {
           aria-selected={day.id === activeDayId}
           onClick={() => onChange(day.id)}
         >
-          {formatDayLabel(day.date)}
+          <span className="dt-n" aria-hidden="true">
+            {index + 1}
+          </span>
+          <span className="dt-d">{formatDayLabel(day.date)}</span>
         </button>
       ))}
     </nav>

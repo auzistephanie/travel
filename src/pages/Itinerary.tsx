@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Navigation, Trash2 } from 'lucide-react'
 import { useItinerary } from '../hooks/useItinerary'
 import { useDestinationWeather } from '../hooks/useDestinationWeather'
 import { DayTabs } from '../components/DayTabs'
@@ -25,9 +26,9 @@ export function Itinerary({ trip }: TripPageProps) {
   const [placeName, setPlaceName] = useState('')
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
-  if (loading) return <p>載入緊…</p>
+  if (loading) return <p>載入中…</p>
   if (error) return <p role="alert">{error}</p>
-  if (days.length === 0) return <p>未有行程日子</p>
+  if (days.length === 0) return <p>尚未安排行程日子</p>
 
   const currentDayId = activeDayId ?? days[0].id
   const currentDay = days.find((d) => d.id === currentDayId) ?? days[0]
@@ -65,15 +66,17 @@ export function Itinerary({ trip }: TripPageProps) {
       {showIndoorSuggestion && dayCenter && (
         <IndoorSuggestionCard lat={dayCenter.lat} lng={dayCenter.lng} />
       )}
-      <ul>
+      <ul className="itinerary-list">
         {stops.map((stop, index) => {
           const next = stops[index + 1]
+          const hasCoords = stop.lat != null && stop.lng != null
           const showTransport =
-            next && stop.lat != null && stop.lng != null && next.lat != null && next.lng != null
+            next && hasCoords && next.lat != null && next.lng != null
 
           return (
             <li
               key={stop.id}
+              className="stop-item"
               draggable
               onDragStart={() => setDraggedIndex(index)}
               onDragOver={(e) => e.preventDefault()}
@@ -82,19 +85,35 @@ export function Itinerary({ trip }: TripPageProps) {
                 handleDrop(index)
               }}
             >
-              {stop.time && <span>{stop.time} </span>}
-              <span>{stop.title}</span>
-              <a href={googleMapsUrl(stop)} target="_blank" rel="noreferrer">
-                🧭
-              </a>
-              {stop.lat != null && stop.lng != null && <FacilityChips lat={stop.lat} lng={stop.lng} />}
-              <button
-                type="button"
-                onClick={() => deleteStop(currentDayId, stop.id)}
-                aria-label={`刪除 ${stop.title}`}
-              >
-                刪除
-              </button>
+              <div className="stop-card">
+                <div className="stop-top">
+                  <div>
+                    {stop.time && <div className="stop-time">{stop.time}</div>}
+                    <h3 className="stop-name">{stop.title}</h3>
+                  </div>
+                  <a
+                    className="stop-nav"
+                    href={googleMapsUrl(stop)}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`導航去 ${stop.title}`}
+                  >
+                    <Navigation size={12} aria-hidden="true" />
+                    導航
+                  </a>
+                </div>
+                <div className="stop-chips">
+                  {hasCoords && <FacilityChips lat={stop.lat as number} lng={stop.lng as number} />}
+                  <button
+                    type="button"
+                    className="stop-del"
+                    onClick={() => deleteStop(currentDayId, stop.id)}
+                    aria-label={`刪除 ${stop.title}`}
+                  >
+                    <Trash2 size={15} aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
               {showTransport && next && (
                 <TransportSegment
                   from={{ lat: stop.lat as number, lng: stop.lng as number }}
@@ -106,7 +125,7 @@ export function Itinerary({ trip }: TripPageProps) {
         })}
       </ul>
       <RouteOptimizationCard stops={stops} onApply={(newOrder) => applyOrder(currentDayId, newOrder)} />
-      <form onSubmit={handleAddStop}>
+      <form className="itinerary-form" onSubmit={handleAddStop}>
         <label htmlFor="stop-title">景點名稱</label>
         <input id="stop-title" value={title} onChange={(e) => setTitle(e.target.value)} required />
 
@@ -116,7 +135,9 @@ export function Itinerary({ trip }: TripPageProps) {
         <label htmlFor="stop-place">地點</label>
         <input id="stop-place" value={placeName} onChange={(e) => setPlaceName(e.target.value)} />
 
-        <button type="submit">＋加入景點</button>
+        <button type="submit" className="itinerary-add">
+          ＋加入景點
+        </button>
       </form>
     </div>
   )

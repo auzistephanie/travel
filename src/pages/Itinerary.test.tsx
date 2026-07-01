@@ -75,7 +75,7 @@ describe('Itinerary', () => {
 
     render(<Itinerary trip={trip} members={members} />)
 
-    expect(await screen.findByRole('link', { name: /🚻/ })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: /公共洗手間/ })).toBeInTheDocument()
     expect(findNearbyRestroom).toHaveBeenCalledWith(35.71, 139.79)
   })
 
