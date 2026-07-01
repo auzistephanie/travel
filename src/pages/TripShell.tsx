@@ -9,8 +9,9 @@ import { Itinerary } from './Itinerary'
 import { MapPage } from './MapPage'
 import { Prep } from './Prep'
 import { Money } from './Money'
+import type { TripPageProps } from '../types/props'
 
-const PAGES: Record<TabId, () => React.JSX.Element> = {
+const PAGES: Record<TabId, (props: TripPageProps) => React.JSX.Element> = {
   overview: Overview,
   itinerary: Itinerary,
   map: MapPage,
@@ -51,7 +52,7 @@ export function TripShell() {
         </button>
       </header>
       <main>
-        <ActivePage />
+        <ActivePage trip={trip} members={members} />
       </main>
       <BottomNav active={activeTab} onChange={setActiveTab} />
     </div>

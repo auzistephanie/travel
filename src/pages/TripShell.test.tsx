@@ -71,7 +71,7 @@ describe('TripShell', () => {
     useTrip.mockReturnValue({ trip, members, loading: false, error: null, joinAsNewMember: vi.fn() })
     getWhoAmI.mockReturnValue('m1')
     renderShell()
-    expect(screen.getByText('東京五日')).toBeInTheDocument()
+    expect(screen.getAllByText('東京五日').length).toBeGreaterThan(0)
     expect(screen.getByRole('tablist', { name: '主導覽' })).toBeInTheDocument()
   })
 
@@ -91,6 +91,6 @@ describe('TripShell', () => {
     renderShell()
     await user.click(screen.getByRole('button', { name: '阿明' }))
     expect(setWhoAmI).toHaveBeenCalledWith('ABC234', 'm1')
-    expect(screen.getByText('東京五日')).toBeInTheDocument()
+    expect(screen.getAllByText('東京五日').length).toBeGreaterThan(0)
   })
 })
