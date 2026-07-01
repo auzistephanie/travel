@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { findTripByShareCode } from '../lib/tripApi'
+import '../styles/journalCard.css'
 
 export function JoinTrip() {
   const navigate = useNavigate()
@@ -28,14 +29,16 @@ export function JoinTrip() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>用分享碼加入</h1>
-      <label htmlFor="share-code">分享碼</label>
-      <input id="share-code" value={shareCode} onChange={(e) => setShareCode(e.target.value)} required />
-      <button type="submit" disabled={submitting}>
-        加入
-      </button>
-      {error && <p role="alert">{error}</p>}
-    </form>
+    <div className="journal-page">
+      <form className="journal-card" onSubmit={handleSubmit}>
+        <h1>用分享碼加入</h1>
+        <label htmlFor="share-code">分享碼</label>
+        <input id="share-code" value={shareCode} onChange={(e) => setShareCode(e.target.value)} required />
+        <button type="submit" disabled={submitting}>
+          加入
+        </button>
+        {error && <p role="alert">{error}</p>}
+      </form>
+    </div>
   )
 }

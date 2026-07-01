@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createTrip } from '../lib/tripApi'
 import { setWhoAmI } from '../lib/whoAmI'
+import '../styles/journalCard.css'
 
 export function CreateTrip() {
   const navigate = useNavigate()
@@ -27,30 +28,32 @@ export function CreateTrip() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>開新行程</h1>
-      <label htmlFor="trip-name">行程名</label>
-      <input id="trip-name" value={name} onChange={(e) => setName(e.target.value)} required />
+    <div className="journal-page">
+      <form className="journal-card" onSubmit={handleSubmit}>
+        <h1>開新行程</h1>
+        <label htmlFor="trip-name">行程名</label>
+        <input id="trip-name" value={name} onChange={(e) => setName(e.target.value)} required />
 
-      <label htmlFor="trip-start">開始日期</label>
-      <input
-        id="trip-start"
-        type="date"
-        value={startDate}
-        onChange={(e) => setStartDate(e.target.value)}
-        required
-      />
+        <label htmlFor="trip-start">開始日期</label>
+        <input
+          id="trip-start"
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          required
+        />
 
-      <label htmlFor="trip-end">結束日期</label>
-      <input id="trip-end" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+        <label htmlFor="trip-end">結束日期</label>
+        <input id="trip-end" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
 
-      <label htmlFor="owner-name">你嘅名</label>
-      <input id="owner-name" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} required />
+        <label htmlFor="owner-name">你嘅名</label>
+        <input id="owner-name" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} required />
 
-      <button type="submit" disabled={submitting}>
-        建立行程
-      </button>
-      {error && <p role="alert">{error}</p>}
-    </form>
+        <button type="submit" disabled={submitting}>
+          建立行程
+        </button>
+        {error && <p role="alert">{error}</p>}
+      </form>
+    </div>
   )
 }
