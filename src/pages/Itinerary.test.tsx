@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Trip, TripMember } from '../types/models'
@@ -60,6 +60,7 @@ describe('Itinerary', () => {
       error: null,
       addStop: vi.fn(),
       deleteStop: vi.fn(),
+      reorderStops: vi.fn(),
     })
     findNearbyRestroom.mockResolvedValue({ name: '公共洗手間', lat: 35.712, lng: 139.795 })
 
@@ -80,6 +81,7 @@ describe('Itinerary', () => {
       error: null,
       addStop: vi.fn(),
       deleteStop: vi.fn(),
+      reorderStops: vi.fn(),
     })
 
     render(<Itinerary trip={trip} members={members} />)
@@ -97,6 +99,7 @@ describe('Itinerary', () => {
       error: null,
       addStop: vi.fn(),
       deleteStop: vi.fn(),
+      reorderStops: vi.fn(),
     })
 
     render(<Itinerary trip={trip} members={members} />)
@@ -111,6 +114,7 @@ describe('Itinerary', () => {
       error: null,
       addStop: vi.fn(),
       deleteStop: vi.fn(),
+      reorderStops: vi.fn(),
     })
     useDestinationWeather.mockReturnValue({
       '2026-08-01': {
@@ -135,6 +139,7 @@ describe('Itinerary', () => {
       error: null,
       addStop: vi.fn(),
       deleteStop: vi.fn(),
+      reorderStops: vi.fn(),
     })
     useDestinationWeather.mockReturnValue({
       '2026-08-01': { date: '2026-08-01', am: { tempC: 26, rainProbability: 80 }, pm: { tempC: 31, rainProbability: 20 } },
@@ -157,6 +162,7 @@ describe('Itinerary', () => {
       error: null,
       addStop: vi.fn(),
       deleteStop: vi.fn(),
+      reorderStops: vi.fn(),
     })
     useDestinationWeather.mockReturnValue({
       '2026-08-01': { date: '2026-08-01', am: { tempC: 26, rainProbability: 10 }, pm: { tempC: 31, rainProbability: 20 } },
@@ -178,6 +184,7 @@ describe('Itinerary', () => {
       error: null,
       addStop: vi.fn(),
       deleteStop: vi.fn(),
+      reorderStops: vi.fn(),
     })
 
     render(<Itinerary trip={trip} members={members} />)
@@ -197,6 +204,7 @@ describe('Itinerary', () => {
       error: null,
       addStop,
       deleteStop: vi.fn(),
+      reorderStops: vi.fn(),
     })
 
     render(<Itinerary trip={trip} members={members} />)
@@ -219,10 +227,39 @@ describe('Itinerary', () => {
       error: null,
       addStop: vi.fn(),
       deleteStop,
+      reorderStops: vi.fn(),
     })
 
     render(<Itinerary trip={trip} members={members} />)
     await user.click(screen.getByRole('button', { name: '刪除 淺草寺' }))
     expect(deleteStop).toHaveBeenCalledWith('d1', 's1')
+  })
+
+  it('reorders stops when one is dragged and dropped on another', () => {
+    const reorderStops = vi.fn()
+    useItinerary.mockReturnValue({
+      days,
+      stopsByDay: {
+        d1: [
+          { id: 's1', day_id: 'd1', time: null, title: '淺草寺', place_name: null, lat: null, lng: null, order_index: 0, transport_mode_to_next: null, icon: null },
+          { id: 's2', day_id: 'd1', time: null, title: '晴空塔', place_name: null, lat: null, lng: null, order_index: 1, transport_mode_to_next: null, icon: null },
+        ],
+        d2: [],
+      },
+      loading: false,
+      error: null,
+      addStop: vi.fn(),
+      deleteStop: vi.fn(),
+      reorderStops,
+    })
+
+    render(<Itinerary trip={trip} members={members} />)
+    const items = screen.getAllByRole('listitem')
+
+    fireEvent.dragStart(items[0])
+    fireEvent.dragOver(items[1])
+    fireEvent.drop(items[1])
+
+    expect(reorderStops).toHaveBeenCalledWith('d1', 0, 1)
   })
 })

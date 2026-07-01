@@ -4,7 +4,7 @@ import { makeQuery } from '../test/supabaseQueryMock'
 const { supabase } = vi.hoisted(() => ({ supabase: { from: vi.fn() } }))
 vi.mock('./supabaseClient', () => ({ supabase }))
 
-import { addStop, deleteStop, ensureDays, listDays, listStops } from './itineraryRepo'
+import { addStop, deleteStop, ensureDays, listDays, listStops, reorderStops } from './itineraryRepo'
 
 describe('listDays', () => {
   beforeEach(() => supabase.from.mockReset())
@@ -90,5 +90,38 @@ describe('listStops / addStop / deleteStop', () => {
   it('deletes a stop', async () => {
     supabase.from.mockImplementation(() => makeQuery({ data: null, error: null }))
     await expect(deleteStop('s1')).resolves.toBeUndefined()
+  })
+
+  it('reorders stops by writing the new order_index for each id', async () => {
+    const updateCalls: { id: string; orderIndex: number }[] = []
+    supabase.from.mockImplementation(() => {
+      let capturedOrderIndex: number | undefined
+      const query: Record<string, unknown> = {
+        update: vi.fn((row: { order_index: number }) => {
+          capturedOrderIndex = row.order_index
+          return query
+        }),
+        eq: vi.fn((_col: string, id: string) => {
+          updateCalls.push({ id, orderIndex: capturedOrderIndex! })
+          return query
+        }),
+        then: (resolve: (r: unknown) => unknown) => resolve({ data: null, error: null }),
+      }
+      return query
+    })
+
+    await reorderStops(['s2', 's1', 's3'])
+
+    expect(updateCalls).toEqual([
+      { id: 's2', orderIndex: 0 },
+      { id: 's1', orderIndex: 1 },
+      { id: 's3', orderIndex: 2 },
+    ])
+  })
+
+  it('throws if any reorder update fails', async () => {
+    const dbError = { message: 'boom' }
+    supabase.from.mockImplementation(() => makeQuery({ data: null, error: dbError }))
+    await expect(reorderStops(['s1'])).rejects.toEqual(dbError)
   })
 })

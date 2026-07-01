@@ -11,7 +11,7 @@ import { averageCoordinates } from '../lib/stopGeo'
 import type { TripPageProps } from '../types/props'
 
 export function Itinerary({ trip }: TripPageProps) {
-  const { days, stopsByDay, loading, error, addStop, deleteStop } = useItinerary(
+  const { days, stopsByDay, loading, error, addStop, deleteStop, reorderStops } = useItinerary(
     trip.id,
     trip.start_date,
     trip.end_date,
@@ -21,6 +21,7 @@ export function Itinerary({ trip }: TripPageProps) {
   const [title, setTitle] = useState('')
   const [time, setTime] = useState('')
   const [placeName, setPlaceName] = useState('')
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
   if (loading) return <p>載入緊…</p>
   if (error) return <p role="alert">{error}</p>
@@ -32,6 +33,13 @@ export function Itinerary({ trip }: TripPageProps) {
   const weather = weatherByDate[currentDay.date] ?? null
   const dayCenter = averageCoordinates(stops)
   const showIndoorSuggestion = weather != null && shouldSuggestIndoor(weather) && dayCenter != null
+
+  function handleDrop(index: number) {
+    if (draggedIndex !== null && draggedIndex !== index) {
+      reorderStops(currentDayId, draggedIndex, index)
+    }
+    setDraggedIndex(null)
+  }
 
   async function handleAddStop(e: FormEvent) {
     e.preventDefault()
@@ -56,8 +64,17 @@ export function Itinerary({ trip }: TripPageProps) {
         <IndoorSuggestionCard lat={dayCenter.lat} lng={dayCenter.lng} />
       )}
       <ul>
-        {stops.map((stop) => (
-          <li key={stop.id}>
+        {stops.map((stop, index) => (
+          <li
+            key={stop.id}
+            draggable
+            onDragStart={() => setDraggedIndex(index)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault()
+              handleDrop(index)
+            }}
+          >
             {stop.time && <span>{stop.time} </span>}
             <span>{stop.title}</span>
             <a href={googleMapsUrl(stop)} target="_blank" rel="noreferrer">

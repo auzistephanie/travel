@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { addStop, deleteStop, ensureDays, listStops, type AddStopInput } from '../lib/itineraryRepo'
+import { addStop, deleteStop, ensureDays, listStops, reorderStops, type AddStopInput } from '../lib/itineraryRepo'
+import { reorder } from '../lib/reorder'
 import type { ItineraryDay, ItineraryStop } from '../types/models'
 
 export function useItinerary(tripId: string, startDate: string, endDate: string) {
@@ -46,5 +47,15 @@ export function useItinerary(tripId: string, startDate: string, endDate: string)
     setStopsByDay((prev) => ({ ...prev, [dayId]: (prev[dayId] ?? []).filter((s) => s.id !== stopId) }))
   }, [])
 
-  return { days, stopsByDay, loading, error, addStop: create, deleteStop: remove, refetch: load }
+  const move = useCallback(
+    async (dayId: string, fromIndex: number, toIndex: number) => {
+      const current = stopsByDay[dayId] ?? []
+      const reordered = reorder(current, fromIndex, toIndex)
+      setStopsByDay((prev) => ({ ...prev, [dayId]: reordered }))
+      await reorderStops(reordered.map((s) => s.id))
+    },
+    [stopsByDay],
+  )
+
+  return { days, stopsByDay, loading, error, addStop: create, deleteStop: remove, reorderStops: move, refetch: load }
 }

@@ -88,3 +88,13 @@ export async function deleteStop(stopId: string): Promise<void> {
   const { error } = await supabase.from('itinerary_stops').delete().eq('id', stopId)
   if (error) throw error
 }
+
+export async function reorderStops(stopIdsInOrder: string[]): Promise<void> {
+  const results = await Promise.all(
+    stopIdsInOrder.map((id, index) =>
+      supabase.from('itinerary_stops').update({ order_index: index }).eq('id', id),
+    ),
+  )
+  const failed = results.find((r) => r.error)
+  if (failed?.error) throw failed.error
+}
