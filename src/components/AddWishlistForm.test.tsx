@@ -137,6 +137,23 @@ describe('AddWishlistForm', () => {
     )
   })
 
+  it('searches nearby stores using the explicit destination_country even with no flights yet', async () => {
+    const user = userEvent.setup()
+    useFlights.mockReturnValue({ flights: [] })
+    searchStoresForItem.mockResolvedValue([
+      { name: '曼谷夜市', address: 'Bangkok', priceLevel: 'PRICE_LEVEL_INEXPENSIVE' },
+    ])
+
+    render(
+      <AddWishlistForm trip={{ ...trip, destination_country: 'TH' }} members={members} days={days} onAdd={vi.fn()} />,
+    )
+    await user.type(screen.getByLabelText('想買嘅嘢'), '手信')
+    await user.click(screen.getByRole('button', { name: 'AI 搜尋邊度買' }))
+
+    expect(searchStoresForItem).toHaveBeenCalledWith('手信', 13.69, 100.7501)
+    expect(await screen.findByText(/曼谷夜市/)).toBeInTheDocument()
+  })
+
   it('shows a hint instead of an error when no store is found', async () => {
     const user = userEvent.setup()
     searchStoresForItem.mockResolvedValue([])

@@ -24,10 +24,19 @@ export const AIRPORTS: Record<string, AirportInfo> = {
   HAN: { lat: 21.2212, lng: 105.8072, country: 'VN' },
   DAD: { lat: 16.0439, lng: 108.1994, country: 'VN' },
   HKG: { lat: 22.308, lng: 113.9185, country: 'HK' },
+  SIN: { lat: 1.3644, lng: 103.9915, country: 'SG' },
+  KUL: { lat: 2.7456, lng: 101.7099, country: 'MY' },
+  PEN: { lat: 5.2971, lng: 100.277, country: 'MY' },
 }
 
 export function getAirport(code: string): AirportInfo | undefined {
   return AIRPORTS[code]
+}
+
+// 用戶喺開新行程果陣直接揀國家（未加航班之前），攞返代表性機場座標
+// 俾天氣/執李/心願清單店舖搜尋等功能用。
+export function getAirportForCountry(countryCode: string): AirportInfo | undefined {
+  return Object.values(AIRPORTS).find((airport) => airport.country === countryCode)
 }
 
 export function getFirstFlightAirport(flights: Flight[]): string | undefined {

@@ -2,7 +2,12 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createTrip } from '../lib/tripApi'
 import { setWhoAmI } from '../lib/whoAmI'
+import { DESTINATIONS } from '../lib/destinations'
 import '../styles/journalCard.css'
+
+// HK 淨係做本地行程參考用，唔擺入揀項。SG/MY 未有自訂插畫（用返 Generic），
+// 之後想加插畫可以加落 src/theme/illustrations 同 DestinationIllustration.tsx 嘅 ILLUSTRATIONS map。
+const DESTINATION_OPTIONS = ['JP', 'TH', 'KR', 'TW', 'VN', 'SG', 'MY'] as const
 
 export function CreateTrip() {
   const navigate = useNavigate()
@@ -10,6 +15,7 @@ export function CreateTrip() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [ownerName, setOwnerName] = useState('')
+  const [destinationCountry, setDestinationCountry] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -18,7 +24,13 @@ export function CreateTrip() {
     setSubmitting(true)
     setError(null)
     try {
-      const { trip, owner } = await createTrip({ name, startDate, endDate, ownerName })
+      const { trip, owner } = await createTrip({
+        name,
+        startDate,
+        endDate,
+        ownerName,
+        destinationCountry: destinationCountry || null,
+      })
       setWhoAmI(trip.share_code, owner.id)
       navigate(`/t/${trip.share_code}`)
     } catch {
@@ -48,6 +60,20 @@ export function CreateTrip() {
 
         <label htmlFor="owner-name">你嘅名</label>
         <input id="owner-name" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} required />
+
+        <label htmlFor="destination-country">目的地國家</label>
+        <select
+          id="destination-country"
+          value={destinationCountry}
+          onChange={(e) => setDestinationCountry(e.target.value)}
+        >
+          <option value="">未定（之後加咗航班會自動判斷）</option>
+          {DESTINATION_OPTIONS.map((code) => (
+            <option key={code} value={code}>
+              {DESTINATIONS[code].countryName}
+            </option>
+          ))}
+        </select>
 
         <button type="submit" disabled={submitting}>
           建立行程

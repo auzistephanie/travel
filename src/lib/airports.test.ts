@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getAirport, getFirstFlightAirport } from './airports'
+import { getAirport, getAirportForCountry, getFirstFlightAirport } from './airports'
 import type { Flight } from '../types/models'
 
 describe('getAirport', () => {
@@ -9,6 +9,16 @@ describe('getAirport', () => {
 
   it('returns undefined for an unknown airport', () => {
     expect(getAirport('ZZZ')).toBeUndefined()
+  })
+})
+
+describe('getAirportForCountry', () => {
+  it('returns a representative airport for a supported country code', () => {
+    expect(getAirportForCountry('JP')).toEqual({ lat: 35.7647, lng: 140.3864, country: 'JP' })
+  })
+
+  it('returns undefined for an unsupported country code', () => {
+    expect(getAirportForCountry('FR')).toBeUndefined()
   })
 })
 

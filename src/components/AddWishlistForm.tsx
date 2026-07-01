@@ -2,7 +2,7 @@ import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { uploadWishlistPhoto } from '../lib/photoRepo'
 import { searchStoresForItem, type StoreSuggestion } from '../lib/storeSuggestApi'
 import { useFlights } from '../hooks/useFlights'
-import { getAirport, getFirstFlightAirport } from '../lib/airports'
+import { getAirport, getAirportForCountry, getFirstFlightAirport } from '../lib/airports'
 import type { AddWishlistItemInput } from '../lib/wishlistRepo'
 import type { ItineraryDay, Trip, TripMember } from '../types/models'
 
@@ -41,10 +41,14 @@ export function AddWishlistForm({ trip, members, days, onAdd }: AddWishlistFormP
 
   async function handleSearchStores() {
     if (!name.trim()) return
-    const airportCode = getFirstFlightAirport(flights)
-    const airport = airportCode ? getAirport(airportCode) : undefined
+    const airport = trip.destination_country
+      ? getAirportForCountry(trip.destination_country)
+      : (() => {
+          const airportCode = getFirstFlightAirport(flights)
+          return airportCode ? getAirport(airportCode) : undefined
+        })()
     if (!airport) {
-      setSearchHint('未有航班資料，未能搜尋')
+      setSearchHint('未知目的地，未能搜尋')
       return
     }
     setSearching(true)

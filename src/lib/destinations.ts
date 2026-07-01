@@ -63,6 +63,26 @@ export const DESTINATIONS: Record<string, DestinationInfo> = {
     cashAdvice: { legalNote: '', suggestedLocalAmount: 0, currency: 'HKD' },
     mosquitoRisk: false,
   },
+  SG: {
+    countryName: '新加坡',
+    plugType: 'G 型（三腳方插，同香港一樣，唔使帶轉換插）',
+    voltage: '230V',
+    visaNote: '持香港特區護照免簽證，可逗留 30 日',
+    cashAdvice: {
+      legalNote: '攜帶超過 20,000 新加坡元現金或等值可轉讓票據需申報',
+      suggestedLocalAmount: 300,
+      currency: 'SGD',
+    },
+    mosquitoRisk: true,
+  },
+  MY: {
+    countryName: '馬來西亞',
+    plugType: 'G 型（三腳方插，同香港一樣，唔使帶轉換插）',
+    voltage: '240V',
+    visaNote: '持香港特區護照免簽證，可逗留 90 日',
+    cashAdvice: { legalNote: '攜帶超過等值 1 萬美元現金需申報', suggestedLocalAmount: 1500, currency: 'MYR' },
+    mosquitoRisk: true,
+  },
 }
 
 export function getDestination(countryCode: string): DestinationInfo | undefined {

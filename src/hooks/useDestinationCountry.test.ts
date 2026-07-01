@@ -1,13 +1,33 @@
 import { renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import type { Trip } from '../types/models'
 
 const useFlights = vi.fn()
 vi.mock('./useFlights', () => ({ useFlights: () => useFlights() }))
 
 const { useDestinationCountry } = await import('./useDestinationCountry')
 
+function makeTrip(overrides: Partial<Trip> = {}): Trip {
+  return {
+    id: 't1',
+    name: '東京五日',
+    start_date: '2026-08-01',
+    end_date: '2026-08-05',
+    share_code: 'ABC234',
+    destination_country: null,
+    created_at: '2026-01-01T00:00:00Z',
+    ...overrides,
+  }
+}
+
 describe('useDestinationCountry', () => {
-  it('resolves the country from the first flight arrival airport', () => {
+  it('prefers the trip.destination_country the owner picked at creation time', () => {
+    useFlights.mockReturnValue({ flights: [] })
+    const { result } = renderHook(() => useDestinationCountry(makeTrip({ destination_country: 'TH' })))
+    expect(result.current).toBe('TH')
+  })
+
+  it('falls back to the first flight arrival airport when destination_country is not set', () => {
     useFlights.mockReturnValue({
       flights: [
         {
@@ -29,13 +49,13 @@ describe('useDestinationCountry', () => {
       ],
     })
 
-    const { result } = renderHook(() => useDestinationCountry('t1'))
+    const { result } = renderHook(() => useDestinationCountry(makeTrip()))
     expect(result.current).toBe('JP')
   })
 
-  it('returns null when there are no flights yet', () => {
+  it('returns null when there is no destination_country and no flights yet', () => {
     useFlights.mockReturnValue({ flights: [] })
-    const { result } = renderHook(() => useDestinationCountry('t1'))
+    const { result } = renderHook(() => useDestinationCountry(makeTrip()))
     expect(result.current).toBeNull()
   })
 })

@@ -51,12 +51,20 @@ describe('PackingSmartCard', () => {
     fetchExchangeRateToHKD.mockResolvedValue(0.052)
   })
 
-  it('renders nothing when there are no flights yet (destination unknown)', () => {
+  it('renders nothing when there are no flights yet and no destination_country (destination unknown)', () => {
     useFlights.mockReturnValue({ flights: [] })
     useDestinationWeather.mockReturnValue({})
 
     const { container } = render(<PackingSmartCard trip={trip} members={members} />)
     expect(container).toBeEmptyDOMElement()
+  })
+
+  it('shows destination info from an explicit destination_country even with no flights yet', () => {
+    useFlights.mockReturnValue({ flights: [] })
+    useDestinationWeather.mockReturnValue({})
+
+    render(<PackingSmartCard trip={{ ...trip, destination_country: 'TH' }} members={members} />)
+    expect(screen.getByText(/泰國/)).toBeInTheDocument()
   })
 
   it('shows plug/voltage, visa note, and cash advice for the detected destination', async () => {

@@ -5,7 +5,7 @@ import type { TripPageProps } from '../types/props'
 
 export function HeroCard({ trip, members }: TripPageProps) {
   const days = inclusiveDayCount(trip.start_date, trip.end_date)
-  const countryCode = useDestinationCountry(trip.id)
+  const countryCode = useDestinationCountry(trip)
 
   return (
     <section>

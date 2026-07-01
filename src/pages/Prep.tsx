@@ -21,7 +21,7 @@ const TABS = [
 function WishlistView({ trip, members }: TripPageProps) {
   const { items, loading, error, addItem, deleteItem, confirmBought, undoBought } = useWishlist(trip.id)
   const { days } = useItinerary(trip.id, trip.start_date, trip.end_date)
-  const countryCode = useDestinationCountry(trip.id)
+  const countryCode = useDestinationCountry(trip)
   const [showAdd, setShowAdd] = useState(false)
   const [confirming, setConfirming] = useState<WishlistItem | null>(null)
 

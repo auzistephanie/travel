@@ -48,9 +48,33 @@ describe('CreateTrip', () => {
       startDate: '2026-08-01',
       endDate: '2026-08-05',
       ownerName: '阿明',
+      destinationCountry: null,
     })
     expect(setWhoAmI).toHaveBeenCalledWith('ABC234', 'm1')
     expect(navigate).toHaveBeenCalledWith('/t/ABC234')
+  })
+
+  it('passes the chosen destination country through to createTrip', async () => {
+    const user = userEvent.setup()
+    createTrip.mockResolvedValue({
+      trip: { id: 't1', share_code: 'ABC234' },
+      owner: { id: 'm1', name: '阿明' },
+    })
+
+    render(
+      <MemoryRouter>
+        <CreateTrip />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByLabelText('行程名'), '曼谷四日')
+    await user.type(screen.getByLabelText('開始日期'), '2026-08-01')
+    await user.type(screen.getByLabelText('結束日期'), '2026-08-04')
+    await user.type(screen.getByLabelText('你嘅名'), '阿明')
+    await user.selectOptions(screen.getByLabelText('目的地國家'), 'TH')
+    await user.click(screen.getByRole('button', { name: '建立行程' }))
+
+    expect(createTrip).toHaveBeenCalledWith(expect.objectContaining({ destinationCountry: 'TH' }))
   })
 
   it('shows an error message when creation fails', async () => {

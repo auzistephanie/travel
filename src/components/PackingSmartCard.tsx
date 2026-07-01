@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useFlights } from '../hooks/useFlights'
+import { useDestinationCountry } from '../hooks/useDestinationCountry'
 import { useDestinationWeather } from '../hooks/useDestinationWeather'
-import { getAirport, getFirstFlightAirport } from '../lib/airports'
 import { getDestination } from '../lib/destinations'
 import { fetchExchangeRateToHKD } from '../lib/fxApi'
 import { anyHalfDayRainAtLeast, tripTemperatureRange } from '../lib/weatherApi'
@@ -10,12 +10,11 @@ import type { TripPageProps } from '../types/props'
 
 export function PackingSmartCard({ trip, members }: TripPageProps) {
   const { flights } = useFlights(trip.id)
+  const countryCode = useDestinationCountry(trip)
   const weatherByDate = useDestinationWeather(trip)
   const [hkdRate, setHkdRate] = useState<number | null>(null)
 
-  const airportCode = getFirstFlightAirport(flights)
-  const airport = airportCode ? getAirport(airportCode) : undefined
-  const destination = airport ? getDestination(airport.country) : undefined
+  const destination = countryCode ? getDestination(countryCode) : undefined
 
   useEffect(() => {
     if (!destination) return

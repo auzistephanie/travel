@@ -10,6 +10,7 @@ export interface CreateTripInput {
   startDate: string
   endDate: string
   ownerName: string
+  destinationCountry?: string | null
 }
 
 export interface CreateTripResult {
@@ -28,6 +29,7 @@ export async function createTrip(input: CreateTripInput): Promise<CreateTripResu
         start_date: input.startDate,
         end_date: input.endDate,
         share_code: generateShareCode(),
+        destination_country: input.destinationCountry ?? null,
       })
       .select()
       .single()

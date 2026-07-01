@@ -41,6 +41,31 @@ describe('createTrip', () => {
     expect(result.owner).toEqual(owner)
   })
 
+  it('persists the chosen destination_country on the trip', async () => {
+    const trip = { id: 't1', name: '東京五日', share_code: 'ABC234', destination_country: 'JP' }
+    const owner = { id: 'm1', trip_id: 't1', name: '阿明', is_owner: true }
+    let tripQuery: ReturnType<typeof makeQuery> | undefined
+
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'trips') {
+        tripQuery = makeQuery({ data: trip, error: null })
+        return tripQuery
+      }
+      if (table === 'trip_members') return makeQuery({ data: owner, error: null })
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    await createTrip({
+      name: '東京五日',
+      startDate: '2026-08-01',
+      endDate: '2026-08-05',
+      ownerName: '阿明',
+      destinationCountry: 'JP',
+    })
+
+    expect(tripQuery?.insert).toHaveBeenCalledWith(expect.objectContaining({ destination_country: 'JP' }))
+  })
+
   it('retries with a new share code when the trip insert hits a unique violation', async () => {
     const trip = { id: 't1', name: '東京五日', share_code: 'XYZ987' }
     const owner = { id: 'm1', trip_id: 't1', name: '阿明', is_owner: true }
