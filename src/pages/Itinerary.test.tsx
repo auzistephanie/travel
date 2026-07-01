@@ -6,6 +6,9 @@ import type { Trip, TripMember } from '../types/models'
 const useItinerary = vi.fn()
 vi.mock('../hooks/useItinerary', () => ({ useItinerary: () => useItinerary() }))
 
+const useDestinationWeather = vi.fn()
+vi.mock('../hooks/useDestinationWeather', () => ({ useDestinationWeather: () => useDestinationWeather() }))
+
 const { Itinerary } = await import('./Itinerary')
 
 const trip: Trip = {
@@ -26,6 +29,8 @@ const days = [
 describe('Itinerary', () => {
   beforeEach(() => {
     useItinerary.mockReset()
+    useDestinationWeather.mockReset()
+    useDestinationWeather.mockReturnValue({})
   })
 
   it('shows the stops for the first day by default', () => {
@@ -43,6 +48,27 @@ describe('Itinerary', () => {
 
     render(<Itinerary trip={trip} members={members} />)
     expect(screen.getByText('淺草寺')).toBeInTheDocument()
+  })
+
+  it('shows the weather for the currently active day', () => {
+    useItinerary.mockReturnValue({
+      days,
+      stopsByDay: { d1: [], d2: [] },
+      loading: false,
+      error: null,
+      addStop: vi.fn(),
+      deleteStop: vi.fn(),
+    })
+    useDestinationWeather.mockReturnValue({
+      '2026-08-01': {
+        date: '2026-08-01',
+        am: { tempC: 26, rainProbability: 20 },
+        pm: { tempC: 31, rainProbability: 70 },
+      },
+    })
+
+    render(<Itinerary trip={trip} members={members} />)
+    expect(screen.getByText('31°C')).toBeInTheDocument()
   })
 
   it('switches stop list when a different day tab is clicked', async () => {

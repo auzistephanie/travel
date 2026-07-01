@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { useItinerary } from '../hooks/useItinerary'
+import { useDestinationWeather } from '../hooks/useDestinationWeather'
 import { DayTabs } from '../components/DayTabs'
+import { WeatherCard } from '../components/WeatherCard'
 import { googleMapsUrl } from '../lib/mapsLink'
 import type { TripPageProps } from '../types/props'
 
@@ -10,6 +12,7 @@ export function Itinerary({ trip }: TripPageProps) {
     trip.start_date,
     trip.end_date,
   )
+  const weatherByDate = useDestinationWeather(trip)
   const [activeDayId, setActiveDayId] = useState<string | null>(null)
   const [title, setTitle] = useState('')
   const [time, setTime] = useState('')
@@ -20,7 +23,9 @@ export function Itinerary({ trip }: TripPageProps) {
   if (days.length === 0) return <p>未有行程日子</p>
 
   const currentDayId = activeDayId ?? days[0].id
+  const currentDay = days.find((d) => d.id === currentDayId) ?? days[0]
   const stops = stopsByDay[currentDayId] ?? []
+  const weather = weatherByDate[currentDay.date] ?? null
 
   async function handleAddStop(e: FormEvent) {
     e.preventDefault()
@@ -40,6 +45,7 @@ export function Itinerary({ trip }: TripPageProps) {
   return (
     <div>
       <DayTabs days={days} activeDayId={currentDayId} onChange={setActiveDayId} />
+      <WeatherCard weather={weather} />
       <ul>
         {stops.map((stop) => (
           <li key={stop.id}>
