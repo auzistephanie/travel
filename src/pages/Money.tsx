@@ -84,7 +84,7 @@ function GiftView({ trip, members }: TripPageProps) {
         <AddGiftForm
           members={members}
           onAdd={(input) => {
-            addGift({ ...input, source: 'manual' })
+            addGift(input)
             setShowAdd(false)
           }}
         />
