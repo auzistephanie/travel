@@ -6,6 +6,15 @@ import type { Trip, TripMember } from '../types/models'
 const useFlights = vi.fn()
 vi.mock('../hooks/useFlights', () => ({ useFlights: () => useFlights() }))
 
+const useExpenses = vi.fn()
+vi.mock('../hooks/useExpenses', () => ({ useExpenses: () => useExpenses() }))
+
+const useItinerary = vi.fn()
+vi.mock('../hooks/useItinerary', () => ({ useItinerary: () => useItinerary() }))
+
+const useExchangeRates = vi.fn()
+vi.mock('../hooks/useExchangeRates', () => ({ useExchangeRates: (...a: unknown[]) => useExchangeRates(...a) }))
+
 const { Overview } = await import('./Overview')
 
 const trip: Trip = {
@@ -21,6 +30,12 @@ const members: TripMember[] = [{ id: 'm1', trip_id: 't1', name: '阿明', color:
 describe('Overview', () => {
   beforeEach(() => {
     useFlights.mockReset()
+    useExpenses.mockReset()
+    useExpenses.mockReturnValue({ expenses: [] })
+    useItinerary.mockReset()
+    useItinerary.mockReturnValue({ days: [] })
+    useExchangeRates.mockReset()
+    useExchangeRates.mockReturnValue({})
   })
 
   it('shows existing flights', () => {
