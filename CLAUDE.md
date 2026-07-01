@@ -1,0 +1,83 @@
+# 旅行規劃 App — CLAUDE.md
+
+> Session context。完整規格見 `TRAVEL_APP_BUILD_SPEC.md`。重大更新後自動更新此檔 + push GitHub。
+> **注意**：App 本體由 Claude Code CLI 開發，專案資料夾在 `/Users/stephanieau/Documents/Claude/Projects/Travel App`（2026-07-02 由 `/Users/stephanieau/Desktop/Work-Google Drive/Travel` 搬過嚟）。
+
+---
+
+## 1. 專案概要
+- **目標**：手機優先嘅旅行規劃 PWA — 行程、地圖、行李、夾錢、手信一站式，朋友可共編。
+- **分享機制**：唔使登入。每個 trip 一個分享碼／連結，朋友撳連結揀返自己個名即可入數。
+- **平台**：Web PWA（加到手機主畫面）。
+
+## 2. 技術棧
+| 部件 | 選用 |
+|---|---|
+| 前端 | React (Vite) + PWA |
+| 後端/DB | Supabase (Postgres + Realtime + Storage) |
+| 部署 | Vercel |
+| 地圖 | Google Maps JS + Places + Directions API |
+| 天氣 | Open-Meteo（免 key） |
+| 航班 | AviationStack / FlightAware AeroAPI |
+| OCR | Google Cloud Vision / Taggun |
+| 匯率 | open.er-api.com（免費，可手動覆蓋） |
+| 洗手間 | OpenStreetMap Overpass |
+
+## 3. 資訊架構（5 底部分頁 + Settings）
+```
+總覽 Overview | 行程 Itinerary | 地圖 Map | 準備 Prep(行李/心願) | 錢 Money(夾錢/手信)
+設定 ⚙️ (右上角，唔佔底部分頁)
+```
+
+## 4. 核心功能重點
+- **總覽**：Hero 卡(目的地插畫背景)、航班列表(API 查詢後用戶確認先加)、出發前準備總進度、開支逐日/分類切換、旅行基本費獨立卡。
+- **行程**：day-tab、上午/下午天氣、降雨≥60% 彈室內推介、時間軸(導航掣、洗手間/便利店 chip)、拖拉重排自動調時間、交通連接、順路分析(nearest-neighbor)。
+- **地圖**：Places 真實搜尋 → 加入指定一日 itinerary。
+- **準備-行李**：智能卡(轉插/簽證/入境現金建議額/溫度建議/每人寄艙額)、衣物數量按日數自動計、100% 蓋印章。
+- **準備-心願**：影相上載、AI 搵邊度買+比價、買俾邊個、「買咗」核實流程 → 流入手信。
+- **錢-夾錢**：多貨幣、旅行基本費 flag、結算 who-owes-whom 折 HKD、分享碼入數。
+- **錢-手信**：影單 OCR(品項/商戶/金額 可改)、按對象分組、同心願打通。
+
+## 5. 視覺系統
+- 4 主題：①復古探險地圖 ②東京霓虹夜 ③明信片剪貼簿 ④和風藍染。
+- **必須 token 化(CSS variables)**，套用全部 5 分頁，唔可逐頁 hardcode。
+- Settings → 主題：縮圖選擇 + 每主題 4 粒強調色 swatch + persist + crossfade 過場。
+- 細節：蓋印章代替剔號、撕紙邊分隔、tap ripple。
+- 目的地插畫：**原創 SVG/CSS**(避版權)，讀第一程航班到達機場自動判斷目的地，套主題濾鏡。
+
+## 6. Supabase 資料模型
+Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `packing_items` `wishlist_items` `expenses` `gifts` `settings`。詳細欄位見 spec 第 9 節。
+
+## 7. Build 順序（每期完成後自己 review 先報告）
+1. **P1 骨架**：Vite+React init、Supabase 連接、分享碼、總覽/行程/地圖基本 CRUD、部署 Vercel。
+2. **P2 智能提醒**：天氣+室內推介、洗手間/便利店 chip、行李智能卡、拖拉重排+交通+順路。
+3. **P3 錢同心願**：夾錢多貨幣+結算、手信 OCR、心願比價+核實流程+打通手信。
+4. **P4 視覺系統**：4 主題 token 化、目的地插畫、Settings 揀色 persist、印章/撕紙邊/ripple。
+5. **P5 打磨**：PWA manifest、分享連結測試、效能/離線。
+
+## 8. 工作規則
+- 方向性決定 → 先 preview，批准先執行。
+- 每個 phase / 功能完成 → 實際跑一次(唔止睇 code) confirm 行為，成功先報告。
+- 用戶設定(主題/匯率)一律放 Settings，唔散落其他分頁。設定以全螢幕蓋面(bottom sheet)開啟，唔可以疊喺頁底。
+- 插畫全原創，唔扒真實圖。
+- 重大更新後更新 CLAUDE.md + push GitHub。
+- **應用內所有文案一律用書面語繁體中文**（唔用廣東話口語）。
+- 對話溝通：繁體中文。
+
+## 8a. 視覺 Redesign（2026-07-02，目標「wow」）
+- **手機框外殼**：`#root` max-width 460px 置中、深色畫布，桌面唔再攤開。
+- **字體**：去 `Special Elite` 打字機字體 → `Noto Sans TC`(body) + `Noto Serif TC`(heading) + `Fraunces` italic(數字)。
+- **配色**：cartography 主題暖橙 accent `#c1683a`(CTA/nav active)、綠 `#2f4a3e`(heading/hero)、米色卡 `#fff8ea`；swatches `[#c1683a,#3f6b4f,#c99a3c,#6b4226]`。
+- **Icon**：統一用 `lucide-react`（emoji 全清）。`vite.config` 有 `optimizeDeps.include:['lucide-react']`，加新 dep 後要 restart dev server。
+- **總覽**：hero overlay 標題 + 出發倒數卡 + 日數/同行/出發 stat chips + section 空狀態。
+- **已改**：Landing / TripShell 頂 bar / BottomNav(蓋章 active) / HeroCard / SettingsPanel(蓋面) / Overview。
+- **未做(下一浪)**：行程 / 準備 / 錢 / 手信 bespoke layout（現時自動食新 token）；全 app 舊文案書面語掃尾(載入中/找不到/邊位…連 test 一齊改)。
+- Mockup 參考：outputs `redesign-mockups.html`、`redesign-mockups-2.html`。
+
+## 9. 相關連結
+- 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
+- GitHub repo：⬜ 待填
+- 部署網址：⬜ 待填
+
+---
+*最後更新：2026-07-02（視覺 redesign 第一浪）*

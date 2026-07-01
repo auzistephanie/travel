@@ -37,23 +37,23 @@ describe('SettingsPanel', () => {
     const user = userEvent.setup()
     render(<Harness />)
 
-    expect(screen.getByLabelText('強調色 #2f4a3e')).toBeInTheDocument()
+    expect(screen.getByLabelText('強調色 #c1683a')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '東京霓虹夜' }))
 
     expect(screen.getByRole('button', { name: '東京霓虹夜' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByLabelText('強調色 #ff3ec9')).toBeInTheDocument()
-    expect(screen.queryByLabelText('強調色 #2f4a3e')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('強調色 #c1683a')).not.toBeInTheDocument()
   })
 
   it('marks the current accent swatch as selected and switches on click', async () => {
     const user = userEvent.setup()
     render(<Harness />)
 
-    expect(screen.getByLabelText('強調色 #2f4a3e')).toHaveAttribute('aria-pressed', 'true')
-    await user.click(screen.getByLabelText('強調色 #b5651d'))
+    expect(screen.getByLabelText('強調色 #c1683a')).toHaveAttribute('aria-pressed', 'true')
+    await user.click(screen.getByLabelText('強調色 #3f6b4f'))
 
-    expect(screen.getByLabelText('強調色 #b5651d')).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByLabelText('強調色 #2f4a3e')).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByLabelText('強調色 #3f6b4f')).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByLabelText('強調色 #c1683a')).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('previews each theme thumbnail with that theme\'s own illustration filter, not the active one', () => {

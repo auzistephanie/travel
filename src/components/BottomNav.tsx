@@ -1,11 +1,13 @@
+import { Compass, CalendarDays, Map, Luggage, Wallet, type LucideIcon } from 'lucide-react'
+
 export type TabId = 'overview' | 'itinerary' | 'map' | 'prep' | 'money'
 
-const TABS: { id: TabId; label: string; icon: string }[] = [
-  { id: 'overview', label: '總覽', icon: '🏠' },
-  { id: 'itinerary', label: '行程', icon: '🗓️' },
-  { id: 'map', label: '地圖', icon: '🗺️' },
-  { id: 'prep', label: '準備', icon: '🧳' },
-  { id: 'money', label: '錢', icon: '💰' },
+const TABS: { id: TabId; label: string; Icon: LucideIcon }[] = [
+  { id: 'overview', label: '總覽', Icon: Compass },
+  { id: 'itinerary', label: '行程', Icon: CalendarDays },
+  { id: 'map', label: '地圖', Icon: Map },
+  { id: 'prep', label: '準備', Icon: Luggage },
+  { id: 'money', label: '錢', Icon: Wallet },
 ]
 
 interface BottomNavProps {
@@ -16,17 +18,19 @@ interface BottomNavProps {
 export function BottomNav({ active, onChange }: BottomNavProps) {
   return (
     <nav role="tablist" aria-label="主導覽">
-      {TABS.map((tab) => (
+      {TABS.map(({ id, label, Icon }) => (
         <button
-          key={tab.id}
+          key={id}
           type="button"
           role="tab"
-          aria-selected={tab.id === active}
-          aria-current={tab.id === active ? 'page' : undefined}
-          onClick={() => onChange(tab.id)}
+          aria-selected={id === active}
+          aria-current={id === active ? 'page' : undefined}
+          onClick={() => onChange(id)}
         >
-          <span aria-hidden="true">{tab.icon}</span>
-          <span>{tab.label}</span>
+          <span className="nav-ico" aria-hidden="true">
+            <Icon size={20} />
+          </span>
+          <span>{label}</span>
         </button>
       ))}
     </nav>

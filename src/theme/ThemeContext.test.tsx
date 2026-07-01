@@ -48,7 +48,7 @@ describe('ThemeProvider / useTheme', () => {
       </ThemeProvider>,
     )
     const wrapper = container.firstChild as HTMLElement
-    expect(wrapper.style.getPropertyValue('--color-bg')).toBe('#f4e9d8')
+    expect(wrapper.style.getPropertyValue('--color-bg')).toBe('#f3ecd8')
     expect(wrapper.dataset.theme).toBe('cartography')
   })
 

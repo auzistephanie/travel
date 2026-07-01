@@ -341,3 +341,408 @@
 [data-theme='indigo'] button:active {
   box-shadow: inset 0 0 10px var(--color-accent);
 }
+
+/* =======================================================================
+   App shell / phone-frame（redesign 2026-07）— 手機框、頂 bar、底 nav、卡片
+   ======================================================================= */
+
+/* 頂 bar */
+.theme-root .trip-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--color-heading);
+  color: #fff;
+  padding: 13px 15px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+}
+
+.theme-root .trip-header .trip-brand {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.theme-root .trip-title {
+  flex: 1;
+  font-weight: 700;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.theme-root button.trip-settings {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+/* main：撐高等 nav 貼底，留位俾底 nav */
+.theme-root main {
+  flex: 1;
+  padding: 10px 14px 26px;
+}
+
+/* 卡片打磨（覆蓋前面 section/article 基本樣式）*/
+.theme-root section,
+.theme-root article {
+  border-radius: 16px;
+  padding: 14px 15px;
+  box-shadow: 0 4px 14px rgba(47, 61, 51, 0.07);
+}
+
+.theme-root section > h2:first-child,
+.theme-root article > h2:first-child {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 17px;
+}
+
+.theme-root button {
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+/* 底 nav：sticky 貼底、backdrop blur、active 蓋章圈 */
+.theme-root nav[role='tablist'] {
+  position: sticky;
+  bottom: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--color-bg-alt) 90%, transparent);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--color-border);
+  padding: 6px 0 8px;
+}
+
+.theme-root nav[role='tablist'] button {
+  position: relative;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 0;
+  border-radius: 10px;
+}
+
+.theme-root nav[role='tablist'] button[aria-selected='true'] {
+  font-weight: 700;
+}
+
+.theme-root nav[role='tablist'] button[aria-selected='true'] .nav-ico::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 32px;
+  border: 2px dashed var(--color-accent);
+  border-radius: 50%;
+  opacity: 0.45;
+}
+
+.nav-ico {
+  display: grid;
+  place-items: center;
+  line-height: 0;
+}
+
+/* ---- Hero 卡 ---- */
+.theme-root section.hero-card {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 18px;
+}
+
+.hero-media {
+  position: relative;
+  line-height: 0;
+}
+
+.hero-media .destination-illustration {
+  width: 100%;
+  border-radius: 0;
+}
+
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(20, 30, 24, 0.15) 0%,
+    transparent 40%,
+    rgba(31, 41, 33, 0.82) 100%
+  );
+}
+
+.hero-caption {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 12px;
+  line-height: 1.15;
+}
+
+.hero-dest {
+  display: block;
+  color: #ffe7c9;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.theme-root .hero-caption h1 {
+  color: #fff;
+  font-size: 26px;
+  margin: 0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.hero-body {
+  padding: 14px 15px 16px;
+}
+
+.hero-dates {
+  font-size: 12px;
+  opacity: 0.72;
+  margin: 0 0 10px;
+}
+
+/* ---- 出發倒數 ---- */
+.countdown {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #3f6b4f, #2f5540);
+  color: #fff;
+  border-radius: 16px;
+  padding: 13px 15px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 22px rgba(47, 61, 51, 0.24);
+}
+
+.countdown .cd-plane {
+  position: absolute;
+  right: -6px;
+  top: -8px;
+  opacity: 0.14;
+}
+
+.cd-label {
+  display: block;
+  font-size: 11px;
+  opacity: 0.85;
+  letter-spacing: 0.06em;
+}
+
+.cd-num {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.cd-sub {
+  display: block;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.cd-dates {
+  margin-left: auto;
+  text-align: right;
+  font-size: 11px;
+  opacity: 0.9;
+  line-height: 1.55;
+}
+
+/* ---- Stat chips ---- */
+.stat-chips {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  padding: 0;
+  margin: 12px 0 0;
+}
+
+.stat-chips li {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 11px 6px 10px;
+  text-align: center;
+  box-shadow: 0 3px 0 rgba(201, 185, 143, 0.3);
+}
+
+.stat-chips .sc-ico {
+  color: var(--color-accent);
+  display: grid;
+  place-items: center;
+}
+
+.stat-chips b {
+  display: block;
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 700;
+  font-size: 18px;
+  margin-top: 3px;
+  color: var(--color-heading);
+}
+
+.stat-chips .sc-lbl {
+  font-size: 10.5px;
+  color: var(--color-text);
+  opacity: 0.7;
+}
+
+/* Hero 內嘅成員頭像貼近底部標題行 */
+.hero-body .member-avatars {
+  margin: 0 0 10px;
+}
+
+/* section 標題帶 icon / 空狀態 / 加掣 */
+.theme-root h2.sec-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.theme-root h2.sec-title svg {
+  color: var(--color-accent);
+}
+
+.sec-empty {
+  font-size: 12.5px;
+  color: var(--color-text);
+  opacity: 0.7;
+  margin: 0 0 12px;
+}
+
+.theme-root button.sec-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ===== 設定：全螢幕蓋面（bottom sheet），唔再疊喺頁底 ===== */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(20, 28, 24, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: settings-fade 0.2s ease-out;
+}
+
+@keyframes settings-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.settings-sheet {
+  width: 100%;
+  max-width: 460px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--color-bg);
+  border-radius: 20px 20px 0 0;
+  padding: 16px 18px 26px;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.32);
+  animation: settings-rise 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes settings-rise {
+  from {
+    transform: translateY(24px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.settings-head h2 {
+  margin: 0;
+}
+
+.theme-root button.settings-x {
+  background: transparent;
+  color: var(--color-text);
+  border: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.settings-sheet h3 {
+  font-size: 14px;
+  margin: 16px 0 8px;
+}
+
+.settings-sheet ul[aria-label='主題選擇'] {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.settings-sheet ul[aria-label='主題選擇'] button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 12px;
+}
+
+.settings-sheet ul[aria-label='強調色選擇'] {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 12px;
+}
+
+.settings-sheet ul[aria-label='強調色選擇'] button {
+  border: 2px solid rgba(0, 0, 0, 0.12);
+}
+
+.theme-root button.settings-done {
+  width: 100%;
+  margin-top: 18px;
+}

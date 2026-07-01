@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { THEMES } from '../theme/tokens'
 import { useTheme } from '../theme/ThemeContext'
 import { GenericIllustration } from '../theme/illustrations/GenericIllustration'
@@ -11,10 +12,21 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
   const currentTheme = THEMES[themeId]
 
   return (
-    <div role="dialog" aria-label="設定">
-      <h2>設定</h2>
+    <div className="settings-overlay" onClick={onClose}>
+      <div
+        className="settings-sheet"
+        role="dialog"
+        aria-label="設定"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="settings-head">
+          <h2>設定</h2>
+          <button type="button" className="settings-x" aria-label="關閉設定" onClick={onClose}>
+            <X size={18} aria-hidden="true" />
+          </button>
+        </div>
 
-      <h3>主題</h3>
+        <h3>主題</h3>
       <ul aria-label="主題選擇">
         {Object.values(THEMES).map((theme) => (
           <li key={theme.id}>
@@ -52,9 +64,10 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
         ))}
       </ul>
 
-      <button type="button" onClick={onClose}>
-        關閉
-      </button>
+        <button type="button" className="settings-done" onClick={onClose}>
+          關閉
+        </button>
+      </div>
     </div>
   )
 }

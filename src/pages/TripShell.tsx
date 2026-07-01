@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState, type ComponentType } from 'react'
+import { Compass, Settings } from 'lucide-react'
 import { useParams } from 'react-router-dom'
 import { useTrip } from '../hooks/useTrip'
 import { getWhoAmI, setWhoAmI } from '../lib/whoAmI'
@@ -56,13 +57,18 @@ export function TripShell() {
     const ActivePage = PAGES[activeTab]
     content = (
       <>
-        <header>
-          <span className="compass-decoration" aria-hidden="true">
-            🧭
+        <header className="trip-header">
+          <span className="trip-brand compass-decoration" aria-hidden="true">
+            <Compass size={18} />
           </span>
-          <span>{trip.name}</span>
-          <button type="button" aria-label="設定" onClick={() => setShowSettings(true)}>
-            ⚙️
+          <span className="trip-title">{trip.name}</span>
+          <button
+            type="button"
+            className="trip-settings"
+            aria-label="設定"
+            onClick={() => setShowSettings(true)}
+          >
+            <Settings size={17} aria-hidden="true" />
           </button>
         </header>
         <TornEdgeDivider />

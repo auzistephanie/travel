@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { BookOpen, Compass, KeyRound } from 'lucide-react'
 import '../styles/journalCard.css'
 import './Landing.css'
 
@@ -7,22 +8,24 @@ export function Landing() {
     <div className="journal-page">
       <div className="journal-card journal-cover-content">
         <span className="journal-compass" aria-hidden="true">
-          🧭
+          <Compass size={30} />
         </span>
         <h1 className="journal-title">旅行規劃 App</h1>
         <p className="journal-subtitle">Travel Journal</p>
         <p className="journal-tagline">
-          同班友仔一齊規劃下一段旅程，
+          與朋友一起規劃下一段旅程，
           <br />
-          撳個掣就入到去，唔使開戶口。
+          一鍵即可加入，無須註冊帳戶。
         </p>
         <div className="journal-actions">
           <Link to="/new" className="journal-cta-primary">
-            📖 開新行程
+            <BookOpen size={17} aria-hidden="true" />
+            開新行程
           </Link>
-          <div className="journal-divider">定係</div>
+          <div className="journal-divider">或</div>
           <Link to="/join" className="journal-cta-secondary">
-            🔑 用分享碼加入
+            <KeyRound size={15} aria-hidden="true" />
+            用分享碼加入
           </Link>
         </div>
       </div>
