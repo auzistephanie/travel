@@ -12,6 +12,13 @@ vi.mock('../hooks/useDestinationWeather', () => ({ useDestinationWeather: () => 
 const searchIndoorPlaces = vi.fn()
 vi.mock('../lib/placesApi', () => ({ searchIndoorPlaces: (...a: unknown[]) => searchIndoorPlaces(...a) }))
 
+const findNearbyRestroom = vi.fn()
+const findNearbyConvenienceStore = vi.fn()
+vi.mock('../lib/facilitiesApi', () => ({
+  findNearbyRestroom: (...a: unknown[]) => findNearbyRestroom(...a),
+  findNearbyConvenienceStore: (...a: unknown[]) => findNearbyConvenienceStore(...a),
+}))
+
 const { Itinerary } = await import('./Itinerary')
 
 const trip: Trip = {
@@ -36,6 +43,47 @@ describe('Itinerary', () => {
     useDestinationWeather.mockReturnValue({})
     searchIndoorPlaces.mockReset()
     searchIndoorPlaces.mockResolvedValue([])
+    findNearbyRestroom.mockReset()
+    findNearbyRestroom.mockResolvedValue(null)
+    findNearbyConvenienceStore.mockReset()
+    findNearbyConvenienceStore.mockResolvedValue(null)
+  })
+
+  it('shows facility chips for stops that have coordinates', async () => {
+    useItinerary.mockReturnValue({
+      days,
+      stopsByDay: {
+        d1: [{ id: 's1', day_id: 'd1', time: null, title: '淺草寺', place_name: null, lat: 35.71, lng: 139.79, order_index: 0, transport_mode_to_next: null, icon: null }],
+        d2: [],
+      },
+      loading: false,
+      error: null,
+      addStop: vi.fn(),
+      deleteStop: vi.fn(),
+    })
+    findNearbyRestroom.mockResolvedValue({ name: '公共洗手間', lat: 35.712, lng: 139.795 })
+
+    render(<Itinerary trip={trip} members={members} />)
+
+    expect(await screen.findByRole('link', { name: /🚻/ })).toBeInTheDocument()
+    expect(findNearbyRestroom).toHaveBeenCalledWith(35.71, 139.79)
+  })
+
+  it('does not show facility chips for stops without coordinates', () => {
+    useItinerary.mockReturnValue({
+      days,
+      stopsByDay: {
+        d1: [{ id: 's1', day_id: 'd1', time: null, title: '淺草寺', place_name: null, lat: null, lng: null, order_index: 0, transport_mode_to_next: null, icon: null }],
+        d2: [],
+      },
+      loading: false,
+      error: null,
+      addStop: vi.fn(),
+      deleteStop: vi.fn(),
+    })
+
+    render(<Itinerary trip={trip} members={members} />)
+    expect(findNearbyRestroom).not.toHaveBeenCalled()
   })
 
   it('shows the stops for the first day by default', () => {

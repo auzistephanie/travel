@@ -4,6 +4,7 @@ import { useDestinationWeather } from '../hooks/useDestinationWeather'
 import { DayTabs } from '../components/DayTabs'
 import { WeatherCard } from '../components/WeatherCard'
 import { IndoorSuggestionCard } from '../components/IndoorSuggestionCard'
+import { FacilityChips } from '../components/FacilityChips'
 import { googleMapsUrl } from '../lib/mapsLink'
 import { shouldSuggestIndoor } from '../lib/weatherApi'
 import { averageCoordinates } from '../lib/stopGeo'
@@ -62,6 +63,7 @@ export function Itinerary({ trip }: TripPageProps) {
             <a href={googleMapsUrl(stop)} target="_blank" rel="noreferrer">
               🧭
             </a>
+            {stop.lat != null && stop.lng != null && <FacilityChips lat={stop.lat} lng={stop.lng} />}
             <button
               type="button"
               onClick={() => deleteStop(currentDayId, stop.id)}
