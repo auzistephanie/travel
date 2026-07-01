@@ -10,6 +10,7 @@ create table trips (
   start_date date not null,
   end_date date not null,
   share_code text not null unique,
+  destination_country text,
   created_at timestamptz not null default now()
 );
 
@@ -70,7 +71,8 @@ create table packing_items (
   category text not null,
   name text not null,
   checked boolean not null default false,
-  auto_qty boolean not null default false
+  auto_qty boolean not null default false,
+  unique (trip_id, name)
 );
 
 -- ============ wishlist_items ============

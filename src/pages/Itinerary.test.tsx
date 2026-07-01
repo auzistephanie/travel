@@ -32,6 +32,7 @@ const trip: Trip = {
   start_date: '2026-08-01',
   end_date: '2026-08-02',
   share_code: 'ABC234',
+  destination_country: null,
   created_at: '2026-01-01T00:00:00Z',
 }
 const members: TripMember[] = []

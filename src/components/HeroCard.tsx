@@ -14,7 +14,7 @@ export function HeroCard({ trip, members }: TripPageProps) {
       <p>
         {trip.start_date} – {trip.end_date}
       </p>
-      <ul>
+      <ul className="member-avatars">
         {members.map((member) => (
           <li key={member.id} title={member.name}>
             {member.name.slice(0, 1)}

@@ -32,6 +32,8 @@ function buildSeedItems(dayCount: number): SeedItem[] {
   return [...DEFAULT_ITEMS, ...clothing]
 }
 
+const UNIQUE_VIOLATION = '23505'
+
 async function insertPackingItem(tripId: string, item: SeedItem): Promise<PackingItem> {
   const { data, error } = await supabase
     .from('packing_items')
@@ -39,7 +41,21 @@ async function insertPackingItem(tripId: string, item: SeedItem): Promise<Packin
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    // 撞咗 (trip_id, name) unique constraint：可能有另一個 ensurePackingItems() call
+    // 幾乎同一時間 seed 緊（React StrictMode 雙重執行 effect 等）。讀返出嚟用就得。
+    if (error.code === UNIQUE_VIOLATION) {
+      const { data: existing, error: readError } = await supabase
+        .from('packing_items')
+        .select()
+        .eq('trip_id', tripId)
+        .eq('name', item.name)
+        .single()
+      if (readError) throw readError
+      return existing as PackingItem
+    }
+    throw error
+  }
   return data as PackingItem
 }
 

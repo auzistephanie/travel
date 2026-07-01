@@ -6,6 +6,7 @@ export interface Trip {
   start_date: string
   end_date: string
   share_code: string
+  destination_country: string | null
   created_at: string
 }
 

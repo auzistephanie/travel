@@ -107,6 +107,34 @@
   margin: 0 auto 14px;
 }
 
+.member-avatars {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.member-avatars li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 14px;
+  border: 2px solid var(--color-bg-alt);
+  margin-left: -8px;
+}
+
+.member-avatars li:first-child {
+  margin-left: 0;
+}
+
 .stamp-badge {
   display: inline-block;
   border: 3px solid var(--color-accent);
@@ -188,13 +216,6 @@
 
 [data-theme='cartography'] .torn-edge-divider {
   stroke-dasharray: 4 3;
-  animation: dash-move 2s linear infinite;
-}
-
-@keyframes dash-move {
-  to {
-    stroke-dashoffset: -14;
-  }
 }
 
 /* ② 東京霓虹夜 Neon：標題霓虹閃爍、背景掃描線、按鈕發光脈動 */
