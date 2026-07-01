@@ -55,6 +55,9 @@ export function TripShell() {
     content = (
       <>
         <header>
+          <span className="compass-decoration" aria-hidden="true">
+            🧭
+          </span>
           <span>{trip.name}</span>
           <button type="button" aria-label="設定" onClick={() => setShowSettings(true)}>
             ⚙️

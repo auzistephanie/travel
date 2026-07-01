@@ -140,3 +140,178 @@
   stroke-width: 1.5;
   margin: 4px 0;
 }
+
+/* ===== 通用 tap ripple（顏色跟主題強調色）===== */
+.tap-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0.4;
+  transform: scale(0);
+  animation: ripple-expand 0.5s ease-out;
+  pointer-events: none;
+}
+
+@keyframes ripple-expand {
+  to {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* ===== 主題招牌動態效果（spec 8.1）===== */
+
+/* ① 復古探險地圖 Cartography：指南針擺動、路線虛線持續移動 */
+.compass-decoration {
+  display: none;
+}
+
+[data-theme='cartography'] .compass-decoration {
+  display: inline-block;
+  animation: compass-swing 3s ease-in-out infinite;
+}
+
+@keyframes compass-swing {
+  0%,
+  100% {
+    transform: rotate(-15deg);
+  }
+  50% {
+    transform: rotate(15deg);
+  }
+}
+
+[data-theme='cartography'] .torn-edge-divider {
+  stroke-dasharray: 4 3;
+  animation: dash-move 2s linear infinite;
+}
+
+@keyframes dash-move {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+/* ② 東京霓虹夜 Neon：標題霓虹閃爍、背景掃描線、按鈕發光脈動 */
+[data-theme='neon'].theme-root {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.04) 0px,
+    rgba(255, 255, 255, 0.04) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+[data-theme='neon'] h1,
+[data-theme='neon'] h2 {
+  animation: neon-flicker 4s ease-in-out infinite;
+}
+
+@keyframes neon-flicker {
+  0%,
+  19%,
+  21%,
+  23%,
+  54%,
+  56%,
+  100% {
+    opacity: 1;
+  }
+  20%,
+  22%,
+  55% {
+    opacity: 0.6;
+  }
+}
+
+[data-theme='neon'] button {
+  animation: neon-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes neon-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 4px var(--color-accent);
+  }
+  50% {
+    box-shadow: 0 0 14px var(--color-accent);
+  }
+}
+
+/* ③ 明信片剪貼簿 Scrapbook：和紙膠帶擺動、卡片撳落有反饋（印章彈入動畫見 .stamp-badge） */
+[data-theme='scrapbook'] section,
+[data-theme='scrapbook'] article {
+  position: relative;
+}
+
+[data-theme='scrapbook'] section::before,
+[data-theme='scrapbook'] article::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 16px;
+  width: 40px;
+  height: 16px;
+  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  transform: rotate(-4deg);
+  animation: tape-sway 4s ease-in-out infinite;
+}
+
+@keyframes tape-sway {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+[data-theme='scrapbook'] section:active,
+[data-theme='scrapbook'] article:active {
+  transform: scale(0.985);
+}
+
+/* ④ 和風藍染 Indigo：背景波紋流動、金線畫入動畫、按鈕內光反饋 */
+[data-theme='indigo'].theme-root {
+  background-image:
+    radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--color-heading) 8%, transparent), transparent 60%),
+    radial-gradient(circle at 80% 80%, color-mix(in srgb, var(--color-heading) 6%, transparent), transparent 55%);
+  background-size: 200% 200%;
+  animation: indigo-flow 12s ease-in-out infinite;
+}
+
+@keyframes indigo-flow {
+  0%,
+  100% {
+    background-position:
+      0% 0%,
+      100% 100%;
+  }
+  50% {
+    background-position:
+      100% 100%,
+      0% 0%;
+  }
+}
+
+[data-theme='indigo'] h1::after,
+[data-theme='indigo'] h2::after {
+  content: '';
+  display: block;
+  height: 2px;
+  width: 0;
+  background: var(--color-heading);
+  animation: gold-line-draw 1s ease-out forwards;
+}
+
+@keyframes gold-line-draw {
+  to {
+    width: 60px;
+  }
+}
+
+[data-theme='indigo'] button:active {
+  box-shadow: inset 0 0 10px var(--color-accent);
+}

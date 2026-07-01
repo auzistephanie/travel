@@ -1,5 +1,6 @@
-import { createContext, useContext, useMemo, type CSSProperties, type ReactNode } from 'react'
+import { createContext, useContext, useMemo, type CSSProperties, type MouseEvent, type ReactNode } from 'react'
 import { getTheme, themeToCssVariables, type ThemeTokens } from './tokens'
+import { spawnRipple } from './ripple'
 import type { ThemeId } from '../types/models'
 
 interface ThemeContextValue {
@@ -40,9 +41,14 @@ export function ThemeProvider({ themeId, accent, onThemeChange, onAccentChange, 
     [themeId, resolvedAccent, tokens, onThemeChange, onAccentChange],
   )
 
+  function handleClick(e: MouseEvent<HTMLDivElement>) {
+    const button = (e.target as HTMLElement).closest('button')
+    if (button) spawnRipple(button, e.clientX, e.clientY)
+  }
+
   return (
     <ThemeContext.Provider value={value}>
-      <div className="theme-root" style={cssVars} data-theme={themeId}>
+      <div className="theme-root" style={cssVars} data-theme={themeId} onClick={handleClick}>
         {children}
       </div>
     </ThemeContext.Provider>
