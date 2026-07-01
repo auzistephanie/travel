@@ -9,6 +9,9 @@ vi.mock('../hooks/useItinerary', () => ({ useItinerary: () => useItinerary() }))
 const useDestinationWeather = vi.fn()
 vi.mock('../hooks/useDestinationWeather', () => ({ useDestinationWeather: () => useDestinationWeather() }))
 
+const searchIndoorPlaces = vi.fn()
+vi.mock('../lib/placesApi', () => ({ searchIndoorPlaces: (...a: unknown[]) => searchIndoorPlaces(...a) }))
+
 const { Itinerary } = await import('./Itinerary')
 
 const trip: Trip = {
@@ -31,6 +34,8 @@ describe('Itinerary', () => {
     useItinerary.mockReset()
     useDestinationWeather.mockReset()
     useDestinationWeather.mockReturnValue({})
+    searchIndoorPlaces.mockReset()
+    searchIndoorPlaces.mockResolvedValue([])
   })
 
   it('shows the stops for the first day by default', () => {
@@ -69,6 +74,48 @@ describe('Itinerary', () => {
 
     render(<Itinerary trip={trip} members={members} />)
     expect(screen.getByText('31°C')).toBeInTheDocument()
+  })
+
+  it('shows indoor suggestions when rain probability is high and a stop has coordinates', async () => {
+    useItinerary.mockReturnValue({
+      days,
+      stopsByDay: {
+        d1: [{ id: 's1', day_id: 'd1', time: null, title: '淺草寺', place_name: null, lat: 35.71, lng: 139.79, order_index: 0, transport_mode_to_next: null, icon: null }],
+        d2: [],
+      },
+      loading: false,
+      error: null,
+      addStop: vi.fn(),
+      deleteStop: vi.fn(),
+    })
+    useDestinationWeather.mockReturnValue({
+      '2026-08-01': { date: '2026-08-01', am: { tempC: 26, rainProbability: 80 }, pm: { tempC: 31, rainProbability: 20 } },
+    })
+    searchIndoorPlaces.mockResolvedValue([{ name: '上野博物館', address: '東京都', lat: 35.71, lng: 139.79 }])
+
+    render(<Itinerary trip={trip} members={members} />)
+    expect(await screen.findByText('上野博物館')).toBeInTheDocument()
+    expect(searchIndoorPlaces).toHaveBeenCalledWith(35.71, 139.79)
+  })
+
+  it('does not show indoor suggestions when rain probability is low', () => {
+    useItinerary.mockReturnValue({
+      days,
+      stopsByDay: {
+        d1: [{ id: 's1', day_id: 'd1', time: null, title: '淺草寺', place_name: null, lat: 35.71, lng: 139.79, order_index: 0, transport_mode_to_next: null, icon: null }],
+        d2: [],
+      },
+      loading: false,
+      error: null,
+      addStop: vi.fn(),
+      deleteStop: vi.fn(),
+    })
+    useDestinationWeather.mockReturnValue({
+      '2026-08-01': { date: '2026-08-01', am: { tempC: 26, rainProbability: 10 }, pm: { tempC: 31, rainProbability: 20 } },
+    })
+
+    render(<Itinerary trip={trip} members={members} />)
+    expect(searchIndoorPlaces).not.toHaveBeenCalled()
   })
 
   it('switches stop list when a different day tab is clicked', async () => {

@@ -3,7 +3,10 @@ import { useItinerary } from '../hooks/useItinerary'
 import { useDestinationWeather } from '../hooks/useDestinationWeather'
 import { DayTabs } from '../components/DayTabs'
 import { WeatherCard } from '../components/WeatherCard'
+import { IndoorSuggestionCard } from '../components/IndoorSuggestionCard'
 import { googleMapsUrl } from '../lib/mapsLink'
+import { shouldSuggestIndoor } from '../lib/weatherApi'
+import { averageCoordinates } from '../lib/stopGeo'
 import type { TripPageProps } from '../types/props'
 
 export function Itinerary({ trip }: TripPageProps) {
@@ -26,6 +29,8 @@ export function Itinerary({ trip }: TripPageProps) {
   const currentDay = days.find((d) => d.id === currentDayId) ?? days[0]
   const stops = stopsByDay[currentDayId] ?? []
   const weather = weatherByDate[currentDay.date] ?? null
+  const dayCenter = averageCoordinates(stops)
+  const showIndoorSuggestion = weather != null && shouldSuggestIndoor(weather) && dayCenter != null
 
   async function handleAddStop(e: FormEvent) {
     e.preventDefault()
@@ -46,6 +51,9 @@ export function Itinerary({ trip }: TripPageProps) {
     <div>
       <DayTabs days={days} activeDayId={currentDayId} onChange={setActiveDayId} />
       <WeatherCard weather={weather} />
+      {showIndoorSuggestion && dayCenter && (
+        <IndoorSuggestionCard lat={dayCenter.lat} lng={dayCenter.lng} />
+      )}
       <ul>
         {stops.map((stop) => (
           <li key={stop.id}>

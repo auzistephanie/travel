@@ -13,7 +13,7 @@ interface PlacesSearchTextResponse {
   }[]
 }
 
-export async function searchPlaces(query: string): Promise<PlaceResult[]> {
+async function searchTextPlaces(body: Record<string, unknown>): Promise<PlaceResult[]> {
   const key = import.meta.env.VITE_GOOGLE_MAPS_KEY
   if (!key) return []
 
@@ -25,13 +25,13 @@ export async function searchPlaces(query: string): Promise<PlaceResult[]> {
         'X-Goog-Api-Key': key,
         'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location',
       },
-      body: JSON.stringify({ textQuery: query }),
+      body: JSON.stringify(body),
     })
     if (!response.ok) return []
 
-    const body = (await response.json()) as PlacesSearchTextResponse
+    const responseBody = (await response.json()) as PlacesSearchTextResponse
 
-    return (body.places ?? []).map((place) => ({
+    return (responseBody.places ?? []).map((place) => ({
       name: place.displayName?.text ?? '',
       address: place.formattedAddress ?? '',
       lat: place.location?.latitude ?? 0,
@@ -40,4 +40,19 @@ export async function searchPlaces(query: string): Promise<PlaceResult[]> {
   } catch {
     return []
   }
+}
+
+export async function searchPlaces(query: string): Promise<PlaceResult[]> {
+  return searchTextPlaces({ textQuery: query })
+}
+
+const INDOOR_SEARCH_RADIUS_METERS = 5000
+
+export async function searchIndoorPlaces(lat: number, lng: number): Promise<PlaceResult[]> {
+  return searchTextPlaces({
+    textQuery: '商場 博物館 水族館',
+    locationBias: {
+      circle: { center: { latitude: lat, longitude: lng }, radius: INDOOR_SEARCH_RADIUS_METERS },
+    },
+  })
 }

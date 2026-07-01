@@ -9,6 +9,15 @@ export interface DayWeather {
   pm: HalfDayWeather
 }
 
+const INDOOR_SUGGESTION_RAIN_THRESHOLD = 60
+
+export function shouldSuggestIndoor(weather: DayWeather): boolean {
+  return (
+    weather.am.rainProbability >= INDOOR_SUGGESTION_RAIN_THRESHOLD ||
+    weather.pm.rainProbability >= INDOOR_SUGGESTION_RAIN_THRESHOLD
+  )
+}
+
 interface OpenMeteoResponse {
   hourly?: {
     time: string[]

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { fetchWeather } from './weatherApi'
+import { fetchWeather, shouldSuggestIndoor } from './weatherApi'
 
 describe('fetchWeather', () => {
   beforeEach(() => {
@@ -40,5 +40,25 @@ describe('fetchWeather', () => {
     vi.mocked(fetch).mockRejectedValue(new Error('network down'))
     const result = await fetchWeather(35.68, 139.69, '2026-08-01', '2026-08-01')
     expect(result).toEqual([])
+  })
+})
+
+describe('shouldSuggestIndoor', () => {
+  it('is true when the AM rain probability is at or above 60%', () => {
+    expect(
+      shouldSuggestIndoor({ date: '2026-08-01', am: { tempC: 25, rainProbability: 60 }, pm: { tempC: 25, rainProbability: 10 } }),
+    ).toBe(true)
+  })
+
+  it('is true when the PM rain probability is at or above 60%', () => {
+    expect(
+      shouldSuggestIndoor({ date: '2026-08-01', am: { tempC: 25, rainProbability: 10 }, pm: { tempC: 25, rainProbability: 60 } }),
+    ).toBe(true)
+  })
+
+  it('is false when both halves are under 60%', () => {
+    expect(
+      shouldSuggestIndoor({ date: '2026-08-01', am: { tempC: 25, rainProbability: 59 }, pm: { tempC: 25, rainProbability: 59 } }),
+    ).toBe(false)
   })
 })

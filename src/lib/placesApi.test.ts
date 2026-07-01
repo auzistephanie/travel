@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { searchPlaces } from './placesApi'
+import { searchIndoorPlaces, searchPlaces } from './placesApi'
 
 describe('searchPlaces', () => {
   beforeEach(() => {
@@ -56,5 +56,34 @@ describe('searchPlaces', () => {
     expect(init?.method).toBe('POST')
     expect((init?.headers as Record<string, string>)['X-Goog-Api-Key']).toBe('test-key')
     expect(JSON.parse(init?.body as string)).toEqual({ textQuery: '淺草寺' })
+  })
+})
+
+describe('searchIndoorPlaces', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+  })
+
+  it('returns [] without calling the API when no key is configured', async () => {
+    vi.stubEnv('VITE_GOOGLE_MAPS_KEY', '')
+    const result = await searchIndoorPlaces(35.68, 139.69)
+    expect(result).toEqual([])
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('biases the search near the given coordinates', async () => {
+    vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key')
+    vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ places: [] }), { status: 200 }))
+
+    await searchIndoorPlaces(35.68, 139.69)
+
+    const [, init] = vi.mocked(fetch).mock.calls[0]
+    const body = JSON.parse(init?.body as string)
+    expect(body.locationBias.circle.center).toEqual({ latitude: 35.68, longitude: 139.69 })
   })
 })
