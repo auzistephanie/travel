@@ -1,5 +1,6 @@
 import { THEMES } from '../theme/tokens'
 import { useTheme } from '../theme/ThemeContext'
+import { GenericIllustration } from '../theme/illustrations/GenericIllustration'
 
 interface SettingsPanelProps {
   onClose: () => void
@@ -23,12 +24,14 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
               onClick={() => setThemeId(theme.id)}
               style={{
                 background: theme.colorBg,
-                color: theme.colorHeading,
-                fontFamily: theme.fontHeading,
                 borderColor: theme.id === themeId ? theme.defaultAccent : theme.colorBorder,
+                padding: 4,
               }}
             >
-              {theme.name}
+              <div className="destination-illustration" aria-hidden="true" style={{ filter: theme.illustrationFilter, width: 72 }}>
+                <GenericIllustration />
+              </div>
+              <span style={{ color: theme.colorHeading, fontFamily: theme.fontHeading }}>{theme.name}</span>
             </button>
           </li>
         ))}

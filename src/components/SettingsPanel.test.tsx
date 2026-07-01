@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { SettingsPanel } from './SettingsPanel'
 import { ThemeProvider } from '../theme/ThemeContext'
+import { THEMES } from '../theme/tokens'
 import type { ThemeId } from '../types/models'
 
 function Harness({ onClose = vi.fn() }: { onClose?: () => void }) {
@@ -53,6 +54,13 @@ describe('SettingsPanel', () => {
 
     expect(screen.getByLabelText('強調色 #b5651d')).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByLabelText('強調色 #2f4a3e')).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('previews each theme thumbnail with that theme\'s own illustration filter, not the active one', () => {
+    render(<Harness />)
+    const neonButton = screen.getByRole('button', { name: '東京霓虹夜' })
+    const preview = neonButton.querySelector('svg')?.parentElement as HTMLElement
+    expect(preview.style.filter).toBe(THEMES.neon.illustrationFilter)
   })
 
   it('calls onClose when the close button is clicked', async () => {
