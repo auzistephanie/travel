@@ -15,16 +15,18 @@ export function SettlementCard({ expenses, members }: SettlementCardProps) {
 
   const nameById = new Map(members.map((m) => [m.id, m.name]))
 
-  if (transactions.length === 0) return <p>結算：大家清晒數</p>
+  if (transactions.length === 0) return <p className="settle-clear">結算：大家清晒數</p>
 
   return (
-    <section aria-label="結算">
+    <section className="settle-card" aria-label="結算">
       <h3>結算</h3>
-      <ul>
+      <ul className="settle-list">
         {transactions.map((t) => (
-          <li key={`${t.fromMemberId}-${t.toMemberId}`}>
-            {nameById.get(t.fromMemberId) ?? '未知'} 找 HK${t.amountHKD.toFixed(2)} 俾{' '}
-            {nameById.get(t.toMemberId) ?? '未知'}
+          <li key={`${t.fromMemberId}-${t.toMemberId}`} className="settle-row">
+            <span className="settle-line">
+              {nameById.get(t.fromMemberId) ?? '未知'} 找 HK${t.amountHKD.toFixed(2)} 俾{' '}
+              {nameById.get(t.toMemberId) ?? '未知'}
+            </span>
           </li>
         ))}
       </ul>
