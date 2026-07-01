@@ -1,11 +1,5 @@
+import { inclusiveDayCount } from '../lib/tripDays'
 import type { TripPageProps } from '../types/props'
-
-function inclusiveDayCount(startDate: string, endDate: string): number {
-  const start = new Date(startDate)
-  const end = new Date(endDate)
-  const msPerDay = 24 * 60 * 60 * 1000
-  return Math.round((end.getTime() - start.getTime()) / msPerDay) + 1
-}
 
 export function HeroCard({ trip, members }: TripPageProps) {
   const days = inclusiveDayCount(trip.start_date, trip.end_date)
