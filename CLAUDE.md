@@ -70,9 +70,15 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **配色**：cartography 主題暖橙 accent `#c1683a`(CTA/nav active)、綠 `#2f4a3e`(heading/hero)、米色卡 `#fff8ea`；swatches `[#c1683a,#3f6b4f,#c99a3c,#6b4226]`。
 - **Icon**：統一用 `lucide-react`（emoji 全清）。`vite.config` 有 `optimizeDeps.include:['lucide-react']`，加新 dep 後要 restart dev server。
 - **總覽**：hero overlay 標題 + 出發倒數卡 + 日數/同行/出發 stat chips + section 空狀態。
-- **已改**：Landing / TripShell 頂 bar / BottomNav(蓋章 active) / HeroCard / SettingsPanel(蓋面) / Overview。
-- **未做(下一浪)**：行程 / 準備 / 錢 / 手信 bespoke layout（現時自動食新 token）；全 app 舊文案書面語掃尾(載入中/找不到/邊位…連 test 一齊改)。
+- **已改**：Landing / TripShell 頂 bar / BottomNav(蓋章 active) / HeroCard / SettingsPanel(蓋面) / Overview / **行程 Itinerary**(DayTabs pill、天氣 pill、雨天室內卡、時間軸卡、Lucide toilet/store/navigation、書面語)。
+- **未做(下一浪)**：準備 / 錢 / 手信 / 地圖 bespoke layout（現時自動食新 token）；全 app 舊文案書面語掃尾(載入中/找不到/邊位…連 test 一齊改)。
 - Mockup 參考：outputs `redesign-mockups.html`、`redesign-mockups-2.html`。
+
+## 8b. 自動 push（github_push.py，2026-07-02）
+- Sandbox 跑 `git add/commit/push` 會留低 stale `.git/*.lock` 擋住 commit，故改用 `github_push.py` 直接經 GitHub API push（照抄 Venturenix 做法）。
+- 用法：`python3 github_push.py "訊息"`。同 **遠端 origin tree** 比對（計 git blob sha），只上傳有差異的檔、刪除遠端多出的檔，idempotent。
+- Token 內嵌喺 `remote.origin.url`（本機 `.git/config`，唔 commit）；亦支援 `GITHUB_TOKEN` / `.gh-token`(gitignored)。
+- 重大更新後：更新 CLAUDE.md → `python3 github_push.py "…"`。
 
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
