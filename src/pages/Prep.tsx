@@ -5,6 +5,7 @@ import { SubTabs } from '../components/SubTabs'
 import { AddWishlistForm } from '../components/AddWishlistForm'
 import { ConfirmPurchaseCard } from '../components/ConfirmPurchaseCard'
 import { DestinationIllustration } from '../components/DestinationIllustration'
+import { StampBadge } from '../components/StampBadge'
 import { useWishlist } from '../hooks/useWishlist'
 import { useItinerary } from '../hooks/useItinerary'
 import { useDestinationCountry } from '../hooks/useDestinationCountry'
@@ -45,9 +46,12 @@ function WishlistView({ trip, members }: TripPageProps) {
               {item.linked_day_id ? dayById.get(item.linked_day_id) : '未連結行程（記得手動去買）'}
             </span>
             {item.bought ? (
-              <button type="button" onClick={() => undoBought(item.id)}>
-                撤銷買咗
-              </button>
+              <>
+                <StampBadge label="買咗" />
+                <button type="button" onClick={() => undoBought(item.id)}>
+                  撤銷買咗
+                </button>
+              </>
             ) : (
               <button type="button" onClick={() => setConfirming(item)}>
                 ✓ 買咗

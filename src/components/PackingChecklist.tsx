@@ -1,4 +1,5 @@
 import { usePackingChecklist } from '../hooks/usePackingChecklist'
+import { StampBadge } from './StampBadge'
 import type { PackingItem } from '../types/models'
 
 interface PackingChecklistProps {
@@ -25,7 +26,7 @@ export function PackingChecklist({ tripId, dayCount }: PackingChecklistProps) {
   return (
     <section aria-label="行李清單">
       <h2>行李清單</h2>
-      {allDone && <p aria-label="執晒印章">✅ 執晒</p>}
+      {allDone && <StampBadge label="執晒" />}
       {[...byCategory.entries()].map(([category, categoryItems]) => (
         <div key={category}>
           <h3>{category}</h3>

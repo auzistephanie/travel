@@ -3,6 +3,7 @@ import { HeroCard } from '../components/HeroCard'
 import { FlightCard } from '../components/FlightCard'
 import { AddFlightModal } from '../components/AddFlightModal'
 import { SpendingSummaryCard } from '../components/SpendingSummaryCard'
+import { TornEdgeDivider } from '../components/TornEdgeDivider'
 import { useFlights } from '../hooks/useFlights'
 import type { TripPageProps } from '../types/props'
 
@@ -31,6 +32,8 @@ export function Overview({ trip, members }: TripPageProps) {
           onClose={() => setShowAddFlight(false)}
         />
       )}
+
+      <TornEdgeDivider />
 
       <SpendingSummaryCard trip={trip} members={members} />
     </div>

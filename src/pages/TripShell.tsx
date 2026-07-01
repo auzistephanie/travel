@@ -5,6 +5,7 @@ import { getWhoAmI, setWhoAmI } from '../lib/whoAmI'
 import { WhoAmIPicker } from '../components/WhoAmIPicker'
 import { BottomNav, type TabId } from '../components/BottomNav'
 import { SettingsPanel } from '../components/SettingsPanel'
+import { TornEdgeDivider } from '../components/TornEdgeDivider'
 import { ThemeProvider } from '../theme/ThemeContext'
 import { getStoredAccent, getStoredThemeId, setStoredAccent, setStoredThemeId } from '../theme/themeStorage'
 import { Overview } from './Overview'
@@ -59,6 +60,7 @@ export function TripShell() {
             ⚙️
           </button>
         </header>
+        <TornEdgeDivider />
         <main>
           <ActivePage trip={trip} members={members} />
         </main>
