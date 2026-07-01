@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState, type ComponentType } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTrip } from '../hooks/useTrip'
 import { getWhoAmI, setWhoAmI } from '../lib/whoAmI'
@@ -8,15 +8,17 @@ import { SettingsPanel } from '../components/SettingsPanel'
 import { TornEdgeDivider } from '../components/TornEdgeDivider'
 import { ThemeProvider } from '../theme/ThemeContext'
 import { getStoredAccent, getStoredThemeId, setStoredAccent, setStoredThemeId } from '../theme/themeStorage'
-import { Overview } from './Overview'
-import { Itinerary } from './Itinerary'
-import { MapPage } from './MapPage'
-import { Prep } from './Prep'
-import { Money } from './Money'
 import type { ThemeId } from '../types/models'
 import type { TripPageProps } from '../types/props'
 
-const PAGES: Record<TabId, (props: TripPageProps) => React.JSX.Element> = {
+// 逐個分頁獨立 code-split，首次載入淨係攞緊嗰個分頁嘅 JS（效能基本處理，spec §10 Phase 5）
+const Overview = lazy(() => import('./Overview').then((m) => ({ default: m.Overview })))
+const Itinerary = lazy(() => import('./Itinerary').then((m) => ({ default: m.Itinerary })))
+const MapPage = lazy(() => import('./MapPage').then((m) => ({ default: m.MapPage })))
+const Prep = lazy(() => import('./Prep').then((m) => ({ default: m.Prep })))
+const Money = lazy(() => import('./Money').then((m) => ({ default: m.Money })))
+
+const PAGES: Record<TabId, ComponentType<TripPageProps>> = {
   overview: Overview,
   itinerary: Itinerary,
   map: MapPage,
@@ -65,7 +67,9 @@ export function TripShell() {
         </header>
         <TornEdgeDivider />
         <main>
-          <ActivePage trip={trip} members={members} />
+          <Suspense fallback={<p>載入緊…</p>}>
+            <ActivePage trip={trip} members={members} />
+          </Suspense>
         </main>
         <BottomNav active={activeTab} onChange={setActiveTab} />
         {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
