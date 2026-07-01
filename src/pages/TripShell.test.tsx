@@ -81,7 +81,7 @@ describe('TripShell', () => {
     getWhoAmI.mockReturnValue('m1')
     renderShell()
     await user.click(screen.getByRole('tab', { name: '行程' }))
-    expect(screen.getByRole('main')).toHaveTextContent('行程')
+    expect(screen.getByRole('main')).toHaveTextContent('載入緊…')
   })
 
   it('persists the chosen member when selected from the who-am-i picker', async () => {

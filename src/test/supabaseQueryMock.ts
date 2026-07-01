@@ -2,7 +2,7 @@ import { vi } from 'vitest'
 
 export function makeQuery(result: { data: unknown; error: unknown }) {
   const query: Record<string, unknown> = {}
-  const methods = ['insert', 'select', 'eq', 'order', 'single', 'maybeSingle']
+  const methods = ['insert', 'select', 'eq', 'order', 'single', 'maybeSingle', 'delete']
   for (const method of methods) {
     query[method] = vi.fn(() => query)
   }
