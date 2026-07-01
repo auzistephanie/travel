@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { fetchWeather, shouldSuggestIndoor } from './weatherApi'
+import { anyHalfDayRainAtLeast, fetchWeather, shouldSuggestIndoor, tripTemperatureRange } from './weatherApi'
 
 describe('fetchWeather', () => {
   beforeEach(() => {
@@ -60,5 +60,31 @@ describe('shouldSuggestIndoor', () => {
     expect(
       shouldSuggestIndoor({ date: '2026-08-01', am: { tempC: 25, rainProbability: 59 }, pm: { tempC: 25, rainProbability: 59 } }),
     ).toBe(false)
+  })
+})
+
+describe('tripTemperatureRange', () => {
+  it('returns the min and max temperature across all days', () => {
+    const days = [
+      { date: '2026-08-01', am: { tempC: 20, rainProbability: 0 }, pm: { tempC: 32, rainProbability: 0 } },
+      { date: '2026-08-02', am: { tempC: 15, rainProbability: 0 }, pm: { tempC: 28, rainProbability: 0 } },
+    ]
+    expect(tripTemperatureRange(days)).toEqual({ min: 15, max: 32 })
+  })
+
+  it('returns null for an empty list', () => {
+    expect(tripTemperatureRange([])).toBeNull()
+  })
+})
+
+describe('anyHalfDayRainAtLeast', () => {
+  it('is true when any half-day meets the threshold', () => {
+    const days = [{ date: '2026-08-01', am: { tempC: 25, rainProbability: 50 }, pm: { tempC: 25, rainProbability: 0 } }]
+    expect(anyHalfDayRainAtLeast(days)).toBe(true)
+  })
+
+  it('is false when no half-day meets the threshold', () => {
+    const days = [{ date: '2026-08-01', am: { tempC: 25, rainProbability: 49 }, pm: { tempC: 25, rainProbability: 10 } }]
+    expect(anyHalfDayRainAtLeast(days)).toBe(false)
   })
 })

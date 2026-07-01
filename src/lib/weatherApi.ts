@@ -18,6 +18,18 @@ export function shouldSuggestIndoor(weather: DayWeather): boolean {
   )
 }
 
+export function tripTemperatureRange(days: DayWeather[]): { min: number; max: number } | null {
+  if (days.length === 0) return null
+  const temps = days.flatMap((d) => [d.am.tempC, d.pm.tempC])
+  return { min: Math.min(...temps), max: Math.max(...temps) }
+}
+
+const UMBRELLA_RAIN_THRESHOLD = 50
+
+export function anyHalfDayRainAtLeast(days: DayWeather[], threshold = UMBRELLA_RAIN_THRESHOLD): boolean {
+  return days.some((d) => d.am.rainProbability >= threshold || d.pm.rainProbability >= threshold)
+}
+
 interface OpenMeteoResponse {
   hourly?: {
     time: string[]
