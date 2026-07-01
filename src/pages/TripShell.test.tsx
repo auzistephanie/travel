@@ -93,4 +93,17 @@ describe('TripShell', () => {
     expect(setWhoAmI).toHaveBeenCalledWith('ABC234', 'm1')
     expect(screen.getAllByText('東京五日').length).toBeGreaterThan(0)
   })
+
+  it('opens the settings panel when the gear icon is clicked', async () => {
+    const user = userEvent.setup()
+    useTrip.mockReturnValue({ trip, members, loading: false, error: null, joinAsNewMember: vi.fn() })
+    getWhoAmI.mockReturnValue('m1')
+    renderShell()
+
+    expect(screen.queryByRole('dialog', { name: '設定' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '設定' }))
+
+    expect(screen.getByRole('dialog', { name: '設定' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '復古探險地圖' })).toBeInTheDocument()
+  })
 })

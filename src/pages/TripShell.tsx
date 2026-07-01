@@ -4,6 +4,7 @@ import { useTrip } from '../hooks/useTrip'
 import { getWhoAmI, setWhoAmI } from '../lib/whoAmI'
 import { WhoAmIPicker } from '../components/WhoAmIPicker'
 import { BottomNav, type TabId } from '../components/BottomNav'
+import { SettingsPanel } from '../components/SettingsPanel'
 import { ThemeProvider } from '../theme/ThemeContext'
 import { getStoredAccent, getStoredThemeId, setStoredAccent, setStoredThemeId } from '../theme/themeStorage'
 import { Overview } from './Overview'
@@ -29,6 +30,7 @@ export function TripShell() {
   const [whoAmI, setWhoAmIState] = useState<string | null>(() => getWhoAmI(shareCode))
   const [themeId, setThemeId] = useState<ThemeId>(() => getStoredThemeId(shareCode))
   const [accent, setAccent] = useState<string | null>(() => getStoredAccent(shareCode))
+  const [showSettings, setShowSettings] = useState(false)
 
   let content: React.JSX.Element
 
@@ -53,7 +55,7 @@ export function TripShell() {
       <>
         <header>
           <span>{trip.name}</span>
-          <button type="button" aria-label="設定">
+          <button type="button" aria-label="設定" onClick={() => setShowSettings(true)}>
             ⚙️
           </button>
         </header>
@@ -61,6 +63,7 @@ export function TripShell() {
           <ActivePage trip={trip} members={members} />
         </main>
         <BottomNav active={activeTab} onChange={setActiveTab} />
+        {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
       </>
     )
   }
