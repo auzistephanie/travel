@@ -6,13 +6,14 @@ import { WeatherCard } from '../components/WeatherCard'
 import { IndoorSuggestionCard } from '../components/IndoorSuggestionCard'
 import { FacilityChips } from '../components/FacilityChips'
 import { TransportSegment } from '../components/TransportSegment'
+import { RouteOptimizationCard } from '../components/RouteOptimizationCard'
 import { googleMapsUrl } from '../lib/mapsLink'
 import { shouldSuggestIndoor } from '../lib/weatherApi'
 import { averageCoordinates } from '../lib/stopGeo'
 import type { TripPageProps } from '../types/props'
 
 export function Itinerary({ trip }: TripPageProps) {
-  const { days, stopsByDay, loading, error, addStop, deleteStop, reorderStops } = useItinerary(
+  const { days, stopsByDay, loading, error, addStop, deleteStop, reorderStops, applyOrder } = useItinerary(
     trip.id,
     trip.start_date,
     trip.end_date,
@@ -104,6 +105,7 @@ export function Itinerary({ trip }: TripPageProps) {
           )
         })}
       </ul>
+      <RouteOptimizationCard stops={stops} onApply={(newOrder) => applyOrder(currentDayId, newOrder)} />
       <form onSubmit={handleAddStop}>
         <label htmlFor="stop-title">景點名稱</label>
         <input id="stop-title" value={title} onChange={(e) => setTitle(e.target.value)} required />

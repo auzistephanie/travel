@@ -57,5 +57,20 @@ export function useItinerary(tripId: string, startDate: string, endDate: string)
     [stopsByDay],
   )
 
-  return { days, stopsByDay, loading, error, addStop: create, deleteStop: remove, reorderStops: move, refetch: load }
+  const applyOrder = useCallback(async (dayId: string, orderedStops: ItineraryStop[]) => {
+    setStopsByDay((prev) => ({ ...prev, [dayId]: orderedStops }))
+    await reorderStops(orderedStops.map((s) => s.id))
+  }, [])
+
+  return {
+    days,
+    stopsByDay,
+    loading,
+    error,
+    addStop: create,
+    deleteStop: remove,
+    reorderStops: move,
+    applyOrder,
+    refetch: load,
+  }
 }

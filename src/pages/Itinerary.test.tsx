@@ -68,6 +68,7 @@ describe('Itinerary', () => {
       addStop: vi.fn(),
       deleteStop: vi.fn(),
       reorderStops: vi.fn(),
+      applyOrder: vi.fn(),
     })
     findNearbyRestroom.mockResolvedValue({ name: '公共洗手間', lat: 35.712, lng: 139.795 })
 
@@ -92,6 +93,7 @@ describe('Itinerary', () => {
       addStop: vi.fn(),
       deleteStop: vi.fn(),
       reorderStops: vi.fn(),
+      applyOrder: vi.fn(),
     })
     fetchTransportEstimate.mockResolvedValue({ mode: 'WALK', durationMinutes: 15 })
 
@@ -120,6 +122,7 @@ describe('Itinerary', () => {
       addStop: vi.fn(),
       deleteStop: vi.fn(),
       reorderStops: vi.fn(),
+      applyOrder: vi.fn(),
     })
 
     render(<Itinerary trip={trip} members={members} />)
@@ -138,6 +141,7 @@ describe('Itinerary', () => {
       addStop: vi.fn(),
       deleteStop: vi.fn(),
       reorderStops: vi.fn(),
+      applyOrder: vi.fn(),
     })
 
     render(<Itinerary trip={trip} members={members} />)
@@ -156,6 +160,7 @@ describe('Itinerary', () => {
       addStop: vi.fn(),
       deleteStop: vi.fn(),
       reorderStops: vi.fn(),
+      applyOrder: vi.fn(),
     })
 
     render(<Itinerary trip={trip} members={members} />)
@@ -171,6 +176,7 @@ describe('Itinerary', () => {
       addStop: vi.fn(),
       deleteStop: vi.fn(),
       reorderStops: vi.fn(),
+      applyOrder: vi.fn(),
     })
     useDestinationWeather.mockReturnValue({
       '2026-08-01': {
@@ -196,6 +202,7 @@ describe('Itinerary', () => {
       addStop: vi.fn(),
       deleteStop: vi.fn(),
       reorderStops: vi.fn(),
+      applyOrder: vi.fn(),
     })
     useDestinationWeather.mockReturnValue({
       '2026-08-01': { date: '2026-08-01', am: { tempC: 26, rainProbability: 80 }, pm: { tempC: 31, rainProbability: 20 } },
@@ -219,6 +226,7 @@ describe('Itinerary', () => {
       addStop: vi.fn(),
       deleteStop: vi.fn(),
       reorderStops: vi.fn(),
+      applyOrder: vi.fn(),
     })
     useDestinationWeather.mockReturnValue({
       '2026-08-01': { date: '2026-08-01', am: { tempC: 26, rainProbability: 10 }, pm: { tempC: 31, rainProbability: 20 } },
@@ -241,6 +249,7 @@ describe('Itinerary', () => {
       addStop: vi.fn(),
       deleteStop: vi.fn(),
       reorderStops: vi.fn(),
+      applyOrder: vi.fn(),
     })
 
     render(<Itinerary trip={trip} members={members} />)
@@ -261,6 +270,7 @@ describe('Itinerary', () => {
       addStop,
       deleteStop: vi.fn(),
       reorderStops: vi.fn(),
+      applyOrder: vi.fn(),
     })
 
     render(<Itinerary trip={trip} members={members} />)
@@ -284,6 +294,7 @@ describe('Itinerary', () => {
       addStop: vi.fn(),
       deleteStop,
       reorderStops: vi.fn(),
+      applyOrder: vi.fn(),
     })
 
     render(<Itinerary trip={trip} members={members} />)
@@ -307,6 +318,7 @@ describe('Itinerary', () => {
       addStop: vi.fn(),
       deleteStop: vi.fn(),
       reorderStops,
+      applyOrder: vi.fn(),
     })
 
     render(<Itinerary trip={trip} members={members} />)
@@ -317,5 +329,28 @@ describe('Itinerary', () => {
     fireEvent.drop(items[1])
 
     expect(reorderStops).toHaveBeenCalledWith('d1', 0, 1)
+  })
+
+  it('applies the suggested route order when offered', async () => {
+    const user = userEvent.setup()
+    const applyOrder = vi.fn()
+    const stopA = { id: 's1', day_id: 'd1', time: null, title: 'A', place_name: null, lat: 0, lng: 0, order_index: 0, transport_mode_to_next: null, icon: null }
+    const stopB = { id: 's2', day_id: 'd1', time: null, title: 'B', place_name: null, lat: 5, lng: 0, order_index: 1, transport_mode_to_next: null, icon: null }
+    const stopC = { id: 's3', day_id: 'd1', time: null, title: 'C', place_name: null, lat: 0.1, lng: 0, order_index: 2, transport_mode_to_next: null, icon: null }
+    useItinerary.mockReturnValue({
+      days,
+      stopsByDay: { d1: [stopA, stopB, stopC], d2: [] },
+      loading: false,
+      error: null,
+      addStop: vi.fn(),
+      deleteStop: vi.fn(),
+      reorderStops: vi.fn(),
+      applyOrder,
+    })
+
+    render(<Itinerary trip={trip} members={members} />)
+    await user.click(await screen.findByRole('button', { name: '一鍵套用' }))
+
+    expect(applyOrder).toHaveBeenCalledWith('d1', [stopA, stopC, stopB])
   })
 })
