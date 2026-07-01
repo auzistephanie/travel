@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { useTrip } from '../hooks/useTrip'
+import { getWhoAmI, setWhoAmI } from '../lib/whoAmI'
+import { WhoAmIPicker } from '../components/WhoAmIPicker'
 import { BottomNav, type TabId } from '../components/BottomNav'
 import { Overview } from './Overview'
 import { Itinerary } from './Itinerary'
@@ -16,14 +19,33 @@ const PAGES: Record<TabId, () => React.JSX.Element> = {
 }
 
 export function TripShell() {
-  const { shareCode } = useParams<{ shareCode: string }>()
+  const { shareCode = '' } = useParams<{ shareCode: string }>()
+  const { trip, members, loading, error, joinAsNewMember } = useTrip(shareCode)
   const [activeTab, setActiveTab] = useState<TabId>('overview')
+  const [whoAmI, setWhoAmIState] = useState<string | null>(() => getWhoAmI(shareCode))
+
+  if (loading) return <p>載入緊…</p>
+  if (error || !trip) return <p role="alert">{error ?? '揾唔到呢個分享碼嘅行程'}</p>
+
+  if (!whoAmI) {
+    return (
+      <WhoAmIPicker
+        members={members}
+        onSelect={(memberId) => {
+          setWhoAmI(shareCode, memberId)
+          setWhoAmIState(memberId)
+        }}
+        onAddNew={joinAsNewMember}
+      />
+    )
+  }
+
   const ActivePage = PAGES[activeTab]
 
   return (
     <div>
       <header>
-        <span>分享碼：{shareCode}</span>
+        <span>{trip.name}</span>
         <button type="button" aria-label="設定">
           ⚙️
         </button>

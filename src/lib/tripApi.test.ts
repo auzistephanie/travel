@@ -1,0 +1,135 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { PostgrestError } from '@supabase/supabase-js'
+
+const { supabase } = vi.hoisted(() => ({ supabase: { from: vi.fn() } }))
+vi.mock('./supabaseClient', () => ({ supabase }))
+
+import { addTripMember, createTrip, findTripByShareCode } from './tripApi'
+
+function makeQuery(result: { data: unknown; error: unknown }) {
+  const query: Record<string, unknown> = {}
+  const methods = ['insert', 'select', 'eq', 'single', 'maybeSingle']
+  for (const method of methods) {
+    query[method] = vi.fn(() => query)
+  }
+  query.then = (resolve: (r: typeof result) => unknown) => resolve(result)
+  return query
+}
+
+const uniqueViolation = {
+  name: 'PostgrestError',
+  message: 'duplicate key value violates unique constraint',
+  details: '',
+  hint: '',
+  code: '23505',
+} as PostgrestError
+
+describe('createTrip', () => {
+  beforeEach(() => {
+    supabase.from.mockReset()
+  })
+
+  it('inserts a trip and an owner member, returning both', async () => {
+    const trip = { id: 't1', name: '東京五日', share_code: 'ABC234' }
+    const owner = { id: 'm1', trip_id: 't1', name: '阿明', is_owner: true }
+
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'trips') return makeQuery({ data: trip, error: null })
+      if (table === 'trip_members') return makeQuery({ data: owner, error: null })
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    const result = await createTrip({
+      name: '東京五日',
+      startDate: '2026-08-01',
+      endDate: '2026-08-05',
+      ownerName: '阿明',
+    })
+
+    expect(result.trip).toEqual(trip)
+    expect(result.owner).toEqual(owner)
+  })
+
+  it('retries with a new share code when the trip insert hits a unique violation', async () => {
+    const trip = { id: 't1', name: '東京五日', share_code: 'XYZ987' }
+    const owner = { id: 'm1', trip_id: 't1', name: '阿明', is_owner: true }
+
+    let tripInsertCalls = 0
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'trips') {
+        tripInsertCalls += 1
+        if (tripInsertCalls === 1) {
+          return makeQuery({ data: null, error: uniqueViolation })
+        }
+        return makeQuery({ data: trip, error: null })
+      }
+      if (table === 'trip_members') return makeQuery({ data: owner, error: null })
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    const result = await createTrip({
+      name: '東京五日',
+      startDate: '2026-08-01',
+      endDate: '2026-08-05',
+      ownerName: '阿明',
+    })
+
+    expect(tripInsertCalls).toBe(2)
+    expect(result.trip).toEqual(trip)
+  })
+
+  it('throws immediately on a non-collision error', async () => {
+    const otherError = { ...uniqueViolation, code: '23503', message: 'fk violation' }
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'trips') return makeQuery({ data: null, error: otherError })
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    await expect(
+      createTrip({ name: 'x', startDate: '2026-08-01', endDate: '2026-08-05', ownerName: 'y' }),
+    ).rejects.toEqual(otherError)
+  })
+})
+
+describe('findTripByShareCode', () => {
+  beforeEach(() => {
+    supabase.from.mockReset()
+  })
+
+  it('returns null when no trip matches the code', async () => {
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'trips') return makeQuery({ data: null, error: null })
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    const result = await findTripByShareCode('NOPE99')
+    expect(result).toBeNull()
+  })
+
+  it('returns the trip and its members when found', async () => {
+    const trip = { id: 't1', share_code: 'ABC234' }
+    const members = [{ id: 'm1', name: '阿明' }]
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'trips') return makeQuery({ data: trip, error: null })
+      if (table === 'trip_members') return makeQuery({ data: members, error: null })
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    const result = await findTripByShareCode('ABC234')
+    expect(result).toEqual({ trip, members })
+  })
+})
+
+describe('addTripMember', () => {
+  it('inserts a non-owner member and returns it', async () => {
+    const member = { id: 'm2', trip_id: 't1', name: '阿珍', is_owner: false }
+    supabase.from.mockReset()
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'trip_members') return makeQuery({ data: member, error: null })
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    const result = await addTripMember('t1', '阿珍')
+    expect(result).toEqual(member)
+  })
+})
