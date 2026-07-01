@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { addWishlistItem, deleteWishlistItem, listWishlistItems, type AddWishlistItemInput } from '../lib/wishlistRepo'
+import {
+  addWishlistItem,
+  deleteWishlistItem,
+  listWishlistItems,
+  markUnbought,
+  type AddWishlistItemInput,
+} from '../lib/wishlistRepo'
+import { confirmWishlistPurchase } from '../lib/wishlistPurchase'
 import type { WishlistItem } from '../types/models'
 
 export function useWishlist(tripId: string) {
@@ -37,5 +44,29 @@ export function useWishlist(tripId: string) {
     setItems((prev) => prev.filter((i) => i.id !== id))
   }, [])
 
-  return { items, loading, error, addItem: create, deleteItem: remove, refetch: load }
+  const confirmBought = useCallback(
+    async (item: WishlistItem, actualStore: string | null, actualAmt: number | null) => {
+      const { wishlistItem } = await confirmWishlistPurchase({ tripId, wishlistItem: item, actualStore, actualAmt })
+      setItems((prev) => prev.map((i) => (i.id === wishlistItem.id ? wishlistItem : i)))
+      return wishlistItem
+    },
+    [tripId],
+  )
+
+  const undoBought = useCallback(async (id: string) => {
+    const updated = await markUnbought(id)
+    setItems((prev) => prev.map((i) => (i.id === id ? updated : i)))
+    return updated
+  }, [])
+
+  return {
+    items,
+    loading,
+    error,
+    addItem: create,
+    deleteItem: remove,
+    confirmBought,
+    undoBought,
+    refetch: load,
+  }
 }

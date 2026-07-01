@@ -3,9 +3,11 @@ import { PackingSmartCard } from '../components/PackingSmartCard'
 import { PackingChecklist } from '../components/PackingChecklist'
 import { SubTabs } from '../components/SubTabs'
 import { AddWishlistForm } from '../components/AddWishlistForm'
+import { ConfirmPurchaseCard } from '../components/ConfirmPurchaseCard'
 import { useWishlist } from '../hooks/useWishlist'
 import { useItinerary } from '../hooks/useItinerary'
 import { inclusiveDayCount } from '../lib/tripDays'
+import type { WishlistItem } from '../types/models'
 import type { TripPageProps } from '../types/props'
 
 const TABS = [
@@ -14,9 +16,10 @@ const TABS = [
 ]
 
 function WishlistView({ trip, members }: TripPageProps) {
-  const { items, loading, error, addItem, deleteItem } = useWishlist(trip.id)
+  const { items, loading, error, addItem, deleteItem, confirmBought, undoBought } = useWishlist(trip.id)
   const { days } = useItinerary(trip.id, trip.start_date, trip.end_date)
   const [showAdd, setShowAdd] = useState(false)
+  const [confirming, setConfirming] = useState<WishlistItem | null>(null)
 
   if (loading) return <p>載入緊…</p>
   if (error) return <p role="alert">{error}</p>
@@ -34,6 +37,15 @@ function WishlistView({ trip, members }: TripPageProps) {
             <span>
               {item.linked_day_id ? dayById.get(item.linked_day_id) : '未連結行程（記得手動去買）'}
             </span>
+            {item.bought ? (
+              <button type="button" onClick={() => undoBought(item.id)}>
+                撤銷買咗
+              </button>
+            ) : (
+              <button type="button" onClick={() => setConfirming(item)}>
+                ✓ 買咗
+              </button>
+            )}
             <button type="button" onClick={() => deleteItem(item.id)} aria-label={`刪除 ${item.name}`}>
               刪除
             </button>
@@ -52,6 +64,16 @@ function WishlistView({ trip, members }: TripPageProps) {
             addItem(input)
             setShowAdd(false)
           }}
+        />
+      )}
+      {confirming && (
+        <ConfirmPurchaseCard
+          item={confirming}
+          onConfirm={(actualStore, actualAmt) => {
+            confirmBought(confirming, actualStore, actualAmt)
+            setConfirming(null)
+          }}
+          onCancel={() => setConfirming(null)}
         />
       )}
     </div>

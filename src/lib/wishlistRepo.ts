@@ -46,3 +46,26 @@ export async function deleteWishlistItem(id: string): Promise<void> {
   const { error } = await supabase.from('wishlist_items').delete().eq('id', id)
   if (error) throw error
 }
+
+export async function markBought(
+  id: string,
+  actualStore: string | null,
+  actualAmt: number | null,
+): Promise<WishlistItem> {
+  const { data, error } = await supabase
+    .from('wishlist_items')
+    .update({ bought: true, actual_store: actualStore, actual_amt: actualAmt, synced_to_gift: true })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as WishlistItem
+}
+
+// 撤銷買咗淨係翻返做未買，唔會刪走已入手信嘅記錄（spec §5.2 避免誤刪帳目）
+export async function markUnbought(id: string): Promise<WishlistItem> {
+  const { data, error } = await supabase.from('wishlist_items').update({ bought: false }).eq('id', id).select().single()
+  if (error) throw error
+  return data as WishlistItem
+}
