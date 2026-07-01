@@ -1,4 +1,8 @@
-/* Landing 專屬：見 src/styles/journalCard.css 攞 .journal-page / .journal-card 個殼 */
+/* Landing 專屬：見 src/styles/journalCard.css 攞 .journal-page / .journal-card 個殼
+   注意：theme.css 有 `.theme-root a { color: var(--color-accent) }` 呢類 global 規則，
+   specificity 係 (0,1,1)。呢個檔案入面凡係要覆蓋文字顏色嘅 selector，
+   都要用返 2 個 class（例如 `.journal-actions .journal-cta-primary`）先可以贏，
+   唔好用 !important。 */
 
 .journal-cover-content {
   text-align: center;
@@ -21,9 +25,9 @@
   }
 }
 
-.journal-title {
-  font-size: 32px !important;
-  margin-bottom: 2px !important;
+.journal-cover-content .journal-title {
+  font-size: 32px;
+  margin-bottom: 2px;
 }
 
 .journal-subtitle {
@@ -49,8 +53,8 @@
   gap: 14px;
 }
 
-.journal-cta-primary,
-.journal-cta-secondary {
+.journal-actions .journal-cta-primary,
+.journal-actions .journal-cta-secondary {
   display: inline-block;
   font-family: 'Special Elite', 'Courier New', monospace;
   text-decoration: none;
@@ -58,7 +62,7 @@
   cursor: pointer;
 }
 
-.journal-cta-primary {
+.journal-actions .journal-cta-primary {
   font-size: 15px;
   padding: 14px 20px;
   background: #2f4a3e;
@@ -71,12 +75,12 @@
     box-shadow 0.15s ease;
 }
 
-.journal-cta-primary:hover {
+.journal-actions .journal-cta-primary:hover {
   transform: rotate(0.7deg) translateY(-1px);
   box-shadow: 0 4px 0 rgba(47, 74, 62, 0.4);
 }
 
-.journal-cta-primary:active {
+.journal-actions .journal-cta-primary:active {
   transform: rotate(0.7deg) translateY(2px);
   box-shadow: 0 1px 0 rgba(47, 74, 62, 0.4);
 }
@@ -98,7 +102,7 @@
   background: #c9b892;
 }
 
-.journal-cta-secondary {
+.journal-actions .journal-cta-secondary {
   font-size: 14px;
   padding: 12px 20px;
   background: transparent;
@@ -109,14 +113,14 @@
     border-color 0.15s ease;
 }
 
-.journal-cta-secondary:hover {
+.journal-actions .journal-cta-secondary:hover {
   background: rgba(181, 101, 29, 0.08);
   border-color: #b5651d;
 }
 
 @media (max-width: 380px) {
-  .journal-title {
-    font-size: 26px !important;
+  .journal-cover-content .journal-title {
+    font-size: 26px;
   }
 }
 

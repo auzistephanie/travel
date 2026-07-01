@@ -61,6 +61,33 @@ describe('ensureDays', () => {
     const dates = result.map((d) => d.date).sort()
     expect(dates).toEqual(['2026-08-01', '2026-08-02', '2026-08-03'])
   })
+
+  it('recovers from a unique-violation race (e.g. two ensureDays calls overlapping) by reading back the row', async () => {
+    // Simulates: listDays sees no existing day for the date, but by the time we
+    // insert, another concurrent ensureDays() call (StrictMode double-invoke,
+    // or two pages mounting useItinerary at once) already created it.
+    const concurrentlyInserted = { id: 'd-race', trip_id: 't1', date: '2026-08-01', order_index: 0 }
+    let callIndex = 0
+    supabase.from.mockImplementation(() => {
+      const currentCall = callIndex++
+      const query: Record<string, unknown> = {
+        select: vi.fn(() => query),
+        eq: vi.fn(() => query),
+        order: vi.fn(() => query),
+        insert: vi.fn(() => query),
+        single: vi.fn(() => query),
+        then: (resolve: (r: unknown) => unknown) => {
+          if (currentCall === 0) return resolve({ data: [], error: null }) // listDays: nothing yet
+          if (currentCall === 1) return resolve({ data: null, error: { code: '23505', message: 'dup' } }) // insert collides
+          return resolve({ data: concurrentlyInserted, error: null }) // recovery read-back
+        },
+      }
+      return query
+    })
+
+    const result = await ensureDays('t1', '2026-08-01', '2026-08-01')
+    expect(result).toEqual([concurrentlyInserted])
+  })
 })
 
 describe('listStops / addStop / deleteStop', () => {

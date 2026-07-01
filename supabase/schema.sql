@@ -45,7 +45,8 @@ create table itinerary_days (
   id uuid primary key default gen_random_uuid(),
   trip_id uuid not null references trips(id) on delete cascade,
   date date not null,
-  order_index integer not null default 0
+  order_index integer not null default 0,
+  unique (trip_id, date)
 );
 
 -- ============ itinerary_stops ============

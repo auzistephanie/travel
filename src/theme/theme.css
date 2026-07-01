@@ -102,6 +102,11 @@
   display: block;
 }
 
+.hero-illustration {
+  max-width: 320px;
+  margin: 0 auto 14px;
+}
+
 .stamp-badge {
   display: inline-block;
   border: 3px solid var(--color-accent);

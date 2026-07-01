@@ -9,7 +9,7 @@ export function HeroCard({ trip, members }: TripPageProps) {
 
   return (
     <section>
-      <DestinationIllustration countryCode={countryCode} />
+      <DestinationIllustration countryCode={countryCode} width={320} className="hero-illustration" />
       <h1>{trip.name}</h1>
       <p>
         {trip.start_date} – {trip.end_date}

@@ -17,14 +17,16 @@ const ILLUSTRATIONS: Record<string, () => React.JSX.Element> = {
 interface DestinationIllustrationProps {
   countryCode: string | null
   width?: number
+  className?: string
 }
 
-export function DestinationIllustration({ countryCode, width }: DestinationIllustrationProps) {
+export function DestinationIllustration({ countryCode, width, className }: DestinationIllustrationProps) {
   const { tokens } = useTheme()
   const Illustration = (countryCode && ILLUSTRATIONS[countryCode]) || GenericIllustration
+  const classes = ['destination-illustration', className].filter(Boolean).join(' ')
 
   return (
-    <div className="destination-illustration" style={{ filter: tokens.illustrationFilter, width }}>
+    <div className={classes} style={{ filter: tokens.illustrationFilter, width }}>
       <Illustration />
     </div>
   )

@@ -12,6 +12,8 @@ export async function listDays(tripId: string): Promise<ItineraryDay[]> {
   return (data ?? []) as ItineraryDay[]
 }
 
+const UNIQUE_VIOLATION = '23505'
+
 async function createDay(tripId: string, date: string, orderIndex: number): Promise<ItineraryDay> {
   const { data, error } = await supabase
     .from('itinerary_days')
@@ -19,7 +21,22 @@ async function createDay(tripId: string, date: string, orderIndex: number): Prom
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    // 撞咗 (trip_id, date) unique constraint：可能有另一個 ensureDays() call
+    // 幾乎同一時間插緊同一日（例如 React StrictMode 喺 dev 環境雙重執行 effect，
+    // 或者兩個分頁一齊 mount useItinerary）。讀返出嚟用就得，唔使當錯處理。
+    if (error.code === UNIQUE_VIOLATION) {
+      const { data: existing, error: readError } = await supabase
+        .from('itinerary_days')
+        .select()
+        .eq('trip_id', tripId)
+        .eq('date', date)
+        .single()
+      if (readError) throw readError
+      return existing as ItineraryDay
+    }
+    throw error
+  }
   return data as ItineraryDay
 }
 
