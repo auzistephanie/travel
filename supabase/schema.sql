@@ -149,3 +149,12 @@ create policy "public access" on wishlist_items for all using (true) with check 
 create policy "public access" on expenses for all using (true) with check (true);
 create policy "public access" on gifts for all using (true) with check (true);
 create policy "public access" on settings for all using (true) with check (true);
+
+-- ============ storage: 心願清單相片 ============
+insert into storage.buckets (id, name, public)
+values ('wishlist-photos', 'wishlist-photos', true)
+on conflict (id) do nothing;
+
+create policy "public access" on storage.objects for all
+  using (bucket_id = 'wishlist-photos')
+  with check (bucket_id = 'wishlist-photos');
