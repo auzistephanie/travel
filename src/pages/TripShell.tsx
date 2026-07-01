@@ -4,11 +4,14 @@ import { useTrip } from '../hooks/useTrip'
 import { getWhoAmI, setWhoAmI } from '../lib/whoAmI'
 import { WhoAmIPicker } from '../components/WhoAmIPicker'
 import { BottomNav, type TabId } from '../components/BottomNav'
+import { ThemeProvider } from '../theme/ThemeContext'
+import { getStoredAccent, getStoredThemeId, setStoredAccent, setStoredThemeId } from '../theme/themeStorage'
 import { Overview } from './Overview'
 import { Itinerary } from './Itinerary'
 import { MapPage } from './MapPage'
 import { Prep } from './Prep'
 import { Money } from './Money'
+import type { ThemeId } from '../types/models'
 import type { TripPageProps } from '../types/props'
 
 const PAGES: Record<TabId, (props: TripPageProps) => React.JSX.Element> = {
@@ -24,12 +27,17 @@ export function TripShell() {
   const { trip, members, loading, error, joinAsNewMember } = useTrip(shareCode)
   const [activeTab, setActiveTab] = useState<TabId>('overview')
   const [whoAmI, setWhoAmIState] = useState<string | null>(() => getWhoAmI(shareCode))
+  const [themeId, setThemeId] = useState<ThemeId>(() => getStoredThemeId(shareCode))
+  const [accent, setAccent] = useState<string | null>(() => getStoredAccent(shareCode))
 
-  if (loading) return <p>載入緊…</p>
-  if (error || !trip) return <p role="alert">{error ?? '揾唔到呢個分享碼嘅行程'}</p>
+  let content: React.JSX.Element
 
-  if (!whoAmI) {
-    return (
+  if (loading) {
+    content = <p>載入緊…</p>
+  } else if (error || !trip) {
+    content = <p role="alert">{error ?? '揾唔到呢個分享碼嘅行程'}</p>
+  } else if (!whoAmI) {
+    content = (
       <WhoAmIPicker
         members={members}
         onSelect={(memberId) => {
@@ -39,22 +47,38 @@ export function TripShell() {
         onAddNew={joinAsNewMember}
       />
     )
+  } else {
+    const ActivePage = PAGES[activeTab]
+    content = (
+      <>
+        <header>
+          <span>{trip.name}</span>
+          <button type="button" aria-label="設定">
+            ⚙️
+          </button>
+        </header>
+        <main>
+          <ActivePage trip={trip} members={members} />
+        </main>
+        <BottomNav active={activeTab} onChange={setActiveTab} />
+      </>
+    )
   }
 
-  const ActivePage = PAGES[activeTab]
-
   return (
-    <div>
-      <header>
-        <span>{trip.name}</span>
-        <button type="button" aria-label="設定">
-          ⚙️
-        </button>
-      </header>
-      <main>
-        <ActivePage trip={trip} members={members} />
-      </main>
-      <BottomNav active={activeTab} onChange={setActiveTab} />
-    </div>
+    <ThemeProvider
+      themeId={themeId}
+      accent={accent ?? undefined}
+      onThemeChange={(id) => {
+        setStoredThemeId(shareCode, id)
+        setThemeId(id)
+      }}
+      onAccentChange={(color) => {
+        setStoredAccent(shareCode, color)
+        setAccent(color)
+      }}
+    >
+      {content}
+    </ThemeProvider>
   )
 }
