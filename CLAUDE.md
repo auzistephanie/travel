@@ -70,9 +70,10 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **配色**：cartography 主題暖橙 accent `#c1683a`(CTA/nav active)、綠 `#2f4a3e`(heading/hero)、米色卡 `#fff8ea`；swatches `[#c1683a,#3f6b4f,#c99a3c,#6b4226]`。
 - **Icon**：統一用 `lucide-react`（emoji 全清）。`vite.config` 有 `optimizeDeps.include:['lucide-react']`，加新 dep 後要 restart dev server。
 - **總覽**：hero overlay 標題 + 出發倒數卡 + 日數/同行/出發 stat chips + section 空狀態。
-- **已改**：Landing / TripShell 頂 bar / BottomNav(蓋章 active) / HeroCard / SettingsPanel(蓋面) / Overview / **行程 Itinerary**(DayTabs pill、天氣 pill、雨天室內卡、時間軸卡、Lucide toilet/store/navigation、書面語) / **錢 Money + 手信**(開支/手信總結卡、segmented subtabs、開支卡、結算卡、手信分組+心願打通 badge、Lucide、書面語)。SubTabs pill 樣式 Prep 亦共用。
-- **未做(下一浪)**：準備 Prep / 地圖 Map bespoke layout（現時自動食新 token；Prep subtabs 已食 pill 樣）；全 app 舊文案書面語掃尾(載入中/找不到/邊位…連 test 一齊改)。
+- **全部頁面已 redesign**：Landing / TripShell 頂 bar / BottomNav(蓋章 active) / HeroCard / SettingsPanel(蓋面) / Overview(hero+倒數+chips) / 行程 Itinerary(DayTabs pill、天氣 pill、雨天室內卡、時間軸卡、洗手間/便利店/導航 chip) / 錢 Money+手信(總結卡、結算卡、手信分組+心願打通 badge) / 準備 Prep(智能卡 grid、進度環、心願卡) / 地圖 Map(搜尋 bar、地點卡)。
+- **Icon 全用 Lucide**；emoji 全清。**全 app 文案已轉書面語**（連相關 test 一齊改）。
 - Mockup 參考：outputs `redesign-mockups.html`、`redesign-mockups-2.html`。
+- 測試現況：改動涉及嘅 test 全綠、`tsc` 零錯、`vite build` 乾淨。
 
 ## 8b. 自動 push（github_push.py，2026-07-02）
 - Sandbox 跑 `git add/commit/push` 會留低 stale `.git/*.lock` 擋住 commit，故改用 `github_push.py` 直接經 GitHub API push（照抄 Venturenix 做法）。
