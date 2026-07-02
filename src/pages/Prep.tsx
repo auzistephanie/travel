@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Trash2 } from 'lucide-react'
+import { CalendarDays, Heart, Store, Tag, Trash2, User } from 'lucide-react'
 import { PackingSmartCard } from '../components/PackingSmartCard'
 import { PackingChecklist } from '../components/PackingChecklist'
 import { SubTabs } from '../components/SubTabs'
@@ -30,54 +30,111 @@ function WishlistView({ trip, members }: TripPageProps) {
   if (error) return <p role="alert">{error}</p>
 
   const dayById = new Map(days.map((d) => [d.id, d.date]))
+  const boughtCount = items.filter((i) => i.bought).length
+  const budget = items.reduce((sum, i) => sum + (i.price_hi ?? i.price_lo ?? 0), 0)
+
+  function priceText(item: WishlistItem): string | null {
+    if (item.price_lo != null && item.price_hi != null) {
+      return `${item.price_lo.toLocaleString()}–${item.price_hi.toLocaleString()}`
+    }
+    if (item.price_hi != null) return `≤ ${item.price_hi.toLocaleString()}`
+    if (item.price_lo != null) return `≥ ${item.price_lo.toLocaleString()}`
+    return null
+  }
+
+  const addButton = (
+    <button type="button" className="money-add" onClick={() => setShowAdd(true)}>
+      ＋加心願
+    </button>
+  )
 
   return (
     <div>
-      <ul className="wish-list">
-        {items.map((item) => (
-          <li key={item.id} className={item.bought ? 'wish-item bought' : 'wish-item'}>
-            <span className="wi-thumb">
-              {item.photo_url ? (
-                <img src={item.photo_url} alt={item.name} />
-              ) : (
-                <DestinationIllustration countryCode={countryCode} width={54} />
-              )}
-            </span>
-            <span className="wi-main">
-              <b>{item.name}</b>
-              <small>買俾：{item.to_member ?? '未指定'}</small>
-              <small className="wi-day">
-                {item.linked_day_id ? dayById.get(item.linked_day_id) : '未連結行程（記得自行前往購買）'}
-              </small>
-            </span>
-            <span className="wi-actions">
-              {item.bought ? (
-                <>
-                  <StampBadge label="已買" />
-                  <button type="button" className="wi-undo" onClick={() => undoBought(item.id)}>
-                    取消已買
-                  </button>
-                </>
-              ) : (
-                <button type="button" className="wi-buy" onClick={() => setConfirming(item)}>
-                  ✓ 已買
-                </button>
-              )}
-              <button
-                type="button"
-                className="wi-del"
-                onClick={() => deleteItem(item.id)}
-                aria-label={`刪除 ${item.name}`}
-              >
-                <Trash2 size={15} aria-hidden="true" />
-              </button>
-            </span>
-          </li>
-        ))}
-      </ul>
-      <button type="button" className="money-add" onClick={() => setShowAdd(true)}>
-        ＋加心願
-      </button>
+      {items.length === 0 ? (
+        <div className="wish-empty">
+          <span className="we-ic">
+            <Heart size={26} aria-hidden="true" />
+          </span>
+          <h3>還沒有心願</h3>
+          <p>記低想買的東西、買俾邊個，買了會自動流入「手信」。</p>
+          {addButton}
+        </div>
+      ) : (
+        <>
+          <div className="wish-summary">
+            <Heart className="ws-bg" size={72} aria-hidden="true" />
+            <div className="ws-label">心願清單</div>
+            <div className="ws-amt">{items.length} 件</div>
+            <div className="ws-sub">
+              已買 {boughtCount}
+              {budget > 0 && ` · 預算約 ${budget.toLocaleString()}`} · 買了自動入手信
+            </div>
+          </div>
+          <ul className="wish-list">
+            {items.map((item) => {
+              const price = priceText(item)
+              return (
+                <li key={item.id} className={item.bought ? 'wish-item bought' : 'wish-item'}>
+                  <span className="wi-thumb">
+                    {item.photo_url ? (
+                      <img src={item.photo_url} alt={item.name} />
+                    ) : (
+                      <DestinationIllustration countryCode={countryCode} width={54} />
+                    )}
+                  </span>
+                  <span className="wi-main">
+                    <b>{item.name}</b>
+                    <span className="wi-chips">
+                      <span className="wchip">
+                        <User size={10} aria-hidden="true" />買俾：{item.to_member ?? '未指定'}
+                      </span>
+                      <span className="wchip">
+                        <CalendarDays size={10} aria-hidden="true" />
+                        {item.linked_day_id ? dayById.get(item.linked_day_id) : '未連結行程'}
+                      </span>
+                      {item.buy_at && (
+                        <span className="wchip">
+                          <Store size={10} aria-hidden="true" />
+                          {item.buy_at}
+                        </span>
+                      )}
+                      {price && (
+                        <span className="wchip price">
+                          <Tag size={10} aria-hidden="true" />
+                          {price}
+                        </span>
+                      )}
+                    </span>
+                  </span>
+                  <span className="wi-actions">
+                    {item.bought ? (
+                      <>
+                        <StampBadge label="已買" />
+                        <button type="button" className="wi-undo" onClick={() => undoBought(item.id)}>
+                          取消已買
+                        </button>
+                      </>
+                    ) : (
+                      <button type="button" className="wi-buy" onClick={() => setConfirming(item)}>
+                        ✓ 已買
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="wi-del"
+                      onClick={() => deleteItem(item.id)}
+                      aria-label={`刪除 ${item.name}`}
+                    >
+                      <Trash2 size={15} aria-hidden="true" />
+                    </button>
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+          {addButton}
+        </>
+      )}
       {showAdd && (
         <AddWishlistForm
           trip={trip}

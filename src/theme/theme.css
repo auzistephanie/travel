@@ -1740,3 +1740,114 @@
   gap: 5px;
   flex: none;
 }
+
+/* =======================================================================
+   心願 Wishlist（redesign 2026-07-02）
+   ======================================================================= */
+
+.wish-summary {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  border-radius: 16px;
+  padding: 15px 16px;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, #9a6a86, #7c5169);
+  box-shadow: 0 10px 22px rgba(124, 81, 105, 0.28);
+}
+
+.wish-summary .ws-bg {
+  position: absolute;
+  right: -8px;
+  bottom: -12px;
+  opacity: 0.16;
+}
+
+.ws-label {
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.ws-amt {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 26px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.ws-sub {
+  font-size: 11px;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
+.wi-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.wchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+
+.wchip svg {
+  color: var(--color-accent-2, var(--color-heading));
+  flex: none;
+}
+
+.wchip.price {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+.wchip.price svg {
+  color: var(--color-accent);
+}
+
+.wish-empty {
+  text-align: center;
+  padding: 28px 18px;
+  background: var(--color-bg-alt);
+  border: 1px dashed var(--color-border);
+  border-radius: 16px;
+}
+
+.wish-empty .we-ic {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  display: grid;
+  place-items: center;
+  color: var(--color-accent);
+  margin: 0 auto 10px;
+}
+
+.wish-empty h3 {
+  font-size: 15px;
+  margin: 0 0 4px;
+}
+
+.wish-empty p {
+  font-size: 12.5px;
+  color: var(--color-text);
+  opacity: 0.7;
+  line-height: 1.6;
+}
+
+.wish-empty .money-add {
+  max-width: 220px;
+  margin: 14px auto 0;
+}
