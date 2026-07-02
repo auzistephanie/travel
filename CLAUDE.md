@@ -85,8 +85,8 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
-- GitHub repo：⬜ 待填
-- 部署網址：⬜ 待填
+- GitHub repo：https://github.com/auzistephanie/travel
+- 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
 *最後更新：2026-07-02（視覺 redesign 第一浪）*
