@@ -10,6 +10,7 @@ import { StampBadge } from '../components/StampBadge'
 import { useWishlist } from '../hooks/useWishlist'
 import { useItinerary } from '../hooks/useItinerary'
 import { useDestinationCountry } from '../hooks/useDestinationCountry'
+import { getDestination } from '../lib/destinations'
 import { inclusiveDayCount } from '../lib/tripDays'
 import type { WishlistItem } from '../types/models'
 import type { TripPageProps } from '../types/props'
@@ -164,6 +165,8 @@ function WishlistView({ trip, members }: TripPageProps) {
 export function Prep({ trip, members }: TripPageProps) {
   const [subTab, setSubTab] = useState('packing')
   const dayCount = inclusiveDayCount(trip.start_date, trip.end_date)
+  const countryCode = useDestinationCountry(trip)
+  const transitCard = countryCode ? getDestination(countryCode)?.transitCard : undefined
 
   return (
     <div>
@@ -171,7 +174,7 @@ export function Prep({ trip, members }: TripPageProps) {
       {subTab === 'packing' && (
         <>
           <PackingSmartCard trip={trip} members={members} />
-          <PackingChecklist tripId={trip.id} dayCount={dayCount} />
+          <PackingChecklist tripId={trip.id} dayCount={dayCount} transitCard={transitCard} />
         </>
       )}
       {subTab === 'wishlist' && <WishlistView trip={trip} members={members} />}

@@ -11,12 +11,14 @@ export interface DestinationInfo {
   visaNote: string
   cashAdvice: CashAdvice
   mosquitoRisk: boolean
+  transitCard: string
 }
 
 // 簽證欄假設用戶持香港特區護照（MVP 簡化，未做多本護照設定）。
 export const DESTINATIONS: Record<string, DestinationInfo> = {
   JP: {
     countryName: '日本',
+    transitCard: 'Suica / PASMO',
     plugType: 'A 型（兩腳扁插）',
     voltage: '100V',
     visaNote: '持香港特區護照免簽證，可逗留 90 日',
@@ -25,6 +27,7 @@ export const DESTINATIONS: Record<string, DestinationInfo> = {
   },
   TH: {
     countryName: '泰國',
+    transitCard: 'Rabbit 卡（BTS 兔子卡）',
     plugType: 'A/C 型（兩腳扁插或圓插）',
     voltage: '220V',
     visaNote: '持香港特區護照免簽證，可逗留 30 日',
@@ -33,6 +36,7 @@ export const DESTINATIONS: Record<string, DestinationInfo> = {
   },
   KR: {
     countryName: '韓國',
+    transitCard: 'T-money',
     plugType: 'C/F 型（兩腳圓插）',
     voltage: '220V',
     visaNote: '持香港特區護照免簽證（需另外網上登記 K-ETA），可逗留 90 日',
@@ -41,6 +45,7 @@ export const DESTINATIONS: Record<string, DestinationInfo> = {
   },
   TW: {
     countryName: '台灣',
+    transitCard: '悠遊卡 / 一卡通',
     plugType: 'A 型（兩腳扁插，與香港三腳插座不同，記得帶轉換插）',
     voltage: '110V',
     visaNote: '持香港特區護照可辦落地簽或網上入境證，可逗留 30 日',
@@ -49,6 +54,7 @@ export const DESTINATIONS: Record<string, DestinationInfo> = {
   },
   VN: {
     countryName: '越南',
+    transitCard: '當地交通卡',
     plugType: 'A/C 型（兩腳扁插或圓插）',
     voltage: '220V',
     visaNote: '持香港特區護照免簽證，可逗留 30 日（出發前請留意最新規定）',
@@ -57,6 +63,7 @@ export const DESTINATIONS: Record<string, DestinationInfo> = {
   },
   HK: {
     countryName: '香港',
+    transitCard: '八達通',
     plugType: 'G 型（三腳方插）',
     voltage: '220V',
     visaNote: '本地，免簽證資料',
@@ -65,6 +72,7 @@ export const DESTINATIONS: Record<string, DestinationInfo> = {
   },
   SG: {
     countryName: '新加坡',
+    transitCard: 'EZ-Link / SimplyGo',
     plugType: 'G 型（三腳方插，與香港一樣，不用帶轉換插）',
     voltage: '230V',
     visaNote: '持香港特區護照免簽證，可逗留 30 日',
@@ -77,6 +85,7 @@ export const DESTINATIONS: Record<string, DestinationInfo> = {
   },
   MY: {
     countryName: '馬來西亞',
+    transitCard: "Touch 'n Go",
     plugType: 'G 型（三腳方插，與香港一樣，不用帶轉換插）',
     voltage: '240V',
     visaNote: '持香港特區護照免簽證，可逗留 90 日',

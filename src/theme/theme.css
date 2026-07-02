@@ -2076,6 +2076,65 @@
   margin-top: 1px;
 }
 
+/* 開支分布（總覽）：基本費列、逐日/分類切換、清單 */
+.spend-base {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 10px 13px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.spend-toggle {
+  display: flex;
+  gap: 6px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 12px;
+}
+
+.theme-root .spend-toggle button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  border-radius: 9px;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 8px 0;
+}
+
+.theme-root .spend-toggle button[aria-pressed='true'] {
+  background: var(--color-heading);
+  color: #fff;
+}
+
+.spend-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.spend-list li {
+  padding: 9px 4px;
+  border-bottom: 1px dashed var(--color-border);
+  font-size: 13px;
+}
+
+.spend-list li:last-child {
+  border-bottom: none;
+}
+
 /* 表單通用：2 欄、分攤 checkbox、旅行基本費 toggle、OCR 掣 */
 .wl-row {
   display: flex;

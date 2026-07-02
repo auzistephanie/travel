@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CalendarDays, ChartColumn } from 'lucide-react'
 import { useExpenses } from '../hooks/useExpenses'
 import { useItinerary } from '../hooks/useItinerary'
 import { useExchangeRates } from '../hooks/useExchangeRates'
@@ -20,23 +21,26 @@ export function SpendingSummaryCard({ trip }: TripPageProps) {
   const grandTotal = categoryTotals.reduce((sum, c) => sum + c.totalHKD, 0)
 
   return (
-    <section aria-label="開支洗去邊">
-      <h2>開支洗去邊</h2>
+    <section aria-label="開支分布">
+      <h2>開支分布</h2>
       {tripBase.length > 0 && (
-        <div aria-label="旅行基本費">
-          <strong>旅行基本費</strong>：HK${tripBaseTotal.toFixed(0)}
+        <div className="spend-base" aria-label="旅行基本費">
+          <strong>旅行基本費</strong>
+          <span>HK${tripBaseTotal.toFixed(0)}</span>
         </div>
       )}
-      <div>
+      <div className="spend-toggle">
         <button type="button" aria-pressed={view === 'daily'} onClick={() => setView('daily')}>
-          📅 逐日洗費
+          <CalendarDays size={14} aria-hidden="true" />
+          逐日開支
         </button>
         <button type="button" aria-pressed={view === 'category'} onClick={() => setView('category')}>
-          📊 分類總覽
+          <ChartColumn size={14} aria-hidden="true" />
+          分類總覽
         </button>
       </div>
       {view === 'daily' && (
-        <ul>
+        <ul className="spend-list">
           {days.map((day) => {
             const total = totalHKD(dailyExpenses(expenses, day.id), rates)
             return (
@@ -48,7 +52,7 @@ export function SpendingSummaryCard({ trip }: TripPageProps) {
         </ul>
       )}
       {view === 'category' && (
-        <ul>
+        <ul className="spend-list">
           {categoryTotals.map((c) => {
             const percentage = grandTotal > 0 ? Math.round((c.totalHKD / grandTotal) * 100) : 0
             return (

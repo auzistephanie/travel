@@ -5,9 +5,16 @@ import type { PackingItem } from '../types/models'
 interface PackingChecklistProps {
   tripId: string
   dayCount: number
+  transitCard?: string
 }
 
-export function PackingChecklist({ tripId, dayCount }: PackingChecklistProps) {
+// 「八達通/當地交通卡」按目的地自動顯示當地卡名（例如日本 → Suica / PASMO）
+function displayItemName(name: string, transitCard?: string): string {
+  if (name === '八達通/當地交通卡' && transitCard) return `${transitCard}（當地交通卡）`
+  return name
+}
+
+export function PackingChecklist({ tripId, dayCount, transitCard }: PackingChecklistProps) {
   const { items, loading, error, toggle } = usePackingChecklist(tripId, dayCount)
 
   if (loading) return <p>載入中…</p>
@@ -51,7 +58,7 @@ export function PackingChecklist({ tripId, dayCount }: PackingChecklistProps) {
                     checked={item.checked}
                     onChange={(e) => toggle(item.id, e.target.checked)}
                   />
-                  {item.name}
+                  {displayItemName(item.name, transitCard)}
                   {item.auto_qty && <span className="pk-auto"> 自動</span>}
                 </label>
               </li>

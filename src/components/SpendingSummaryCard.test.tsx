@@ -84,7 +84,7 @@ describe('SpendingSummaryCard', () => {
     useExpenses.mockReturnValue({ expenses: expenseFixture() })
     render(<SpendingSummaryCard trip={trip} members={members} />)
 
-    await user.click(screen.getByRole('button', { name: '📊 分類總覽' }))
+    await user.click(screen.getByRole('button', { name: '分類總覽' }))
 
     expect(screen.getByText(/交通：HK\$3000（97%）/)).toBeInTheDocument()
     expect(screen.getByText(/餐飲：HK\$100（3%）/)).toBeInTheDocument()
