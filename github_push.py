@@ -79,7 +79,7 @@ def get_token(remote_token):
     if os.path.isfile(tokfile):
         with open(tokfile) as f:
             return f.read().strip()
-    return remote_token
+    return remote_token  # legacy fallback only — embedding tokens in remote URL is discouraged
 
 
 def api(method, path, token, body=None):
