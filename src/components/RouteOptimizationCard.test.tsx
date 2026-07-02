@@ -52,7 +52,7 @@ describe('RouteOptimizationCard', () => {
 
     render(<RouteOptimizationCard stops={stops} onApply={onApply} />)
 
-    expect(await screen.findByText(/可以更順路，慳/)).toBeInTheDocument()
+    expect(await screen.findByText(/可以更順路，省/)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '一鍵套用' }))
 
     expect(onApply).toHaveBeenCalledWith([stops[0], stops[2], stops[1]])

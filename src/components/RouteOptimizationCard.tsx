@@ -22,7 +22,7 @@ export function RouteOptimizationCard({ stops, onApply }: RouteOptimizationCardP
 
   return (
     <section aria-label="順路分析">
-      <p>可以更順路，慳 {savings.toFixed(1)}km</p>
+      <p>可以更順路，省 {savings.toFixed(1)}km</p>
       <button type="button" onClick={() => onApply(order.map((i) => stops[i]))}>
         一鍵套用
       </button>

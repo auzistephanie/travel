@@ -41,7 +41,7 @@ export const DESTINATIONS: Record<string, DestinationInfo> = {
   },
   TW: {
     countryName: '台灣',
-    plugType: 'A 型（兩腳扁插，同香港三腳插座唔同，記得帶轉換插）',
+    plugType: 'A 型（兩腳扁插，與香港三腳插座不同，記得帶轉換插）',
     voltage: '110V',
     visaNote: '持香港特區護照可辦落地簽或網上入境證，可逗留 30 日',
     cashAdvice: { legalNote: '攜帶超過等值 1 萬美元現金需申報', suggestedLocalAmount: 5000, currency: 'TWD' },
@@ -65,7 +65,7 @@ export const DESTINATIONS: Record<string, DestinationInfo> = {
   },
   SG: {
     countryName: '新加坡',
-    plugType: 'G 型（三腳方插，同香港一樣，唔使帶轉換插）',
+    plugType: 'G 型（三腳方插，與香港一樣，不用帶轉換插）',
     voltage: '230V',
     visaNote: '持香港特區護照免簽證，可逗留 30 日',
     cashAdvice: {
@@ -77,7 +77,7 @@ export const DESTINATIONS: Record<string, DestinationInfo> = {
   },
   MY: {
     countryName: '馬來西亞',
-    plugType: 'G 型（三腳方插，同香港一樣，唔使帶轉換插）',
+    plugType: 'G 型（三腳方插，與香港一樣，不用帶轉換插）',
     voltage: '240V',
     visaNote: '持香港特區護照免簽證，可逗留 90 日',
     cashAdvice: { legalNote: '攜帶超過等值 1 萬美元現金需申報', suggestedLocalAmount: 1500, currency: 'MYR' },

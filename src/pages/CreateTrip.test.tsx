@@ -40,7 +40,7 @@ describe('CreateTrip', () => {
     await user.type(screen.getByLabelText('行程名'), '東京五日')
     await user.type(screen.getByLabelText('開始日期'), '2026-08-01')
     await user.type(screen.getByLabelText('結束日期'), '2026-08-05')
-    await user.type(screen.getByLabelText('你嘅名'), '阿明')
+    await user.type(screen.getByLabelText('你的名字'), '阿明')
     await user.click(screen.getByRole('button', { name: '建立行程' }))
 
     expect(createTrip).toHaveBeenCalledWith({
@@ -70,7 +70,7 @@ describe('CreateTrip', () => {
     await user.type(screen.getByLabelText('行程名'), '曼谷四日')
     await user.type(screen.getByLabelText('開始日期'), '2026-08-01')
     await user.type(screen.getByLabelText('結束日期'), '2026-08-04')
-    await user.type(screen.getByLabelText('你嘅名'), '阿明')
+    await user.type(screen.getByLabelText('你的名字'), '阿明')
     await user.selectOptions(screen.getByLabelText('目的地國家'), 'TH')
     await user.click(screen.getByRole('button', { name: '建立行程' }))
 
@@ -90,7 +90,7 @@ describe('CreateTrip', () => {
     await user.type(screen.getByLabelText('行程名'), '東京五日')
     await user.type(screen.getByLabelText('開始日期'), '2026-08-01')
     await user.type(screen.getByLabelText('結束日期'), '2026-08-05')
-    await user.type(screen.getByLabelText('你嘅名'), '阿明')
+    await user.type(screen.getByLabelText('你的名字'), '阿明')
     await user.click(screen.getByRole('button', { name: '建立行程' }))
 
     expect(await screen.findByText('建立失敗，請再試一次')).toBeInTheDocument()

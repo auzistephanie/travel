@@ -58,7 +58,7 @@ export function CreateTrip() {
         <label htmlFor="trip-end">結束日期</label>
         <input id="trip-end" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
 
-        <label htmlFor="owner-name">你嘅名</label>
+        <label htmlFor="owner-name">你的名字</label>
         <input id="owner-name" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} required />
 
         <label htmlFor="destination-country">目的地國家</label>
@@ -67,7 +67,7 @@ export function CreateTrip() {
           value={destinationCountry}
           onChange={(e) => setDestinationCountry(e.target.value)}
         >
-          <option value="">未定（之後加咗航班會自動判斷）</option>
+          <option value="">未定（加入航班後自動判斷）</option>
           {DESTINATION_OPTIONS.map((code) => (
             <option key={code} value={code}>
               {DESTINATIONS[code].countryName}
