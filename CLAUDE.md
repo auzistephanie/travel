@@ -23,11 +23,12 @@
 | 匯率 | open.er-api.com（免費，可手動覆蓋） |
 | 洗手間 | OpenStreetMap Overpass |
 
-## 3. 資訊架構（5 底部分頁 + Settings）
+## 3. 資訊架構（4 底部分頁 + Settings）
 ```
-總覽 Overview | 行程 Itinerary | 地圖 Map | 準備 Prep(行李/心願) | 錢 Money(夾錢/手信)
+總覽 Overview | 行程 Itinerary(併地圖) | 準備 Prep(行李/心願) | 錢 Money(夾錢/手信)
 設定 ⚙️ (右上角，唔佔底部分頁)
 ```
+> 2026-07-02：**地圖併入行程**（原 5 格 → 4 格）。行程頁頂有地圖區（現時 placeholder 靜態底圖，連 Google Maps key 後顯示 pin＋路線）＋搜尋加入今日＋就近提示（離今日行程 km）＋景點序號。`MapPage.tsx/.test` 已無 route 引用（mount 唔俾 sandbox 刪，係 dead code，可手動移除）。
 
 ## 4. 核心功能重點
 - **總覽**：Hero 卡(目的地插畫背景)、航班列表(API 查詢後用戶確認先加)、出發前準備總進度、開支逐日/分類切換、旅行基本費獨立卡。
