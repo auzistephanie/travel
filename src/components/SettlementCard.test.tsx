@@ -35,7 +35,7 @@ describe('SettlementCard', () => {
 
   it('shows everyone is settled when there are no expenses', () => {
     render(<SettlementCard expenses={[]} members={members} />)
-    expect(screen.getByText('結算：大家清晒數')).toBeInTheDocument()
+    expect(screen.getByText('結算：大家都清帳了')).toBeInTheDocument()
   })
 
   it('shows who owes whom by name with the HKD amount', () => {

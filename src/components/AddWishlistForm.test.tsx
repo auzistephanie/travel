@@ -97,7 +97,7 @@ describe('AddWishlistForm', () => {
 
     render(<AddWishlistForm trip={trip} members={members} days={days} onAdd={onAdd} />)
     await user.type(screen.getByLabelText('想買嘅嘢'), '曲奇')
-    await user.selectOptions(screen.getByLabelText('連去邊一日行程'), 'd1')
+    await user.selectOptions(screen.getByLabelText('連結到哪一天行程'), 'd1')
     await user.click(screen.getByRole('button', { name: '加入心願' }))
 
     expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ linkedDayId: 'd1' }))
@@ -162,6 +162,6 @@ describe('AddWishlistForm', () => {
     await user.type(screen.getByLabelText('想買嘅嘢'), 'ㄈㄈㄈ')
     await user.click(screen.getByRole('button', { name: 'AI 搜尋邊度買' }))
 
-    expect(await screen.findByText('搵唔到相關商店')).toBeInTheDocument()
+    expect(await screen.findByText('找不到相關商店')).toBeInTheDocument()
   })
 })

@@ -63,7 +63,7 @@ export async function markBought(
   return data as WishlistItem
 }
 
-// 撤銷買咗淨係翻返做未買，唔會刪走已入手信嘅記錄（spec §5.2 避免誤刪帳目）
+// 取消已買淨係翻返做未買，唔會刪走已入手信嘅記錄（spec §5.2 避免誤刪帳目）
 export async function markUnbought(id: string): Promise<WishlistItem> {
   const { data, error } = await supabase.from('wishlist_items').update({ bought: false }).eq('id', id).select().single()
   if (error) throw error

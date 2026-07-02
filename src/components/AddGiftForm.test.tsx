@@ -80,6 +80,6 @@ describe('AddGiftForm', () => {
     render(<AddGiftForm members={members} onAdd={vi.fn()} />)
     await user.upload(screen.getByLabelText('影單 OCR'), fakeFile())
 
-    expect(await screen.findByText('讀唔到，請手動輸入')).toBeInTheDocument()
+    expect(await screen.findByText('讀取不到，請手動輸入')).toBeInTheDocument()
   })
 })

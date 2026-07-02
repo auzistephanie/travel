@@ -56,7 +56,7 @@ export function AddWishlistForm({ trip, members, days, onAdd }: AddWishlistFormP
     try {
       const results = await searchStoresForItem(name, airport.lat, airport.lng)
       setSuggestions(results)
-      if (results.length === 0) setSearchHint('搵唔到相關商店')
+      if (results.length === 0) setSearchHint('找不到相關商店')
     } finally {
       setSearching(false)
     }
@@ -154,7 +154,7 @@ export function AddWishlistForm({ trip, members, days, onAdd }: AddWishlistFormP
         ))}
       </datalist>
 
-      <label htmlFor="wishlist-day">連去邊一日行程</label>
+      <label htmlFor="wishlist-day">連結到哪一天行程</label>
       <select id="wishlist-day" value={linkedDayId} onChange={(e) => setLinkedDayId(e.target.value)}>
         <option value="">未連結（記得手動去買）</option>
         {days.map((d) => (

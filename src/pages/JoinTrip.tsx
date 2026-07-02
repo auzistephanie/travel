@@ -17,7 +17,7 @@ export function JoinTrip() {
     try {
       const result = await findTripByShareCode(code)
       if (!result) {
-        setError('揾唔到呢個分享碼嘅行程')
+        setError('找不到這個分享碼的行程')
         setSubmitting(false)
         return
       }

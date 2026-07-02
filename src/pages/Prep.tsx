@@ -53,14 +53,14 @@ function WishlistView({ trip, members }: TripPageProps) {
             <span className="wi-actions">
               {item.bought ? (
                 <>
-                  <StampBadge label="買咗" />
+                  <StampBadge label="已買" />
                   <button type="button" className="wi-undo" onClick={() => undoBought(item.id)}>
-                    撤銷買咗
+                    取消已買
                   </button>
                 </>
               ) : (
                 <button type="button" className="wi-buy" onClick={() => setConfirming(item)}>
-                  ✓ 買咗
+                  ✓ 已買
                 </button>
               )}
               <button

@@ -32,7 +32,7 @@ export function AddGiftForm({ members, onAdd }: AddGiftFormProps) {
     try {
       const result = await scanReceipt(file)
       if (!result) {
-        setScanHint('讀唔到，請手動輸入')
+        setScanHint('讀取不到，請手動輸入')
         return
       }
       if (result.merchantName) setStore(result.merchantName)

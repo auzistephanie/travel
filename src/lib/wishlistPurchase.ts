@@ -14,7 +14,7 @@ export interface ConfirmPurchaseResult {
   gift: Gift
 }
 
-// 心願確認買咗，永遠流入手信（包括買俾自己），spec §5.2
+// 心願確認已購，永遠流入手信（包括買俾自己），spec §5.2
 export async function confirmWishlistPurchase(input: ConfirmPurchaseInput): Promise<ConfirmPurchaseResult> {
   const wishlistItem = await markBought(input.wishlistItem.id, input.actualStore, input.actualAmt)
   const gift = await addGift({

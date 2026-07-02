@@ -39,7 +39,7 @@ describe('ConfirmPurchaseCard', () => {
     const amountInput = screen.getByLabelText('實際價錢')
     await user.clear(amountInput)
     await user.type(amountInput, '1280')
-    await user.click(screen.getByRole('button', { name: '確認買咗' }))
+    await user.click(screen.getByRole('button', { name: '確認已購' }))
 
     expect(onConfirm).toHaveBeenCalledWith('心齋橋分店', 1280)
   })

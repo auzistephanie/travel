@@ -37,7 +37,7 @@ export function PackingChecklist({ tripId, dayCount }: PackingChecklistProps) {
             {items.length} 件 · 已執 {doneCount} 件
           </p>
         </div>
-        {allDone && <StampBadge label="執晒" />}
+        {allDone && <StampBadge label="收拾完成" />}
       </div>
       {[...byCategory.entries()].map(([category, categoryItems]) => (
         <div key={category} className="pk-cat">

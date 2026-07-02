@@ -25,7 +25,7 @@ export function WhoAmIPicker({ members, onSelect, onAddNew }: WhoAmIPickerProps)
 
   return (
     <div>
-      <p>邊位係你？</p>
+      <p>哪位是你？</p>
       <ul>
         {members.map((member) => (
           <li key={member.id}>

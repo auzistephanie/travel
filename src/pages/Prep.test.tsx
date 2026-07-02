@@ -145,10 +145,10 @@ describe('Prep', () => {
 
     renderPrep()
     await user.click(screen.getByRole('tab', { name: '心願' }))
-    await user.click(screen.getByRole('button', { name: '✓ 買咗' }))
+    await user.click(screen.getByRole('button', { name: '✓ 已買' }))
 
     expect(screen.getByLabelText('實際商戶')).toHaveValue('銀座曲奇（計劃）')
-    await user.click(screen.getByRole('button', { name: '確認買咗' }))
+    await user.click(screen.getByRole('button', { name: '確認已購' }))
 
     expect(confirmBought).toHaveBeenCalledWith(item, '銀座曲奇（計劃）', 1500)
   })
@@ -185,7 +185,7 @@ describe('Prep', () => {
 
     renderPrep()
     await user.click(screen.getByRole('tab', { name: '心願' }))
-    await user.click(screen.getByRole('button', { name: '撤銷買咗' }))
+    await user.click(screen.getByRole('button', { name: '取消已買' }))
 
     expect(undoBought).toHaveBeenCalledWith('w1')
   })

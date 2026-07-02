@@ -92,7 +92,7 @@ describe('Money', () => {
 
   it('shows the settlement summary', () => {
     render(<Money trip={trip} members={members} />)
-    expect(screen.getByText('結算：大家清晒數')).toBeInTheDocument()
+    expect(screen.getByText('結算：大家都清帳了')).toBeInTheDocument()
   })
 
   it('groups gifts by recipient with a subtotal, including 自己', async () => {

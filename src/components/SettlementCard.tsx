@@ -15,7 +15,7 @@ export function SettlementCard({ expenses, members }: SettlementCardProps) {
 
   const nameById = new Map(members.map((m) => [m.id, m.name]))
 
-  if (transactions.length === 0) return <p className="settle-clear">結算：大家清晒數</p>
+  if (transactions.length === 0) return <p className="settle-clear">結算：大家都清帳了</p>
 
   return (
     <section className="settle-card" aria-label="結算">

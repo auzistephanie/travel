@@ -32,7 +32,7 @@ export function AddFlightModal({ members, onAdd, onClose }: AddFlightModalProps)
     try {
       const result = await lookupFlight(code, date)
       if (!result) {
-        setLookupHint('查唔到，請手動輸入')
+        setLookupHint('查不到，請手動輸入')
         return
       }
       setFromAirport(result.fromAirport)

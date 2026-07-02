@@ -4,12 +4,12 @@ import { StampBadge } from './StampBadge'
 
 describe('StampBadge', () => {
   it('renders the given label', () => {
-    render(<StampBadge label="執晒" />)
-    expect(screen.getByText('執晒')).toBeInTheDocument()
+    render(<StampBadge label="收拾完成" />)
+    expect(screen.getByText('收拾完成')).toBeInTheDocument()
   })
 
   it('applies the stamp-badge class for the ink-stamp visual', () => {
-    render(<StampBadge label="買咗" />)
-    expect(screen.getByText('買咗')).toHaveClass('stamp-badge')
+    render(<StampBadge label="已買" />)
+    expect(screen.getByText('已買')).toHaveClass('stamp-badge')
   })
 })

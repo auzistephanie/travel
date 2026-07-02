@@ -20,7 +20,7 @@ export function ConfirmPurchaseCard({ item, onConfirm, onCancel }: ConfirmPurcha
 
   return (
     <form onSubmit={handleSubmit}>
-      <h3>核實買咗：{item.name}</h3>
+      <h3>核實購買：{item.name}</h3>
 
       <label htmlFor="confirm-purchase-store">實際商戶</label>
       <input
@@ -37,7 +37,7 @@ export function ConfirmPurchaseCard({ item, onConfirm, onCancel }: ConfirmPurcha
         onChange={(e) => setActualAmt(e.target.value)}
       />
 
-      <button type="submit">確認買咗</button>
+      <button type="submit">確認已購</button>
       <button type="button" onClick={onCancel}>
         取消
       </button>

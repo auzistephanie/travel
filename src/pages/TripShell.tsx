@@ -39,9 +39,9 @@ export function TripShell() {
   let content: React.JSX.Element
 
   if (loading) {
-    content = <p>載入緊…</p>
+    content = <p>載入中…</p>
   } else if (error || !trip) {
-    content = <p role="alert">{error ?? '揾唔到呢個分享碼嘅行程'}</p>
+    content = <p role="alert">{error ?? '找不到這個分享碼的行程'}</p>
   } else if (!whoAmI) {
     content = (
       <WhoAmIPicker
@@ -73,7 +73,7 @@ export function TripShell() {
         </header>
         <TornEdgeDivider />
         <main>
-          <Suspense fallback={<p>載入緊…</p>}>
+          <Suspense fallback={<p>載入中…</p>}>
             <ActivePage trip={trip} members={members} />
           </Suspense>
         </main>

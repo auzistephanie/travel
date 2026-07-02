@@ -19,14 +19,14 @@ export function useTrip(shareCode: string | undefined) {
 
   const load = useCallback(async () => {
     if (!shareCode) {
-      setState({ trip: null, members: [], loading: false, error: '冇分享碼' })
+      setState({ trip: null, members: [], loading: false, error: '沒有分享碼' })
       return
     }
     setState((s) => ({ ...s, loading: true, error: null }))
     try {
       const result = await findTripByShareCode(shareCode)
       if (!result) {
-        setState({ trip: null, members: [], loading: false, error: '揾唔到呢個分享碼嘅行程' })
+        setState({ trip: null, members: [], loading: false, error: '找不到這個分享碼的行程' })
         return
       }
       setState({ trip: result.trip, members: result.members, loading: false, error: null })

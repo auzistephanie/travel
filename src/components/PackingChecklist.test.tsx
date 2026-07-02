@@ -48,12 +48,12 @@ describe('PackingChecklist', () => {
     const doneItems = items.map((i) => ({ ...i, checked: true }))
     usePackingChecklist.mockReturnValue({ items: doneItems, loading: false, error: null, toggle: vi.fn() })
     render(<PackingChecklist tripId="t1" dayCount={5} />)
-    expect(screen.getByText(/執晒/)).toBeInTheDocument()
+    expect(screen.getByText(/收拾完成/)).toBeInTheDocument()
   })
 
   it('does not show a stamp when items are still unchecked', () => {
     usePackingChecklist.mockReturnValue({ items, loading: false, error: null, toggle: vi.fn() })
     render(<PackingChecklist tripId="t1" dayCount={5} />)
-    expect(screen.queryByText(/執晒/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/收拾完成/)).not.toBeInTheDocument()
   })
 })

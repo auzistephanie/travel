@@ -45,7 +45,7 @@ describe('TripShell', () => {
   it('shows a loading indicator while the trip is being fetched', () => {
     useTrip.mockReturnValue({ trip: null, members: [], loading: true, error: null, joinAsNewMember: vi.fn() })
     renderShell()
-    expect(screen.getByText('載入緊…')).toBeInTheDocument()
+    expect(screen.getByText('載入中…')).toBeInTheDocument()
   })
 
   it('shows an error message when the trip cannot be loaded', () => {
@@ -53,18 +53,18 @@ describe('TripShell', () => {
       trip: null,
       members: [],
       loading: false,
-      error: '揾唔到呢個分享碼嘅行程',
+      error: '找不到這個分享碼的行程',
       joinAsNewMember: vi.fn(),
     })
     renderShell()
-    expect(screen.getByRole('alert')).toHaveTextContent('揾唔到呢個分享碼嘅行程')
+    expect(screen.getByRole('alert')).toHaveTextContent('找不到這個分享碼的行程')
   })
 
   it('shows the who-am-i picker when no member is remembered for this device', () => {
     useTrip.mockReturnValue({ trip, members, loading: false, error: null, joinAsNewMember: vi.fn() })
     getWhoAmI.mockReturnValue(null)
     renderShell()
-    expect(screen.getByText('邊位係你？')).toBeInTheDocument()
+    expect(screen.getByText('哪位是你？')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '阿明' })).toBeInTheDocument()
   })
 
@@ -82,7 +82,7 @@ describe('TripShell', () => {
     getWhoAmI.mockReturnValue('m1')
     renderShell()
     await user.click(screen.getByRole('tab', { name: '行程' }))
-    expect(screen.getByRole('main')).toHaveTextContent('載入緊…')
+    expect(screen.getByRole('main')).toHaveTextContent('載入中…')
   })
 
   it('persists the chosen member when selected from the who-am-i picker', async () => {

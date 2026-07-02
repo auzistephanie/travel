@@ -48,7 +48,7 @@ describe('AddFlightModal', () => {
     await user.type(screen.getByLabelText('日期'), '2026-08-01')
     await user.click(screen.getByRole('button', { name: '查詢' }))
 
-    expect(await screen.findByText('查唔到，請手動輸入')).toBeInTheDocument()
+    expect(await screen.findByText('查不到，請手動輸入')).toBeInTheDocument()
   })
 
   it('saves the manually entered flight and closes on confirm', async () => {

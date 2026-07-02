@@ -50,7 +50,7 @@ describe('JoinTrip', () => {
     await user.type(screen.getByLabelText('分享碼'), 'NOPE99')
     await user.click(screen.getByRole('button', { name: '加入' }))
 
-    expect(await screen.findByText('揾唔到呢個分享碼嘅行程')).toBeInTheDocument()
+    expect(await screen.findByText('找不到這個分享碼的行程')).toBeInTheDocument()
     expect(navigate).not.toHaveBeenCalled()
   })
 })
