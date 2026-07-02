@@ -2135,6 +2135,58 @@
   border-bottom: none;
 }
 
+/* 通用 modal（加入航班）：蓋面 bottom sheet */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(20, 28, 24, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: settings-fade 0.2s ease-out;
+}
+
+.theme-root form.modal-sheet {
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin-top: 0;
+  border-radius: 20px 20px 0 0;
+  animation: settings-rise 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.modal-head h2 {
+  margin: 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.theme-root .modal-actions button.wl-submit,
+.theme-root .modal-actions button.wl-cancel {
+  flex: 1;
+  width: auto;
+  margin-top: 0;
+}
+
+.theme-root button.wl-cancel {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
 /* 表單通用：2 欄、分攤 checkbox、旅行基本費 toggle、OCR 掣 */
 .wl-row {
   display: flex;
