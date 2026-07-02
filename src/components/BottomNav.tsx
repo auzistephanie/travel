@@ -1,11 +1,10 @@
-import { Compass, CalendarDays, Map, Luggage, Wallet, type LucideIcon } from 'lucide-react'
+import { Compass, Luggage, MapPinned, Wallet, type LucideIcon } from 'lucide-react'
 
-export type TabId = 'overview' | 'itinerary' | 'map' | 'prep' | 'money'
+export type TabId = 'overview' | 'itinerary' | 'prep' | 'money'
 
 const TABS: { id: TabId; label: string; Icon: LucideIcon }[] = [
   { id: 'overview', label: '總覽', Icon: Compass },
-  { id: 'itinerary', label: '行程', Icon: CalendarDays },
-  { id: 'map', label: '地圖', Icon: Map },
+  { id: 'itinerary', label: '行程', Icon: MapPinned },
   { id: 'prep', label: '準備', Icon: Luggage },
   { id: 'money', label: '錢', Icon: Wallet },
 ]

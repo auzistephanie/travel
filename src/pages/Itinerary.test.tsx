@@ -10,7 +10,11 @@ const useDestinationWeather = vi.fn()
 vi.mock('../hooks/useDestinationWeather', () => ({ useDestinationWeather: () => useDestinationWeather() }))
 
 const searchIndoorPlaces = vi.fn()
-vi.mock('../lib/placesApi', () => ({ searchIndoorPlaces: (...a: unknown[]) => searchIndoorPlaces(...a) }))
+const searchPlaces = vi.fn()
+vi.mock('../lib/placesApi', () => ({
+  searchIndoorPlaces: (...a: unknown[]) => searchIndoorPlaces(...a),
+  searchPlaces: (...a: unknown[]) => searchPlaces(...a),
+}))
 
 const findNearbyRestroom = vi.fn()
 const findNearbyConvenienceStore = vi.fn()

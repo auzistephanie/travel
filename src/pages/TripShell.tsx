@@ -15,14 +15,12 @@ import type { TripPageProps } from '../types/props'
 // 逐個分頁獨立 code-split，首次載入淨係攞緊嗰個分頁嘅 JS（效能基本處理，spec §10 Phase 5）
 const Overview = lazy(() => import('./Overview').then((m) => ({ default: m.Overview })))
 const Itinerary = lazy(() => import('./Itinerary').then((m) => ({ default: m.Itinerary })))
-const MapPage = lazy(() => import('./MapPage').then((m) => ({ default: m.MapPage })))
 const Prep = lazy(() => import('./Prep').then((m) => ({ default: m.Prep })))
 const Money = lazy(() => import('./Money').then((m) => ({ default: m.Money })))
 
 const PAGES: Record<TabId, ComponentType<TripPageProps>> = {
   overview: Overview,
   itinerary: Itinerary,
-  map: MapPage,
   prep: Prep,
   money: Money,
 }

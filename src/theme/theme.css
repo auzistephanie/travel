@@ -751,6 +751,92 @@
    行程 Itinerary（redesign 2026-07-02）
    ======================================================================= */
 
+/* 行程頁地圖區（併入行程，地圖先 placeholder）*/
+.map-area {
+  margin: 8px 0 4px;
+}
+
+.map-canvas {
+  position: relative;
+  height: 180px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  line-height: 0;
+}
+
+.map-canvas svg {
+  width: 100%;
+  height: 100%;
+}
+
+.map-note {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 248, 234, 0.95);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: var(--color-text);
+}
+
+.map-note svg {
+  color: var(--color-accent);
+  flex: none;
+}
+
+.theme-root form.map-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 5px 5px 5px 12px;
+  margin: 8px 0 0;
+}
+
+.theme-root form.map-search > svg {
+  color: var(--color-text);
+  opacity: 0.5;
+  flex: none;
+}
+
+.theme-root form.map-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 6px 2px;
+}
+
+.theme-root form.map-search input:focus-visible {
+  outline: none;
+}
+
+.theme-root form.map-search button {
+  flex: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+}
+
+.map-area .place-list {
+  margin-top: 8px;
+}
+
+.place-near {
+  font-size: 11px;
+  color: var(--color-accent);
+  font-weight: 700;
+  margin-right: auto;
+}
+
 /* Day tab pill 列（覆蓋 base tablist 底 bar 樣式）*/
 .theme-root nav[aria-label='日程'] {
   border-top: none;
@@ -906,29 +992,34 @@
 .itinerary-list::before {
   content: '';
   position: absolute;
-  left: 6px;
-  top: 14px;
-  bottom: 14px;
+  left: 11px;
+  top: 16px;
+  bottom: 16px;
   width: 2px;
   background: repeating-linear-gradient(var(--color-border) 0 5px, transparent 5px 9px);
 }
 
 .stop-item {
   position: relative;
-  padding-left: 22px;
+  padding-left: 34px;
   margin-bottom: 12px;
 }
 
-.stop-item::before {
-  content: '';
+.stop-num {
   position: absolute;
-  left: 1px;
-  top: 15px;
-  width: 12px;
-  height: 12px;
+  left: 0;
+  top: 12px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: var(--color-accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
   border: 2px solid var(--color-bg);
+  z-index: 2;
 }
 
 .stop-card {
