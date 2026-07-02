@@ -96,7 +96,7 @@ describe('Prep', () => {
     await user.click(screen.getByRole('tab', { name: '心願' }))
 
     expect(screen.getByText('曲奇')).toBeInTheDocument()
-    expect(screen.getByText('買俾：阿珍')).toBeInTheDocument()
+    expect(screen.getByText('買給：阿珍')).toBeInTheDocument()
     expect(screen.getByText('2026-08-01')).toBeInTheDocument()
   })
 
@@ -108,7 +108,7 @@ describe('Prep', () => {
     renderPrep()
     await user.click(screen.getByRole('tab', { name: '心願' }))
     await user.click(screen.getByRole('button', { name: '＋加心願' }))
-    await user.type(screen.getByLabelText('想買嘅嘢'), '曲奇')
+    await user.type(screen.getByLabelText('想買的東西'), '曲奇')
     await user.click(screen.getByRole('button', { name: '加入心願' }))
 
     expect(addItem).toHaveBeenCalledWith(expect.objectContaining({ name: '曲奇' }))

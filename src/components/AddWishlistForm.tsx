@@ -1,4 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { Sparkles, Store } from 'lucide-react'
 import { uploadWishlistPhoto } from '../lib/photoRepo'
 import { searchStoresForItem, type StoreSuggestion } from '../lib/storeSuggestApi'
 import { useFlights } from '../hooks/useFlights'
@@ -106,65 +107,94 @@ export function AddWishlistForm({ trip, members, days, onAdd }: AddWishlistFormP
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label htmlFor="wishlist-name">想買嘅嘢</label>
-      <input id="wishlist-name" value={name} onChange={(e) => setName(e.target.value)} required />
-      <button type="button" onClick={handleSearchStores} disabled={searching || !name.trim()}>
-        AI 搜尋邊度買
-      </button>
-      {searchHint && <p>{searchHint}</p>}
+    <form className="wl-form" onSubmit={handleSubmit}>
+      <h3 className="wl-title">加入心願</h3>
+
+      <div className="wl-field">
+        <label htmlFor="wishlist-name">想買的東西</label>
+        <div className="wl-name-row">
+          <input id="wishlist-name" value={name} onChange={(e) => setName(e.target.value)} required />
+          <button
+            type="button"
+            className="wl-ai"
+            onClick={handleSearchStores}
+            disabled={searching || !name.trim()}
+          >
+            <Sparkles size={13} aria-hidden="true" />
+            {searching ? '搜尋中…' : 'AI 建議商店'}
+          </button>
+        </div>
+      </div>
+
+      {searchHint && <p className="wl-hint">{searchHint}</p>}
       {suggestions.length > 0 && (
-        <ul aria-label="邊度買建議">
+        <ul className="wl-sugg" aria-label="商店建議">
           {suggestions.map((s, i) => (
             <li key={`${s.name}-${i}`}>
               <button type="button" onClick={() => pickSuggestion(s)}>
-                {s.name}（{s.address}
-                {priceLevelLabel(s.priceLevel) && `，${priceLevelLabel(s.priceLevel)}`}）
+                <Store size={13} aria-hidden="true" />
+                <span>
+                  {s.name}
+                  <small>
+                    {s.address}
+                    {priceLevelLabel(s.priceLevel) && ` · ${priceLevelLabel(s.priceLevel)}`}
+                  </small>
+                </span>
               </button>
             </li>
           ))}
         </ul>
       )}
 
-      <label htmlFor="wishlist-buy-at">邊度買</label>
-      <input id="wishlist-buy-at" value={buyAt} onChange={(e) => setBuyAt(e.target.value)} />
+      <div className="wl-field">
+        <label htmlFor="wishlist-buy-at">在哪裡買</label>
+        <input id="wishlist-buy-at" value={buyAt} onChange={(e) => setBuyAt(e.target.value)} />
+      </div>
 
-      <label htmlFor="wishlist-photo">相片</label>
-      <input
-        id="wishlist-photo"
-        type="file"
-        accept="image/*"
-        onChange={handlePhotoChange}
-        disabled={uploading}
-      />
-      {uploadHint && <p>{uploadHint}</p>}
-      {photoUrl && <img src={photoUrl} alt="心願相片" width={80} />}
+      <div className="wl-field">
+        <label htmlFor="wishlist-photo">相片</label>
+        <input
+          id="wishlist-photo"
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoChange}
+          disabled={uploading}
+        />
+        {uploadHint && <p className="wl-hint">{uploadHint}</p>}
+        {photoUrl && <img className="wl-photo" src={photoUrl} alt="心願相片" />}
+      </div>
 
-      <label htmlFor="wishlist-to-member">買俾邊個</label>
-      <input
-        id="wishlist-to-member"
-        list="wishlist-recipients"
-        value={toMember}
-        onChange={(e) => setToMember(e.target.value)}
-      />
-      <datalist id="wishlist-recipients">
-        <option value="自己" />
-        {members.map((m) => (
-          <option key={m.id} value={m.name} />
-        ))}
-      </datalist>
+      <div className="wl-field">
+        <label htmlFor="wishlist-to-member">買給誰</label>
+        <input
+          id="wishlist-to-member"
+          list="wishlist-recipients"
+          value={toMember}
+          onChange={(e) => setToMember(e.target.value)}
+        />
+        <datalist id="wishlist-recipients">
+          <option value="自己" />
+          {members.map((m) => (
+            <option key={m.id} value={m.name} />
+          ))}
+        </datalist>
+      </div>
 
-      <label htmlFor="wishlist-day">連結到哪一天行程</label>
-      <select id="wishlist-day" value={linkedDayId} onChange={(e) => setLinkedDayId(e.target.value)}>
-        <option value="">未連結（記得手動去買）</option>
-        {days.map((d) => (
-          <option key={d.id} value={d.id}>
-            {d.date}
-          </option>
-        ))}
-      </select>
+      <div className="wl-field">
+        <label htmlFor="wishlist-day">連結到哪一天行程</label>
+        <select id="wishlist-day" value={linkedDayId} onChange={(e) => setLinkedDayId(e.target.value)}>
+          <option value="">未連結（自行前往購買）</option>
+          {days.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.date}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <button type="submit">加入心願</button>
+      <button type="submit" className="wl-submit">
+        加入心願
+      </button>
     </form>
   )
 }

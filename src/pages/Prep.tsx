@@ -56,7 +56,7 @@ function WishlistView({ trip, members }: TripPageProps) {
             <Heart size={26} aria-hidden="true" />
           </span>
           <h3>還沒有心願</h3>
-          <p>記低想買的東西、買俾邊個，買了會自動流入「手信」。</p>
+          <p>記低想買的東西、買給誰，買了會自動流入「手信」。</p>
           {addButton}
         </div>
       ) : (
@@ -86,7 +86,7 @@ function WishlistView({ trip, members }: TripPageProps) {
                     <b>{item.name}</b>
                     <span className="wi-chips">
                       <span className="wchip">
-                        <User size={10} aria-hidden="true" />買俾：{item.to_member ?? '未指定'}
+                        <User size={10} aria-hidden="true" />買給：{item.to_member ?? '未指定'}
                       </span>
                       <span className="wchip">
                         <CalendarDays size={10} aria-hidden="true" />

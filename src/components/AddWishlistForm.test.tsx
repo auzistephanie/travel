@@ -61,7 +61,7 @@ describe('AddWishlistForm', () => {
     const onAdd = vi.fn()
 
     render(<AddWishlistForm trip={trip} members={members} days={days} onAdd={onAdd} />)
-    await user.type(screen.getByLabelText('想買嘅嘢'), '曲奇')
+    await user.type(screen.getByLabelText('想買的東西'), '曲奇')
     await user.click(screen.getByRole('button', { name: '加入心願' }))
 
     expect(onAdd).toHaveBeenCalledWith({
@@ -82,7 +82,7 @@ describe('AddWishlistForm', () => {
     const onAdd = vi.fn()
 
     render(<AddWishlistForm trip={trip} members={members} days={days} onAdd={onAdd} />)
-    await user.type(screen.getByLabelText('想買嘅嘢'), '曲奇')
+    await user.type(screen.getByLabelText('想買的東西'), '曲奇')
     await user.upload(screen.getByLabelText('相片'), fakeFile())
     await screen.findByAltText('心願相片')
     await user.click(screen.getByRole('button', { name: '加入心願' }))
@@ -96,7 +96,7 @@ describe('AddWishlistForm', () => {
     const onAdd = vi.fn()
 
     render(<AddWishlistForm trip={trip} members={members} days={days} onAdd={onAdd} />)
-    await user.type(screen.getByLabelText('想買嘅嘢'), '曲奇')
+    await user.type(screen.getByLabelText('想買的東西'), '曲奇')
     await user.selectOptions(screen.getByLabelText('連結到哪一天行程'), 'd1')
     await user.click(screen.getByRole('button', { name: '加入心願' }))
 
@@ -110,14 +110,14 @@ describe('AddWishlistForm', () => {
     ])
 
     render(<AddWishlistForm trip={trip} members={members} days={days} onAdd={vi.fn()} />)
-    await user.type(screen.getByLabelText('想買嘅嘢'), '曲奇')
-    await user.click(screen.getByRole('button', { name: 'AI 搜尋邊度買' }))
+    await user.type(screen.getByLabelText('想買的東西'), '曲奇')
+    await user.click(screen.getByRole('button', { name: 'AI 建議商店' }))
 
     expect(searchStoresForItem).toHaveBeenCalledWith('曲奇', 35.7647, 140.3864)
     expect(await screen.findByText(/銀座曲奇本店/)).toBeInTheDocument()
   })
 
-  it('fills in 邊度買 and a price-level tip when a suggestion is picked', async () => {
+  it('fills in 在哪裡買 and a price-level tip when a suggestion is picked', async () => {
     const user = userEvent.setup()
     searchStoresForItem.mockResolvedValue([
       { name: '銀座曲奇本店', address: '東京都中央区', priceLevel: 'PRICE_LEVEL_MODERATE' },
@@ -125,11 +125,11 @@ describe('AddWishlistForm', () => {
     const onAdd = vi.fn()
 
     render(<AddWishlistForm trip={trip} members={members} days={days} onAdd={onAdd} />)
-    await user.type(screen.getByLabelText('想買嘅嘢'), '曲奇')
-    await user.click(screen.getByRole('button', { name: 'AI 搜尋邊度買' }))
+    await user.type(screen.getByLabelText('想買的東西'), '曲奇')
+    await user.click(screen.getByRole('button', { name: 'AI 建議商店' }))
     await user.click(await screen.findByRole('button', { name: /銀座曲奇本店/ }))
 
-    expect(screen.getByLabelText('邊度買')).toHaveValue('銀座曲奇本店')
+    expect(screen.getByLabelText('在哪裡買')).toHaveValue('銀座曲奇本店')
     await user.click(screen.getByRole('button', { name: '加入心願' }))
 
     expect(onAdd).toHaveBeenCalledWith(
@@ -147,8 +147,8 @@ describe('AddWishlistForm', () => {
     render(
       <AddWishlistForm trip={{ ...trip, destination_country: 'TH' }} members={members} days={days} onAdd={vi.fn()} />,
     )
-    await user.type(screen.getByLabelText('想買嘅嘢'), '手信')
-    await user.click(screen.getByRole('button', { name: 'AI 搜尋邊度買' }))
+    await user.type(screen.getByLabelText('想買的東西'), '手信')
+    await user.click(screen.getByRole('button', { name: 'AI 建議商店' }))
 
     expect(searchStoresForItem).toHaveBeenCalledWith('手信', 13.69, 100.7501)
     expect(await screen.findByText(/曼谷夜市/)).toBeInTheDocument()
@@ -159,8 +159,8 @@ describe('AddWishlistForm', () => {
     searchStoresForItem.mockResolvedValue([])
 
     render(<AddWishlistForm trip={trip} members={members} days={days} onAdd={vi.fn()} />)
-    await user.type(screen.getByLabelText('想買嘅嘢'), 'ㄈㄈㄈ')
-    await user.click(screen.getByRole('button', { name: 'AI 搜尋邊度買' }))
+    await user.type(screen.getByLabelText('想買的東西'), 'ㄈㄈㄈ')
+    await user.click(screen.getByRole('button', { name: 'AI 建議商店' }))
 
     expect(await screen.findByText('找不到相關商店')).toBeInTheDocument()
   })
