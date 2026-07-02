@@ -27,7 +27,7 @@ describe('AddGiftForm', () => {
     await user.type(screen.getByLabelText('品項'), '曲奇')
     await user.type(screen.getByLabelText('商戶'), '銀座曲奇')
     await user.type(screen.getByLabelText('金額'), '100')
-    const toMemberInput = screen.getByLabelText('買俾邊個')
+    const toMemberInput = screen.getByLabelText('買給誰')
     await user.clear(toMemberInput)
     await user.type(toMemberInput, '阿珍')
     await user.click(screen.getByRole('button', { name: '加入手信' }))
@@ -43,7 +43,7 @@ describe('AddGiftForm', () => {
 
   it('defaults the recipient to 自己', () => {
     render(<AddGiftForm members={members} onAdd={vi.fn()} />)
-    expect(screen.getByLabelText('買俾邊個')).toHaveValue('自己')
+    expect(screen.getByLabelText('買給誰')).toHaveValue('自己')
   })
 
   it('prefills store and amount from a successful scan without auto-submitting', async () => {
@@ -52,7 +52,7 @@ describe('AddGiftForm', () => {
     const onAdd = vi.fn()
 
     render(<AddGiftForm members={members} onAdd={onAdd} />)
-    await user.upload(screen.getByLabelText('影單 OCR'), fakeFile())
+    await user.upload(screen.getByLabelText('拍單據 OCR'), fakeFile())
 
     expect(await screen.findByDisplayValue('銀座曲奇')).toBeInTheDocument()
     expect(screen.getByDisplayValue('1280')).toBeInTheDocument()
@@ -65,7 +65,7 @@ describe('AddGiftForm', () => {
     const onAdd = vi.fn()
 
     render(<AddGiftForm members={members} onAdd={onAdd} />)
-    await user.upload(screen.getByLabelText('影單 OCR'), fakeFile())
+    await user.upload(screen.getByLabelText('拍單據 OCR'), fakeFile())
     await screen.findByDisplayValue('銀座曲奇')
     await user.type(screen.getByLabelText('品項'), '曲奇')
     await user.click(screen.getByRole('button', { name: '加入手信' }))
@@ -78,7 +78,7 @@ describe('AddGiftForm', () => {
     scanReceipt.mockResolvedValue(null)
 
     render(<AddGiftForm members={members} onAdd={vi.fn()} />)
-    await user.upload(screen.getByLabelText('影單 OCR'), fakeFile())
+    await user.upload(screen.getByLabelText('拍單據 OCR'), fakeFile())
 
     expect(await screen.findByText('讀取不到，請手動輸入')).toBeInTheDocument()
   })
