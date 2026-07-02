@@ -15,7 +15,8 @@ github_push.py — 直接經 GitHub API 把整個 working tree 同步上 GitHub 
 用法：
   python3 github_push.py "你的 commit message"
 
-Token 來源：remote URL 內嵌 → GITHUB_TOKEN/GH_TOKEN → .gh-token 檔。Token 只喺本機讀，唔會 print。
+Token 來源：.env（GITHUB_TOKEN）→ 環境變數 GITHUB_TOKEN/GH_TOKEN → .gh-token 檔（gitignored）→
+remote URL 內嵌（唔建議，只作向後兼容）。Token 只喺本機讀，唔會 print。
 """
 import base64
 import hashlib
@@ -27,16 +28,30 @@ import sys
 import urllib.error
 import urllib.request
 
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
+
 API = "https://api.github.com"
 REPO = os.path.dirname(os.path.abspath(__file__))
 
+if load_dotenv:
+    load_dotenv(os.path.join(REPO, ".env"))
+
 
 def run(args):
-    return subprocess.run(args, cwd=REPO, capture_output=True, text=True)
+    # -c core.quotepath=false：非 ASCII（中文）檔名唔好被 octal-escape 做 "\346\...",
+    # 否則 git ls-files 攞到嘅係字面 backslash-digit 文字，match 唔到真檔案，會被當刪咗。
+    return subprocess.run(["git", "-c", "core.quotepath=false"] + args[1:],
+                           cwd=REPO, capture_output=True, text=True)
 
 
 def get_remote_url():
     return run(["git", "config", "--get", "remote.origin.url"]).stdout.strip()
+
+
+_TOKEN_PREFIXES = ("ghp_", "gho_", "ghu_", "ghs_", "ghr_", "github_pat_")
 
 
 def parse_remote(url):
@@ -46,15 +61,17 @@ def parse_remote(url):
     creds, owner, repo = m.group(1), m.group(2), m.group(3)
     token = None
     if creds and ":" in creds:
+        # user:token@ — the part after the colon is the token
         token = creds.split(":", 1)[1]
-    elif creds:
+    elif creds and creds.startswith(_TOKEN_PREFIXES):
+        # bare token@ (no username) — only treat as a token if it looks like one,
+        # otherwise it's just a plain username (e.g. "auzistephanie@") and the
+        # real token should come from .env / GITHUB_TOKEN / .gh-token instead
         token = creds
     return token, owner, repo
 
 
 def get_token(remote_token):
-    if remote_token:
-        return remote_token
     for env in ("GITHUB_TOKEN", "GH_TOKEN"):
         if os.environ.get(env):
             return os.environ[env]
@@ -62,7 +79,7 @@ def get_token(remote_token):
     if os.path.isfile(tokfile):
         with open(tokfile) as f:
             return f.read().strip()
-    return None
+    return remote_token
 
 
 def api(method, path, token, body=None):
@@ -71,7 +88,7 @@ def api(method, path, token, body=None):
     req = urllib.request.Request(url, data=data, method=method)
     req.add_header("Authorization", f"Bearer {token}")
     req.add_header("Accept", "application/vnd.github+json")
-    req.add_header("User-Agent", "travel-app-push")
+    req.add_header("User-Agent", "github-push-script")
     try:
         with urllib.request.urlopen(req) as resp:
             return json.loads(resp.read().decode())
@@ -113,7 +130,7 @@ def main():
         raise SystemExit("❌ 讀唔到 remote.origin.url")
     token = get_token(remote_token)
     if not token:
-        raise SystemExit("❌ 揾唔到 GitHub token（remote URL 內嵌 / GITHUB_TOKEN / .gh-token）")
+        raise SystemExit("❌ 揾唔到 GitHub token（.env GITHUB_TOKEN / 環境變數 / .gh-token）")
 
     base = f"/repos/{owner}/{repo}/git"
     ref = api("GET", f"{base}/ref/heads/main", token)
