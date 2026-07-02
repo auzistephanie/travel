@@ -1598,3 +1598,145 @@
   border: none;
   padding: 3px;
 }
+
+/* =======================================================================
+   地圖 Map（redesign 2026-07-02）
+   ======================================================================= */
+
+.map-search {
+  margin: 6px 0 12px;
+}
+
+.map-search-label {
+  display: block;
+  font-size: 11.5px;
+  opacity: 0.75;
+  margin-bottom: 5px;
+}
+
+.map-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 6px 6px 6px 12px;
+}
+
+.map-search-bar > svg {
+  color: var(--color-text);
+  opacity: 0.5;
+  flex: none;
+}
+
+.theme-root .map-search-bar input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 6px 2px;
+}
+
+.theme-root .map-search-bar input:focus-visible {
+  outline: none;
+}
+
+.theme-root .map-search-bar button {
+  flex: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+}
+
+.map-hint,
+.map-empty {
+  font-size: 12.5px;
+  opacity: 0.7;
+  margin: 8px 2px;
+}
+
+.place-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.place-card {
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 12px 13px;
+  box-shadow: 0 3px 10px rgba(47, 61, 51, 0.06);
+}
+
+.place-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.place-ic {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 10px;
+  background: var(--color-bg);
+  display: grid;
+  place-items: center;
+  color: var(--color-accent);
+}
+
+.place-info {
+  min-width: 0;
+}
+
+.place-info strong {
+  display: block;
+  font-size: 14px;
+  font-family: 'Noto Serif TC', serif;
+}
+
+.place-info span {
+  font-size: 11.5px;
+  color: var(--color-text);
+  opacity: 0.65;
+}
+
+.theme-root button.place-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  font-size: 12px;
+  padding: 7px 13px;
+  border-radius: 20px;
+}
+
+.place-add-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.place-add-row label {
+  font-size: 11.5px;
+  opacity: 0.75;
+  width: 100%;
+}
+
+.theme-root .place-add-row select {
+  flex: 1;
+  min-width: 120px;
+}
+
+.theme-root .place-add-row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+}

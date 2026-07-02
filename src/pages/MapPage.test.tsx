@@ -54,7 +54,7 @@ describe('MapPage', () => {
     await user.type(screen.getByLabelText('搜尋地點'), 'ㄈㄈㄈ')
     await user.click(screen.getByRole('button', { name: '搜尋' }))
 
-    expect(await screen.findByText('搵唔到相關地點')).toBeInTheDocument()
+    expect(await screen.findByText('找不到相關地點')).toBeInTheDocument()
   })
 
   it('adds the selected place to the chosen day', async () => {
@@ -68,8 +68,8 @@ describe('MapPage', () => {
     await user.click(screen.getByRole('button', { name: '搜尋' }))
     await screen.findByText('淺草寺')
 
-    await user.click(screen.getByRole('button', { name: '加入邊一日' }))
-    await user.selectOptions(screen.getByLabelText('加入邊一日'), 'd2')
+    await user.click(screen.getByRole('button', { name: '加入哪一天' }))
+    await user.selectOptions(screen.getByLabelText('加入哪一天'), 'd2')
     await user.click(screen.getByRole('button', { name: '確認加入' }))
 
     expect(addStop).toHaveBeenCalledWith('d2', {
