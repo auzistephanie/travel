@@ -1966,3 +1966,21 @@
   width: 100%;
   margin-top: 4px;
 }
+
+.wl-ai-comment {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  border-radius: 8px;
+  padding: 6px 9px;
+  margin: 6px 0 0;
+  line-height: 1.4;
+}
+
+.wl-ai-comment svg {
+  flex: none;
+  margin-top: 1px;
+}

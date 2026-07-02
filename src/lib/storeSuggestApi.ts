@@ -2,10 +2,17 @@ export interface StoreSuggestion {
   name: string
   address: string
   priceLevel: string | null
+  lat?: number
+  lng?: number
 }
 
 interface PlacesSearchTextResponse {
-  places?: { displayName?: { text?: string }; formattedAddress?: string; priceLevel?: string }[]
+  places?: {
+    displayName?: { text?: string }
+    formattedAddress?: string
+    priceLevel?: string
+    location?: { latitude?: number; longitude?: number }
+  }[]
 }
 
 const SEARCH_RADIUS_METERS = 10000
@@ -23,7 +30,8 @@ export async function searchStoresForItem(itemName: string, lat: number, lng: nu
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': key,
-        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.priceLevel',
+        'X-Goog-FieldMask':
+          'places.displayName,places.formattedAddress,places.priceLevel,places.location',
       },
       body: JSON.stringify({
         textQuery: itemName,
@@ -36,11 +44,18 @@ export async function searchStoresForItem(itemName: string, lat: number, lng: nu
 
     const body = (await response.json()) as PlacesSearchTextResponse
 
-    return (body.places ?? []).slice(0, MAX_SUGGESTIONS).map((place) => ({
-      name: place.displayName?.text ?? '',
-      address: place.formattedAddress ?? '',
-      priceLevel: place.priceLevel ?? null,
-    }))
+    return (body.places ?? []).slice(0, MAX_SUGGESTIONS).map((place) => {
+      const suggestion: StoreSuggestion = {
+        name: place.displayName?.text ?? '',
+        address: place.formattedAddress ?? '',
+        priceLevel: place.priceLevel ?? null,
+      }
+      if (place.location?.latitude != null && place.location?.longitude != null) {
+        suggestion.lat = place.location.latitude
+        suggestion.lng = place.location.longitude
+      }
+      return suggestion
+    })
   } catch {
     return []
   }
