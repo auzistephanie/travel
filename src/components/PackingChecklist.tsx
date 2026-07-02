@@ -10,11 +10,13 @@ interface PackingChecklistProps {
 export function PackingChecklist({ tripId, dayCount }: PackingChecklistProps) {
   const { items, loading, error, toggle } = usePackingChecklist(tripId, dayCount)
 
-  if (loading) return <p>載入緊…</p>
+  if (loading) return <p>載入中…</p>
   if (error) return <p role="alert">{error}</p>
   if (items.length === 0) return null
 
-  const allDone = items.every((item) => item.checked)
+  const doneCount = items.filter((item) => item.checked).length
+  const allDone = doneCount === items.length
+  const pct = Math.round((doneCount / items.length) * 100)
 
   const byCategory = new Map<string, PackingItem[]>()
   for (const item of items) {
@@ -25,14 +27,24 @@ export function PackingChecklist({ tripId, dayCount }: PackingChecklistProps) {
 
   return (
     <section aria-label="行李清單">
-      <h2>行李清單</h2>
-      {allDone && <StampBadge label="執晒" />}
+      <div className="pk-head">
+        <div className="pk-ring" style={{ ['--pct' as string]: `${pct}%` }} aria-hidden="true">
+          <span>{pct}%</span>
+        </div>
+        <div className="pk-head-txt">
+          <h2>行李清單</h2>
+          <p className="pk-sub">
+            {items.length} 件 · 已執 {doneCount} 件
+          </p>
+        </div>
+        {allDone && <StampBadge label="執晒" />}
+      </div>
       {[...byCategory.entries()].map(([category, categoryItems]) => (
-        <div key={category}>
+        <div key={category} className="pk-cat">
           <h3>{category}</h3>
-          <ul>
+          <ul className="pk-list">
             {categoryItems.map((item) => (
-              <li key={item.id}>
+              <li key={item.id} className={item.checked ? 'pk-item done' : 'pk-item'}>
                 <label>
                   <input
                     type="checkbox"
@@ -40,7 +52,7 @@ export function PackingChecklist({ tripId, dayCount }: PackingChecklistProps) {
                     onChange={(e) => toggle(item.id, e.target.checked)}
                   />
                   {item.name}
-                  {item.auto_qty && <span> 自動</span>}
+                  {item.auto_qty && <span className="pk-auto"> 自動</span>}
                 </label>
               </li>
             ))}

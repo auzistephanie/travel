@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Banknote, FileCheck, Luggage, Plug, Sparkles, Thermometer } from 'lucide-react'
 import { useFlights } from '../hooks/useFlights'
 import { useDestinationCountry } from '../hooks/useDestinationCountry'
 import { useDestinationWeather } from '../hooks/useDestinationWeather'
@@ -37,28 +38,63 @@ export function PackingSmartCard({ trip, members }: TripPageProps) {
   return (
     <section aria-label="行李智能提醒">
       <h2>行李智能提醒 — {destination.countryName}</h2>
-      <p>
-        🔌 {destination.plugType} · {destination.voltage}
-      </p>
-      <p>🛂 {destination.visaNote}</p>
-      <p>
-        💵 {destination.cashAdvice.legalNote}，建議帶{' '}
-        {destination.cashAdvice.suggestedLocalAmount.toLocaleString()} {destination.cashAdvice.currency}
-        {suggestedHkd != null && ` (約 HK$${suggestedHkd.toLocaleString()})`}
-      </p>
+      <div className="smart-grid">
+        <div className="smart-card">
+          <span className="sc2-ic">
+            <Plug size={17} aria-hidden="true" />
+          </span>
+          <div className="sc2-k">轉插頭</div>
+          <div className="sc2-v">
+            {destination.plugType} · {destination.voltage}
+          </div>
+        </div>
+        <div className="smart-card">
+          <span className="sc2-ic">
+            <FileCheck size={17} aria-hidden="true" />
+          </span>
+          <div className="sc2-k">簽證</div>
+          <div className="sc2-v">{destination.visaNote}</div>
+        </div>
+        <div className="smart-card">
+          <span className="sc2-ic">
+            <Banknote size={17} aria-hidden="true" />
+          </span>
+          <div className="sc2-k">建議現金</div>
+          <div className="sc2-v">
+            {destination.cashAdvice.suggestedLocalAmount.toLocaleString()}{' '}
+            {destination.cashAdvice.currency}
+            {suggestedHkd != null && ` (約 HK$${suggestedHkd.toLocaleString()})`}
+          </div>
+        </div>
+        {range && (
+          <div className="smart-card">
+            <span className="sc2-ic">
+              <Thermometer size={17} aria-hidden="true" />
+            </span>
+            <div className="sc2-k">氣溫</div>
+            <div className="sc2-v">
+              {range.min}–{range.max}°C
+            </div>
+          </div>
+        )}
+      </div>
       {tips.length > 0 && (
-        <ul>
+        <ul className="tip-list">
           {tips.map((tip) => (
             <li key={tip.text}>
-              {tip.icon} {tip.text}
+              <Sparkles size={13} aria-hidden="true" />
+              {tip.text}
             </li>
           ))}
         </ul>
       )}
       {baggageRows.length > 0 && (
         <>
-          <h3>🧳 寄艙行李額</h3>
-          <ul>
+          <h3 className="sec-title">
+            <Luggage size={17} aria-hidden="true" />
+            寄艙行李額
+          </h3>
+          <ul className="baggage-list">
             {baggageRows.map((f) => (
               <li key={f.id}>
                 {memberById.get(f.member_id as string) ?? '未指定'}：{f.baggage_kg}kg（{f.code}）

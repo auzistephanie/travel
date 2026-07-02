@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Trash2 } from 'lucide-react'
 import { PackingSmartCard } from '../components/PackingSmartCard'
 import { PackingChecklist } from '../components/PackingChecklist'
 import { SubTabs } from '../components/SubTabs'
@@ -25,45 +26,56 @@ function WishlistView({ trip, members }: TripPageProps) {
   const [showAdd, setShowAdd] = useState(false)
   const [confirming, setConfirming] = useState<WishlistItem | null>(null)
 
-  if (loading) return <p>載入緊…</p>
+  if (loading) return <p>載入中…</p>
   if (error) return <p role="alert">{error}</p>
 
   const dayById = new Map(days.map((d) => [d.id, d.date]))
 
   return (
     <div>
-      <ul>
+      <ul className="wish-list">
         {items.map((item) => (
-          <li key={item.id}>
-            {item.photo_url ? (
-              <img src={item.photo_url} alt={item.name} width={60} />
-            ) : (
-              <DestinationIllustration countryCode={countryCode} width={60} />
-            )}
-            <span>{item.name}</span>
-            <span>買俾：{item.to_member ?? '未指定'}</span>
-            <span>
-              {item.linked_day_id ? dayById.get(item.linked_day_id) : '未連結行程（記得手動去買）'}
+          <li key={item.id} className={item.bought ? 'wish-item bought' : 'wish-item'}>
+            <span className="wi-thumb">
+              {item.photo_url ? (
+                <img src={item.photo_url} alt={item.name} />
+              ) : (
+                <DestinationIllustration countryCode={countryCode} width={54} />
+              )}
             </span>
-            {item.bought ? (
-              <>
-                <StampBadge label="買咗" />
-                <button type="button" onClick={() => undoBought(item.id)}>
-                  撤銷買咗
+            <span className="wi-main">
+              <b>{item.name}</b>
+              <small>買俾：{item.to_member ?? '未指定'}</small>
+              <small className="wi-day">
+                {item.linked_day_id ? dayById.get(item.linked_day_id) : '未連結行程（記得自行前往購買）'}
+              </small>
+            </span>
+            <span className="wi-actions">
+              {item.bought ? (
+                <>
+                  <StampBadge label="買咗" />
+                  <button type="button" className="wi-undo" onClick={() => undoBought(item.id)}>
+                    撤銷買咗
+                  </button>
+                </>
+              ) : (
+                <button type="button" className="wi-buy" onClick={() => setConfirming(item)}>
+                  ✓ 買咗
                 </button>
-              </>
-            ) : (
-              <button type="button" onClick={() => setConfirming(item)}>
-                ✓ 買咗
+              )}
+              <button
+                type="button"
+                className="wi-del"
+                onClick={() => deleteItem(item.id)}
+                aria-label={`刪除 ${item.name}`}
+              >
+                <Trash2 size={15} aria-hidden="true" />
               </button>
-            )}
-            <button type="button" onClick={() => deleteItem(item.id)} aria-label={`刪除 ${item.name}`}>
-              刪除
-            </button>
+            </span>
           </li>
         ))}
       </ul>
-      <button type="button" onClick={() => setShowAdd(true)}>
+      <button type="button" className="money-add" onClick={() => setShowAdd(true)}>
         ＋加心願
       </button>
       {showAdd && (

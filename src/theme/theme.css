@@ -1340,3 +1340,261 @@
   font-size: 14px;
   flex: none;
 }
+
+/* =======================================================================
+   準備 Prep（redesign 2026-07-02）
+   ======================================================================= */
+
+/* 智能卡 grid */
+.smart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 4px;
+}
+
+.smart-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 13px;
+  padding: 11px 12px;
+}
+
+.smart-card .sc2-ic {
+  color: var(--color-accent);
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--color-bg-alt);
+}
+
+.smart-card .sc2-k {
+  font-size: 10.5px;
+  color: var(--color-text);
+  opacity: 0.65;
+  margin-top: 7px;
+}
+
+.smart-card .sc2-v {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Noto Serif TC', serif;
+  margin-top: 1px;
+  line-height: 1.3;
+}
+
+.tip-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tip-list li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+}
+
+.tip-list li svg {
+  color: var(--color-accent);
+  flex: none;
+}
+
+.baggage-list {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  font-size: 12.5px;
+}
+
+.baggage-list li {
+  padding: 4px 0;
+}
+
+/* 行李進度環 */
+.pk-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.pk-ring {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 50%;
+  background: conic-gradient(var(--color-heading) var(--pct), var(--color-border) var(--pct));
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.pk-ring::before {
+  content: '';
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-bg-alt);
+}
+
+.pk-ring span {
+  position: relative;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.pk-head h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.pk-sub {
+  font-size: 11.5px;
+  opacity: 0.7;
+  margin: 1px 0 0;
+}
+
+.pk-cat h3 {
+  font-size: 13px;
+  margin: 14px 0 7px;
+  opacity: 0.8;
+}
+
+.pk-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.pk-item {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 9px 12px;
+}
+
+.pk-item label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pk-item.done label {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.pk-auto {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  padding: 1px 7px;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+/* 心願 list */
+.wish-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.wish-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.wish-item.bought {
+  opacity: 0.72;
+}
+
+.wi-thumb {
+  width: 54px;
+  height: 54px;
+  flex: none;
+  border-radius: 11px;
+  overflow: hidden;
+  background: var(--color-bg);
+  display: grid;
+  place-items: center;
+}
+
+.wi-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wi-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.wi-main b {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.wi-main small {
+  display: block;
+  font-size: 10.5px;
+  color: var(--color-text);
+  opacity: 0.7;
+}
+
+.wi-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex: none;
+}
+
+.theme-root button.wi-buy {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 11px;
+  border-radius: 20px;
+}
+
+.theme-root button.wi-undo {
+  font-size: 10.5px;
+  padding: 4px 9px;
+  border-radius: 20px;
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.theme-root button.wi-del {
+  background: transparent;
+  color: var(--color-text);
+  opacity: 0.5;
+  border: none;
+  padding: 3px;
+}
