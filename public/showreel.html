@@ -349,7 +349,21 @@ body{
   const stage = document.getElementById('stage');
   const gate  = document.getElementById('playgate');
   const gateLabel = gate.querySelector('p');
-  let master = null, fired = new Set(), ended = false, timer = null;
+  let master = null, fired = new Set(), ended = false, timer = null, unlocked = false;
+
+  // 預載旁白：fetch → blob src（繞過 service worker / Range / 背景 defer 問題）
+  // file:// 直開時 fetch 用唔到，就維持原本相對路徑 src（本地直接載無問題）
+  if (location.protocol !== 'file:') {
+    cues.forEach(async c => {
+      try {
+        const r = await fetch(c.id + '.mp3');
+        if (!r.ok) throw new Error(r.status);
+        const el = document.getElementById(c.id);
+        el.src = URL.createObjectURL(await r.blob());
+        el.load();
+      } catch(e) { /* fetch 失敗就保留原 src 做 fallback */ }
+    });
+  }
 
   function start(){
     gate.classList.add('off');
@@ -357,10 +371,20 @@ body{
     fired.clear(); ended = false;
     cues.forEach(c => {
       const a = document.getElementById(c.id);
-      a.pause();
-      if (a.readyState === 0) a.load();   // 背景分頁可能 defer 咗載入，強制載
-      a.currentTime = 0;
+      // 喺用戶手勢入面解鎖每個 audio（iOS/Safari 要求；否則之後 timer 觸發嘅 play() 會被封）
+      if (!unlocked) {
+        a.muted = true;
+        const p = a.play();
+        if (p && p.then) p.then(() => { a.pause(); a.currentTime = 0; a.muted = false; })
+                          .catch(() => { a.muted = false; });
+        else { a.pause(); a.currentTime = 0; a.muted = false; }
+      } else {
+        a.pause();
+        a.currentTime = 0;
+      }
+      if (a.readyState === 0) a.load();
     });
+    unlocked = true;
     const anims = document.getAnimations();
     anims.forEach(a => { a.currentTime = 0; a.play(); });   // 由頭開始，動畫做 master clock
     master = anims.find(a => a.effect.getTiming().duration === LOOP) || anims[0];
