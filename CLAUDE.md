@@ -105,6 +105,7 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **App**（`src/styles/journalCard.css` `.journal-page`）：未入 trip 前 3 頁（Landing/建立行程/用分享碼加入）共用嘅底層背景，加咗花磚扇形圓弧紋樣（Pattern C）。**刻意用靛藍 `#7f9bb8`／磚紅 `#c1503a`／深靛 `#3a5f8a`，同 journal-card 本身嘅綠/橙/米色唔撞色**；opacity 現定 0.7（用戶要求較顯眼，未跟 skill 建議嘅 0.14–0.22 隱約範圍，日後想調淡可直接改呢 3 個 `fill-opacity` 值）。
 - 花磚紋樣庫（8 瓣花/星芒羅盤/扇形圓弧/菱格細紋 4 款 SVG pattern，含配色/用法指引）喺 skill `brand-landing-page` 嘅 `references/tile-patterns.md`，日後其他頁面想加花磚可以再攞。
 - 驗證方式：CSS brace 平衡 check、`vitest run HeroCard/SettingsPanel test`（12 個全過）、push 後用 Chrome MCP 清 SW cache 重新 load 實測截圖確認（唔止睇 code）。
+- **補做確認（2026-07-04 later）**：之前 4 主題花磚 doc 已寫「都有」，但實際 `theme.css` 淨係 `[data-theme='cartography']` 有規則，neon/indigo/scrapbook 3 個主題冇對應 `.hero-body::before`，用戶截圖對比 3 個主題發現分隔條冇跟色。已補齊 3 段規則令代碼同呢份 doc 一致。`tsc -b` 零錯、`vite build` 乾淨，編譯後 CSS 8 隻新色（`1f1830 ff3ec9 2ee6d6 1f4166 d4af37 c0392b c2434a e8a33d`）各出現一次，確認冇打錯冇重複。
 
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
@@ -112,4 +113,4 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-04（新增 8e 花磚 vintage tile 裝飾）*
+*最後更新：2026-07-04（8e 花磚：補齊 neon/indigo/scrapbook 3 主題 hero 分隔條，同 doc 對齊）*
