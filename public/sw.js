@@ -1,7 +1,7 @@
 // 基本離線處理：cache app shell，離線時導航請求 fallback 去 index.html
 // （靠 client-side routing 接手），資料本身（Supabase）離線本身就讀唔到，
 // 呢個 service worker 淨係保證個 app 唔會齋顯示白畫面/瀏覽器錯誤頁。
-const CACHE_NAME = 'travel-app-shell-v2'
+const CACHE_NAME = 'travel-app-shell-v3'
 const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/favicon.svg']
 
 self.addEventListener('install', (event) => {
@@ -25,6 +25,23 @@ self.addEventListener('fetch', (event) => {
   const pathname = new URL(event.request.url).pathname
   if (/\.(mp3|mp4|webm|ogg|wav|m4a)$/i.test(pathname)) return
   if (event.request.headers.has('range')) return
+
+  // HTML／導航請求：network-first（確保攞到最新版），離線先 fallback 去 cache
+  const isHTML = event.request.mode === 'navigate' || /\.html$/i.test(pathname) || pathname === '/'
+  if (isHTML) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+          }
+          return response
+        })
+        .catch(() => caches.match(event.request).then((c) => c || caches.match('/index.html'))),
+    )
+    return
+  }
 
   event.respondWith(
     caches.match(event.request).then((cached) => {
