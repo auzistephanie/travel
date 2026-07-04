@@ -165,10 +165,16 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **已知限制**：`manualOverride` 淨係嗰個 session（即係冇 reload 頁面之前）有效——如果之後用「自訂新名字」加咗一個新人，之後重新整個頁（例如朋友第二日先再開），auth 自動識別效果會重新跑，Google 已連結嘅 owner 帳戶又會贏，跳返做返 owner，唔會記得住個新加嘅人（除非嗰個新人自己嗰部機／瀏覽器揀名）。呢個係「一部機一個 Google 帳戶」設計本身嘅限制，冇喺呢次改埋，日後如果要做到「一部機可以畀唔同人長期記住身份」要再諗過個架構（例如每個 member 各自一個 code，而唔淨係得 owner 個 Google 帳戶咁強勢）。
 - **測試**：`TripShell.test.tsx` 加咗 2 個新 case（撳「切換身份」清走記錄翻去揀名畫面；已連結 Google 嘅 owner 撳咗都唔會即刻俾自動識別搶返身份），連原有 12 個一齊全 14 個 test 全綠、`tsc -b` 零錯、`vite build` 乾淨。
 
+## 8m. 「哪位是你？」揀名畫面重新設計（2026-07-05）
+- **背景**：Stephanie 截圖畀我睇，發現呢個畫面一直冇跟返 8a 嗰輪 redesign——淨係死白背景、預設 bullet list、無樣式 input/button，同成個 app 嘅視覺系統完全脫節（呢頁本身冇經過 `.journal-card`/`.theme-root` 嘅卡片包裝）。
+- **做法**：`WhoAmIPicker.tsx` 改用 `.whoami-page`/`.whoami-card` 包裝，加返 Compass 品牌圈、標題+副標、每個名字做返一粒帶頭像圓圈（攞名首字，同 Overview 個 member avatar 一致風格）嘅 pill 掣、「或」分隔線、「自訂新名字」input+掣獨立一 row（`UserPlus` icon）。全部顏色行 `var(--color-*)` theme tokens，跟返該 trip 揀咗嘅主題（cartography/neon/indigo/scrapbook 都啱），唔係死用 cartography。
+- 新增 CSS 喺 `theme.css`「App shell」段，avatar 圓圈刻意 `aria-hidden`，唔影響 button 嘅 accessible name（test 仲係用返 member 個名揾button）。
+- **測試**：`WhoAmIPicker.test.tsx`（3 個原有 test 冇改都全過）、`TripShell.test.tsx`（14 個）全綠、`tsc -b` 零錯、`vite build` 乾淨；用 Chrome MCP 喺線上實測撳「切換身份」睇真身版面，確認顏色/卡片/頭像/分隔線都出返晒。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-05（新增 8l 切換身份掣，修邀請連結同機無得加自己嘅問題）*
+*最後更新：2026-07-05（新增 8m「哪位是你？」畫面重新設計）*
