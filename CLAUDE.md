@@ -89,6 +89,7 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 播一次後定格 CTA 畫面，撳「重播」由頭再播（唔循環）。
 - 旁白：edge-tts `zh-HK-HiuMaanNeural` 廣東話，每鏡開始後 0.5s 播；因 autoplay 限制加咗 ▶ 播放掣起動。vo4 用「按一下…」（原句「撳」字 TTS 發音怪，2026-07-04 更換）。
 - 線上網址：https://travel-ochre-rho.vercel.app/showreel.html （mp3 要同 HTML 同一目錄）。
+- **無聲 debug（2026-07-04）**：三層修復 — ① `sw.js` 跳過 mp3/Range request（SW 攔截會整跛 audio）；② `sw.js` HTML/導航改 network-first（原本 cache-first 令用戶永遠食舊一版 HTML）；③ showreel 音檔 fetch→blob 預載＋播放掣手勢內 muted-unlock 4 個 audio（iOS/Safari 要求）。SW cache 而家係 v3。注意：Chrome MCP 背景視窗完全封鎖 media loading，測聲一定要前景真人測。
 - **Landing 合併**：`public/landing-preview.html` 加咗 `#showreel` section（iframe 嵌 showreel，marquee 同 features 之間），nav「產品影片」＋rail dot 都有入口；landing-preview 已搬入 `public/`，線上 https://travel-ochre-rho.vercel.app/landing-preview.html 。
 
 ## 9. 相關連結
