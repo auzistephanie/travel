@@ -43,6 +43,15 @@ a{color:inherit;text-decoration:none}
 .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
 section{position:relative;overflow:hidden}
 
+/* ================= Showreel ================= */
+#showreel{padding:96px 0 90px}
+.sr-grid{display:grid;grid-template-columns:1fr 400px;gap:56px;align-items:center}
+.sr-frame{aspect-ratio:9/16;width:min(400px,88vw);border-radius:30px;overflow:hidden;
+  box-shadow:0 26px 60px rgba(47,74,62,.25);background:#16201b;justify-self:center}
+.sr-frame iframe{width:100%;height:100%;border:0;display:block}
+.sr-actions{display:flex;gap:14px;margin-top:26px;align-items:center}
+@media(max-width:900px){.sr-grid{grid-template-columns:1fr;gap:36px}}
+
 /* ================= Nav ================= */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:90;
@@ -416,6 +425,7 @@ body.indigo-zone .plane-trail{background:#9fc2f0}
   <div class="nav-inner">
     <a class="logo" href="#top"><span class="stamp-dot">旅</span>旅圖 TravelMap</a>
     <div class="nav-links">
+      <a href="#showreel">產品影片</a>
       <a href="#features">產品功能</a>
       <a href="#about">關於我們</a>
       <a href="#steps">如何開始</a>
@@ -428,6 +438,8 @@ body.indigo-zone .plane-trail{background:#9fc2f0}
 <!-- 飛行進度 rail -->
 <div class="rail" id="rail">
   <a class="dot" href="#top"><span class="tip"><i>啟程 · 探險地圖</i></span></a>
+  <span class="line"></span>
+  <a class="dot" href="#showreel"><span class="tip"><i>產品影片 · 60 秒</i></span></a>
   <span class="line"></span>
   <a class="dot" href="#features"><span class="tip"><i>STOP 1 · 東京霓虹</i></span></a>
   <span class="line"></span>
@@ -513,6 +525,23 @@ body.indigo-zone .plane-trail{background:#9fc2f0}
     <span>TOKYO 東京 ✈</span><span>SEOUL 首爾 ✈</span><span>TAIPEI 台北 ✈</span><span>OSAKA 大阪 ✈</span><span>BANGKOK 曼谷 ✈</span><span>HONG KONG 香港 ✈</span><span>KYOTO 京都 ✈</span><span>SHANGHAI 上海 ✈</span>
   </div>
 </div>
+
+<!-- ================= Showreel：60 秒產品影片 ================= -->
+<section id="showreel" data-zone="light">
+  <div class="wrap sr-grid">
+    <div>
+      <span class="stop-tag reveal" style="color:var(--accent)">SHOWREEL · 產品影片</span>
+      <h2 class="sec-title reveal d1">60 秒，看它如何<br>替你排好整趟旅程</h2>
+      <p class="sec-desc reveal d2" style="margin:0 0 8px">四個鏡頭：行程總覽、三大賣點、實際拖拉操作，到一條連結全團開始規劃。附廣東話旁白，按 ▶ 即可播放。</p>
+      <div class="sr-actions reveal d3">
+        <a class="btn-ghost" href="showreel.html" target="_blank" rel="noopener">全螢幕觀看 →</a>
+      </div>
+    </div>
+    <div class="sr-frame reveal zoom d2">
+      <iframe src="showreel.html" title="旅圖產品 Showreel" loading="lazy"></iframe>
+    </div>
+  </div>
+</section>
 
 <!-- ================= STOP 01：東京霓虹夜 ================= -->
 <section id="features" data-zone="dark">

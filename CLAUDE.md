@@ -87,8 +87,9 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 ## 8c. 產品 Showreel（2026-07-04）
 - `public/showreel.html`＋`public/vo1–vo4.mp3`：9:16 純 HTML/CSS 產品展示動畫，4 鏡頭（特寫→賣點→使用→CTA）每鏡 5 秒，撕紙轉場＋字幕，cartography 主題色。
 - 播一次後定格 CTA 畫面，撳「重播」由頭再播（唔循環）。
-- 旁白：edge-tts `zh-HK-HiuMaanNeural` 廣東話，每鏡開始後 0.5s 播；因 autoplay 限制加咗 ▶ 播放掣起動。
+- 旁白：edge-tts `zh-HK-HiuMaanNeural` 廣東話，每鏡開始後 0.5s 播；因 autoplay 限制加咗 ▶ 播放掣起動。vo4 用「按一下…」（原句「撳」字 TTS 發音怪，2026-07-04 更換）。
 - 線上網址：https://travel-ochre-rho.vercel.app/showreel.html （mp3 要同 HTML 同一目錄）。
+- **Landing 合併**：`public/landing-preview.html` 加咗 `#showreel` section（iframe 嵌 showreel，marquee 同 features 之間），nav「產品影片」＋rail dot 都有入口；landing-preview 已搬入 `public/`，線上 https://travel-ochre-rho.vercel.app/landing-preview.html 。
 
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
