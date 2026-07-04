@@ -140,10 +140,18 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **測試**：`ownerAuth.test.ts`／`SettingsPanel.test.tsx`／`CreateTrip.test.tsx`／`TripShell.test.tsx` 全部改咗去對應 Google 登入，加埋新嘅 lazyWithReload test，5 個改動涉及嘅 test 檔（38 條 test）一次過跑晒全綠，`tsc -b` 零錯、`vite build` 乾淨。
 - **未驗證**：Stephanie 未做完 Google Cloud + Supabase 嗰兩步前，「用 Google 登入」實際撳落去會見到錯誤訊息係預期行為，唔係新 bug；做完之後要再測一次真實登入流程。
 
+## 8j. Google OAuth 外部設定完成 + 實測成功（2026-07-05）
+- **背景**：8i 淨係改咗 code，Google Cloud OAuth Client + Supabase Google provider 呢兩步外部設定原本要 Stephanie 自己做，佢喺 Google Cloud Console 撞到「OAuth consent screen 唔識揀」，改口叫用 Claude in Chrome 代做。
+- **Google Cloud**：沿用現有專案 `My Project 31044`（`just-clover-487108-a0`，同 Venturenix FluentSMTP 共用，冇改動佢個 branding）——Audience 加咗 `auzistephanie@gmail.com` 做 test user（consent screen 仲喺 Testing 狀態，得 test user 先登入到）；Clients 新建一個 Web application client「Travel App」（JS origin `https://travel-ochre-rho.vercel.app`、redirect URI `https://cmtubaxlniglklmdwlzs.supabase.co/auth/v1/callback`），攞到 Client ID/Secret。
+- **Supabase**：Authentication → Providers → Google 貼咗個 Client ID/Secret 開啟。
+- **撞到並修咗嘅 bug**：第一次實測登入成功攞到 token，但跳去咗 `http://localhost:3000` 唔係去個 live app——查因 Supabase **Site URL 仲係預設 `localhost:3000`、Redirect URLs 空白**（呢個同 Google/code 完全無關，純粹外部設定漏咗）。已改 Site URL 做 `https://travel-ochre-rho.vercel.app`，加咗 Redirect URL `https://travel-ochre-rho.vercel.app/**`（wildcard 蓋晒 `/t/:shareCode` 呢啲路徑）。呢個改動改咗production auth 設定，先問過 Stephanie 批准（佢覆「改」）先執行。
+- **實測（用 Chrome MCP，真人流程）**：開新行程 → 撳「用 Google 登入」→ 揀 `auzistephanie@gmail.com` → 授權 → 成功跳返 `travel-ochre-rho.vercel.app/t/:shareCode?m=...`、trip 正常載入、Settings 帳戶 section 顯示「已用 auzistephanie@gmail.com 登入，呢部裝置隨時都認得返你」。**Google OAuth owner 登入全流程確認行得通**，8i 嗰個「未驗證」已經解決。
+- 遺留：test user cap 100 人（而家淨係 Stephanie 一個），app 仲喺 Google 「Testing」publishing status——如果之後想任何人都可以用呢個 Google login（唔止 Stephanie），要做 Google OAuth consent screen 嘅 verification 先可以出返 Production，呢個未做，亦都冇必要做（得 owner 一個人需要呢個功能）。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-04（新增 8i owner 登入改用 Google OAuth）*
+*最後更新：2026-07-05（新增 8j Google OAuth 外部設定完成 + 實測登入成功）*
