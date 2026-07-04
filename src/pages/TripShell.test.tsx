@@ -61,6 +61,13 @@ describe('TripShell', () => {
     onAuthUserChange.mockReset().mockReturnValue(vi.fn())
     linkMemberToAuthUser.mockReset().mockResolvedValue(undefined)
     sendOwnerLoginLink.mockReset()
+    // 分頁 chunk 用真.dynamic import()（見 lazyImportWithReload），jsdom 冇真正 navigation，
+    // 淨係 stub 走 reload 避免測試噪音；唔係測緊 reload 本身嘅邏輯（嗰個喺 lazyWithReload.test.ts）。
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, reload: vi.fn() },
+      writable: true,
+      configurable: true,
+    })
   })
 
   it('shows a loading indicator while the trip is being fetched', () => {

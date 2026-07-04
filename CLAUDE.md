@@ -125,6 +125,13 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **朋友流程完全冇變**：「用分享碼加入」同 Landing page 個「無須註冊帳戶」tagline 都冇改，login 提示淨係出現喺「開新行程」（owner）呢條路，仲係可以 skip。
 - **測試**：`CreateTrip.test.tsx` 加咗 3 個新 case（顯示提示畫面、寄連結+入去行程、skip 直入），`ownerAuth.test.ts` 加咗 redirectTo 案例。全部改動涉及嘅 test（`ownerAuth`／`CreateTrip`／`TripShell`／`SettingsPanel`／全 `src/lib`／`src/components`／`src/pages`+`hooks`+`theme`）逐個 chunk 跑晒，全部 0 個 fail，`tsc -b` 零錯、`vite build` 乾淨。
 - **未驗證**：同 8f 一樣，實際 email 流程要 Stephanie 親身用真 email 試一次（建立行程 → 寄連結 → 撳連結 → 確認自動登入返個新 trip）。
+- **實測（2026-07-04）**：用 Chrome MCP 喺線上 https://travel-ochre-rho.vercel.app 實測「開新行程」→ skip 入去、同「開新行程」→ 寄登入連結（真係寄咗去 `auzistephanie@gmail.com`）兩條路，都成功、冇 console error。
+
+## 8h. Lazy-load chunk 404 全黑修復（2026-07-04）
+- **問題**：Stephanie 開新行程後見到全黑畫面。查因：`TripShell.tsx` 4 個分頁（Overview/Itinerary/Prep/Money）用 `React.lazy` + code-split，每次 deploy 啲 chunk 檔名都會變（content hash）；如果個瀏覽器 tab 喺 deploy 之前已經開住（或者岩岩跳過幾個 deploy），佢部機仍然行緊嗰個舊 build 嘅 JS，一去到要 lazy-load 某個分頁，就會攞緊個已經喺伺服器度冇咗嘅舊檔名 → import() 404 → React 冇 error boundary 接住呢種失敗，成棵 tree 靜靜哋 unmount，淨低 app 外殼嘅深色背景 = 全黑。用 Chrome MCP 喺全新 tab 實測建立行程兩條路都正常（見上面 8g 實測），side 印證咗呢個係「舊 tab 撞新 deploy」嘅時間性問題，唔係業務邏輯本身有 bug。
+- **修復**：新增 `src/lib/lazyWithReload.ts` 嘅 `lazyImportWithReload` wrapper，包住 4 個 `lazy()` import。攞 chunk 失敗（第一次）就用 `sessionStorage` 記住已經試過，然後 `window.location.reload()` 自動攞返最新版；如果 reload 完仲係攞唔到（真係網絡問題）先正常拋錯，唔會再全黑，亦唔會無限 loop。
+- **測試**：新增 `src/lib/lazyWithReload.test.ts`（3 個：成功清 flag／第一次失敗會 reload 且 promise 唔 resolve／已經 reload 過就正常拋錯）；`TripShell.test.tsx` 加咗 `window.location.reload` stub 避免測試環境嘅 jsdom navigation 噪音。`tsc -b` 零錯、`vite build` 乾淨。
+- **後續補救建議（未做）**：目前修復係「畀用戶靜雞雞自動 reload 一次」，用戶完全唔會見到發生咗咩事；如果想更透明，可以加一個小提示「偵測到新版本，重新載入緊…」。呢個屬於錦上添花，唔係緊要，未做。
 
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
@@ -132,4 +139,4 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-04（新增 8g 開新行程即刻提示登入）*
+*最後更新：2026-07-04（新增 8h lazy-load chunk 404 全黑修復）*

@@ -4,6 +4,7 @@ import { useParams, useSearchParams } from 'react-router-dom'
 import { useTrip } from '../hooks/useTrip'
 import { getWhoAmI, setWhoAmI } from '../lib/whoAmI'
 import { getCurrentAuthUser, linkMemberToAuthUser, onAuthUserChange, sendOwnerLoginLink, type AuthUser } from '../lib/ownerAuth'
+import { lazyImportWithReload } from '../lib/lazyWithReload'
 import { WhoAmIPicker } from '../components/WhoAmIPicker'
 import { BottomNav, type TabId } from '../components/BottomNav'
 import { SettingsPanel } from '../components/SettingsPanel'
@@ -14,10 +15,11 @@ import type { ThemeId } from '../types/models'
 import type { TripPageProps } from '../types/props'
 
 // 逐個分頁獨立 code-split，首次載入淨係攞緊嗰個分頁嘅 JS（效能基本處理，spec §10 Phase 5）
-const Overview = lazy(() => import('./Overview').then((m) => ({ default: m.Overview })))
-const Itinerary = lazy(() => import('./Itinerary').then((m) => ({ default: m.Itinerary })))
-const Prep = lazy(() => import('./Prep').then((m) => ({ default: m.Prep })))
-const Money = lazy(() => import('./Money').then((m) => ({ default: m.Money })))
+// lazyImportWithReload：redeploy 後撞舊 chunk 就自動 reload 一次攞新版，唔會齋齋全黑（見 lib/lazyWithReload.ts）
+const Overview = lazy(lazyImportWithReload(() => import('./Overview').then((m) => ({ default: m.Overview }))))
+const Itinerary = lazy(lazyImportWithReload(() => import('./Itinerary').then((m) => ({ default: m.Itinerary }))))
+const Prep = lazy(lazyImportWithReload(() => import('./Prep').then((m) => ({ default: m.Prep }))))
+const Money = lazy(lazyImportWithReload(() => import('./Money').then((m) => ({ default: m.Money }))))
 
 const PAGES: Record<TabId, ComponentType<TripPageProps>> = {
   overview: Overview,
