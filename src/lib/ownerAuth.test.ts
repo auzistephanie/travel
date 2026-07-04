@@ -33,6 +33,15 @@ describe('sendOwnerLoginLink', () => {
     supabase.auth.signInWithOtp.mockResolvedValue({ error: new Error('rate limited') })
     await expect(sendOwnerLoginLink('stephanie@example.com')).rejects.toThrow('rate limited')
   })
+
+  it('redirects to an explicit URL when given one (e.g. the trip page right after creation)', async () => {
+    supabase.auth.signInWithOtp.mockResolvedValue({ error: null })
+    await sendOwnerLoginLink('stephanie@example.com', 'https://travel-ochre-rho.vercel.app/t/ABC234?m=m1')
+    expect(supabase.auth.signInWithOtp).toHaveBeenCalledWith({
+      email: 'stephanie@example.com',
+      options: { emailRedirectTo: 'https://travel-ochre-rho.vercel.app/t/ABC234?m=m1' },
+    })
+  })
 })
 
 describe('getCurrentAuthUser', () => {

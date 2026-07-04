@@ -8,11 +8,14 @@ export interface AuthUser {
   email: string | null
 }
 
-/** 寄 magic link 去個 email，撳咗個連結會跳返嚟依家個網址（帶埋 ?m= 身份）並自動登入。 */
-export async function sendOwnerLoginLink(email: string): Promise<void> {
+/**
+ * 寄 magic link 去個 email，撳咗個連結會跳去 redirectTo（預設係而家個網址，通常已經帶埋 ?m= 身份）並自動登入。
+ * 喺「開新行程」流程用嘅時候要明確傳個 trip 頁網址，因為嗰陣仲喺 /new 度，唔想個連結撳咗跳返去建立行程嗰頁。
+ */
+export async function sendOwnerLoginLink(email: string, redirectTo: string = window.location.href): Promise<void> {
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: window.location.href },
+    options: { emailRedirectTo: redirectTo },
   })
   if (error) throw error
 }

@@ -118,10 +118,18 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **測試**：新增 `src/lib/ownerAuth.test.ts`（6 個）、`TripShell.test.tsx`／`SettingsPanel.test.tsx` 加咗 owner-login 相關 case，全 80 個 test 檔（480+ 條 test）全綠、`tsc -b` 零錯、`vite build` 乾淨。
 - **未驗證**：實際 email 有冇收到 magic link（sandbox 冇辦法寄真 email），Stephanie 要親身入 Settings 試一次先算完全過關。Supabase 內建寄信服務（免費版）有速率限制，一開始測試冇問題，都要留意。
 
+## 8g. 開新行程即刻提示登入（2026-07-04）
+- **背景**：8f 個帳戶入口本身收埋喺 Settings 度，要用戶自己揀入去先見到，容易冇人用。用戶想「開新行程」（即係做 owner）嗰下即刻見到登入選項。
+- **做法**：`CreateTrip.tsx` 建立行程成功後唔即刻 navigate 入 trip，先顯示一個中間畫面「行程建立成功！」+ email 輸入 + 「寄登入連結」，撳咗會用 `sendOwnerLoginLink(email, redirectTo)` 寄 magic link；`redirectTo` 明確指去 `/t/:shareCode?m=:ownerId`（唔用預設嘅 `window.location.href`，因為呢陣仲喺 `/new` 度，唔想個連結撳咗跳返嚟建立行程頁）。可以撳「遲啲先，直接入去行程」skip，唔會硬性攔住。
+- **`ownerAuth.ts` 改動**：`sendOwnerLoginLink(email, redirectTo = window.location.href)` 加咗個可選 `redirectTo` 參數；SettingsPanel 嗰邊冇改，繼續用預設值（本身已喺 trip 頁入面，帶埋 `?m=` 冇問題）。
+- **朋友流程完全冇變**：「用分享碼加入」同 Landing page 個「無須註冊帳戶」tagline 都冇改，login 提示淨係出現喺「開新行程」（owner）呢條路，仲係可以 skip。
+- **測試**：`CreateTrip.test.tsx` 加咗 3 個新 case（顯示提示畫面、寄連結+入去行程、skip 直入），`ownerAuth.test.ts` 加咗 redirectTo 案例。全部改動涉及嘅 test（`ownerAuth`／`CreateTrip`／`TripShell`／`SettingsPanel`／全 `src/lib`／`src/components`／`src/pages`+`hooks`+`theme`）逐個 chunk 跑晒，全部 0 個 fail，`tsc -b` 零錯、`vite build` 乾淨。
+- **未驗證**：同 8f 一樣，實際 email 流程要 Stephanie 親身用真 email 試一次（建立行程 → 寄連結 → 撳連結 → 確認自動登入返個新 trip）。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-04（新增 8f owner-only 登入）*
+*最後更新：2026-07-04（新增 8g 開新行程即刻提示登入）*

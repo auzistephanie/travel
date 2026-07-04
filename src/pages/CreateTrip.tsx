@@ -2,7 +2,9 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createTrip } from '../lib/tripApi'
 import { setWhoAmI } from '../lib/whoAmI'
+import { sendOwnerLoginLink } from '../lib/ownerAuth'
 import { DESTINATIONS } from '../lib/destinations'
+import type { Trip, TripMember } from '../types/models'
 import '../styles/journalCard.css'
 
 // HK 淨係做本地行程參考用，唔擺入揀項。SG/MY 未有自訂插畫（用返 Generic），
@@ -18,6 +20,11 @@ export function CreateTrip() {
   const [destinationCountry, setDestinationCountry] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [created, setCreated] = useState<{ trip: Trip; owner: TripMember } | null>(null)
+  const [loginEmail, setLoginEmail] = useState('')
+  const [linkSent, setLinkSent] = useState(false)
+  const [sendingLink, setSendingLink] = useState(false)
+  const [loginError, setLoginError] = useState<string | null>(null)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -32,11 +39,69 @@ export function CreateTrip() {
         destinationCountry: destinationCountry || null,
       })
       setWhoAmI(trip.share_code, owner.id)
-      navigate(`/t/${trip.share_code}`)
+      setCreated({ trip, owner })
     } catch {
       setError('建立失敗，請再試一次')
       setSubmitting(false)
     }
+  }
+
+  function goToTrip() {
+    if (!created) return
+    navigate(`/t/${created.trip.share_code}`)
+  }
+
+  async function handleSendLoginLink() {
+    if (!created) return
+    const trimmed = loginEmail.trim()
+    if (!trimmed || sendingLink) return
+    setSendingLink(true)
+    setLoginError(null)
+    try {
+      await sendOwnerLoginLink(
+        trimmed,
+        `${window.location.origin}/t/${created.trip.share_code}?m=${created.owner.id}`,
+      )
+      setLinkSent(true)
+    } catch {
+      setLoginError('寄唔到登入連結，請檢查 email，或者遲啲入行程嘅「設定」度再試')
+    } finally {
+      setSendingLink(false)
+    }
+  }
+
+  if (created) {
+    return (
+      <div className="journal-page">
+        <div className="journal-card">
+          <h1>行程建立成功！</h1>
+          <p>
+            留低你個 email，就算之後換裝置或瀏覽器都認得返你，唔使再揀名。呢步可以跳過，遲啲入
+            設定 都做得到。
+          </p>
+          {linkSent ? (
+            <p>登入連結已寄去 {loginEmail}，請去信箱撳連結完成登入。</p>
+          ) : (
+            <>
+              <label htmlFor="owner-login-email">Email</label>
+              <input
+                id="owner-login-email"
+                type="email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+              />
+              <button type="button" onClick={handleSendLoginLink} disabled={sendingLink}>
+                寄登入連結
+              </button>
+              {loginError && <p role="alert">{loginError}</p>}
+            </>
+          )}
+          <button type="button" onClick={goToTrip}>
+            {linkSent ? '入去行程' : '遲啲先，直接入去行程'}
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
