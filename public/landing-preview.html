@@ -366,22 +366,6 @@ footer{background:#243b31;color:#9db3a6;padding:26px 0;font-size:.85rem}
 .intro-skip:hover{color:var(--paper)}
 
 
-/* ---- 3a) cursor 紙飛機 + 輕尾跡 ---- */
-#planeCursor{
-  position:fixed;top:0;left:0;width:26px;height:26px;margin:-13px 0 0 -13px;z-index:9998;
-  pointer-events:none;opacity:0;transition:opacity .3s;will-change:transform;
-  filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));
-}
-body.has-plane{cursor:none}
-body.has-plane a,body.has-plane button,body.has-plane input,body.has-plane textarea,body.has-plane .dot{cursor:none}
-#planeCursor.on{opacity:.95}
-.plane-trail{position:fixed;z-index:9996;pointer-events:none;width:5px;height:5px;border-radius:50%;
-  background:var(--accent);opacity:.5;animation:trailFade .6s ease-out forwards}
-body.dark-zone .plane-trail{background:var(--neon-cyan)}
-body.indigo-zone .plane-trail{background:#9fc2f0}
-@keyframes trailFade{to{opacity:0;transform:scale(.2)}}
-@media(hover:none){#planeCursor{display:none}body.has-plane{cursor:auto}}
-
 /* ---- 3b) 蓋章粒子（點 nav CTA / 主按鈕彈出）---- */
 .ink-burst{position:fixed;z-index:9997;pointer-events:none;font-size:.9rem;font-weight:700;color:var(--accent);
   animation:inkPop .7s ease-out forwards}
@@ -415,14 +399,6 @@ body.indigo-zone .plane-trail{background:#9fc2f0}
   <span class="intro-plane">✈️</span>
   <button class="intro-skip" id="introSkip">跳過 · 直接登機 →</button>
 </div>
-
-<!-- ===== 3a) cursor 紙飛機 ===== -->
-<svg id="planeCursor" viewBox="0 0 24 24" aria-hidden="true">
-  <g id="planeCursorBody">
-    <path d="M2 12 L22 3 L13 12 L22 21 Z" fill="#c1683a" stroke="#fff8ea" stroke-width="1.1" stroke-linejoin="round"/>
-    <path d="M13 12 L22 3 L15.5 12 Z" fill="#a6552c"/>
-  </g>
-</svg>
 
 <nav id="nav">
   <div class="nav-inner">
@@ -844,35 +820,6 @@ function startTypewriter(){
   })();
 }
 
-
-/* ---- 3a) cursor 紙飛機：跟滑鼠、機頭朝移動方向、拖輕尾跡 ---- */
-(function(){
-  const c=document.getElementById('planeCursor');
-  const body=document.getElementById('planeCursorBody');
-  if(!c||reduceMotion||matchMedia('(hover:none)').matches) return;
-  document.body.classList.add('has-plane');
-  let lx=0,ly=0,lastTrail=0;
-  addEventListener('mousemove',e=>{
-    c.classList.add('on');
-    c.style.transform=`translate(${e.clientX}px,${e.clientY}px)`;
-    const dx=e.clientX-lx,dy=e.clientY-ly,d=Math.hypot(dx,dy);
-    if(d>1){
-      const ang=Math.atan2(dy,dx)*180/Math.PI;
-      body.setAttribute('transform',`rotate(${ang} 12 12)`);
-    }
-    const now=performance.now();
-    if(d>4 && now-lastTrail>28){
-      lastTrail=now;
-      const t=document.createElement('span');
-      t.className='plane-trail';
-      t.style.left=(lx-2.5)+'px'; t.style.top=(ly-2.5)+'px';
-      document.body.appendChild(t);
-      setTimeout(()=>t.remove(),600);
-    }
-    lx=e.clientX;ly=e.clientY;
-  },{passive:true});
-  addEventListener('mouseleave',()=>c.classList.remove('on'));
-})();
 
 /* ---- 3b) 蓋章粒子：點主要 CTA / nav 彈出「印」字碎 ---- */
 (function(){
