@@ -72,6 +72,7 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **Icon**：統一用 `lucide-react`（emoji 全清）。`vite.config` 有 `optimizeDeps.include:['lucide-react']`，加新 dep 後要 restart dev server。
 - **總覽**：hero overlay 標題 + 出發倒數卡 + 日數/同行/出發 stat chips + section 空狀態。
 - **全部頁面已 redesign**：Landing / TripShell 頂 bar / BottomNav(蓋章 active) / HeroCard / SettingsPanel(蓋面) / Overview(hero+倒數+chips) / 行程 Itinerary(DayTabs pill、天氣 pill、雨天室內卡、時間軸卡、洗手間/便利店/導航 chip) / 錢 Money+手信(總結卡、結算卡、手信分組+心願打通 badge) / 準備 Prep(智能卡 grid、進度環、心願卡) / 地圖 Map(搜尋 bar、地點卡)。
+- **加航班表單**：`AddFlightModal` 改蓋面 modal + 卡片式 2 欄排版（查詢掣、關閉 X、取消/加入航班 action bar），Lucide icon。
 - **Icon 全用 Lucide**；emoji 全清。**全 app 文案已轉書面語**（連相關 test 一齊改）。
 - **加心願表單**：卡片式重排、AI 建議商店卡、相片預覽；**AI 就近配對**自動建議「連結邊一日」= 商店座標 × 每日景點平均座標 haversine 最近，出 comment 可改（`storeSuggestApi` 加 `places.location`；`stopsByDay` 由 Prep 傳落 form）。無座標時 fallback 出提示。
 - Mockup 參考：outputs `redesign-mockups.html`、`redesign-mockups-2.html`。
@@ -89,4 +90,4 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-02（視覺 redesign 第一浪）*
+*最後更新：2026-07-04（補回加航班表單 redesign 記錄）*
