@@ -99,10 +99,17 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 唔影響朋友入數嘅原本流程（佢哋唔理 URL 有冇 `?m=`，一樣揀名就得）。
 - 測試：`TripShell.test.tsx`／`SettingsPanel.test.tsx` 加咗對應 case，全 78 個 test 檔（含新增）全綠、`tsc -b` 零錯、`vite build` 乾淨（實測用 `--outDir` 因為 sandbox 舊 `dist/` 有殘留鎖檔，非代碼問題）。
 
+## 8e. 花磚 vintage tile 裝飾（2026-07-04）
+- **Landing page**（`public/landing-preview.html`）：手機橫向可拉動修復——`html`/`body` 雙層 `overflow-x:hidden` + `.hero`(header) 補 `overflow:hidden`（原本 `section{overflow:hidden}` 冇食到 `<header class="hero">`，令 `.cloud`/`.hero-plane` 嘅 `translateX(115vw)` 動畫谷大 scrollWidth）。STOP 02 明信片段 `#about` background 由純圓點紋理換做花磚八瓣花 wash（`#2f4a3e`/`#c1683a`/`#c99a3c`，opacity 0.05–0.07，120px tile）——首版 0.16 太濃似壁紙，已調淡。
+- **App**（`src/theme/theme.css`）：Hero 卡相片／內容之間加咗花磚分隔條（菱格細紋，14px strip，`.hero-body::before`）——**4 個主題都有**，各自跟返主題色（cartography 米/綠/金、neon 紫黑/桃紅/青、indigo 靛藍/金/紅、scrapbook 白/胭脂紅/橙）；Settings 主題選擇，現用緊 cartography 嗰張卡加 2×2 花磚角落點綴（`ul[aria-label='主題選擇'] button[aria-pressed='true']::before`，暫時淨 cartography 有）。冇加新色，全部用返各主題原有 token。
+- **App**（`src/styles/journalCard.css` `.journal-page`）：未入 trip 前 3 頁（Landing/建立行程/用分享碼加入）共用嘅底層背景，加咗花磚扇形圓弧紋樣（Pattern C）。**刻意用靛藍 `#7f9bb8`／磚紅 `#c1503a`／深靛 `#3a5f8a`，同 journal-card 本身嘅綠/橙/米色唔撞色**；opacity 現定 0.7（用戶要求較顯眼，未跟 skill 建議嘅 0.14–0.22 隱約範圍，日後想調淡可直接改呢 3 個 `fill-opacity` 值）。
+- 花磚紋樣庫（8 瓣花/星芒羅盤/扇形圓弧/菱格細紋 4 款 SVG pattern，含配色/用法指引）喺 skill `brand-landing-page` 嘅 `references/tile-patterns.md`，日後其他頁面想加花磚可以再攞。
+- 驗證方式：CSS brace 平衡 check、`vitest run HeroCard/SettingsPanel test`（12 個全過）、push 後用 Chrome MCP 清 SW cache 重新 load 實測截圖確認（唔止睇 code）。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-04（新增 8d 身份識別跨 context 修復）*
+*最後更新：2026-07-04（新增 8e 花磚 vintage tile 裝飾）*
