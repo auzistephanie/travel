@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel App Showreel — 9:16 循環展示</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700;900&family=Fraunces:ital,wght@1,600;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --orange:#c1683a;
+  --green:#2f4a3e;
+  --green2:#3f6b4f;
+  --gold:#c99a3c;
+  --brown:#6b4226;
+  --cream:#fff8ea;
+  --ink:#2b2b26;
+  --loop:20s; /* 4 鏡頭 × 5s */
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 30%, #24312a 0%, #16201b 70%);
+  font-family:'Noto Sans TC',sans-serif;color:var(--ink);
+}
+/* ========== 9:16 舞台 ========== */
+.stage{
+  position:relative;aspect-ratio:9/16;height:min(92vh,860px);max-width:96vw;
+  background:var(--cream);border-radius:22px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.55);
+}
+/* 地圖航線背景紋理 */
+.stage::before{
+  content:"";position:absolute;inset:0;opacity:.5;pointer-events:none;
+  background:
+    radial-gradient(circle at 82% 12%, rgba(201,154,60,.14) 0 90px, transparent 91px),
+    radial-gradient(circle at 12% 78%, rgba(63,107,79,.10) 0 120px, transparent 121px),
+    repeating-linear-gradient(115deg, transparent 0 46px, rgba(107,66,38,.05) 46px 47px);
+}
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:26px 22px 108px;opacity:0;}
+/* ========== 鏡頭進出時序（14s 循環） ========== */
+.s1{animation:showS1 var(--loop) linear infinite;}
+.s2{animation:showS2 var(--loop) linear infinite;}
+.s3{animation:showS3 var(--loop) linear infinite;}
+.s4{animation:showS4 var(--loop) linear infinite;}
+@keyframes showS1{0%{opacity:1}23%{opacity:1}24.5%{opacity:0}98.5%{opacity:0}100%{opacity:1}}
+@keyframes showS2{0%,23.5%{opacity:0}25%{opacity:1}48%{opacity:1}49.5%{opacity:0}100%{opacity:0}}
+@keyframes showS3{0%,48.5%{opacity:0}50%{opacity:1}73%{opacity:1}74.5%{opacity:0}100%{opacity:0}}
+@keyframes showS4{0%,73.5%{opacity:0}75%{opacity:1}98%{opacity:1}99.5%{opacity:0}100%{opacity:0}}
+
+/* ========== 撕紙轉場 ========== */
+.wipe{
+  position:absolute;inset:-6% 0;background:var(--green);z-index:40;pointer-events:none;
+  clip-path:polygon(0 2%,6% 0,13% 2.2%,21% .6%,30% 2.4%,38% .8%,47% 2.2%,55% .5%,64% 2.3%,72% .7%,81% 2.1%,90% .6%,100% 2%,100% 98%,94% 100%,86% 97.8%,78% 99.4%,69% 97.6%,61% 99.2%,52% 97.8%,44% 99.5%,35% 97.7%,27% 99.3%,18% 97.9%,9% 99.4%,0 98%);
+  animation:wipe calc(var(--loop)/4) linear infinite;
+}
+.wipe::after{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg, transparent 0 34px, rgba(255,248,234,.06) 34px 35px);}
+@keyframes wipe{0%,84%{transform:translateY(-118%)}100%{transform:translateY(118%)}}
+
+/* ========== 字幕 ========== */
+.cap{
+  position:absolute;left:50%;bottom:40px;transform:translateX(-50%);z-index:30;
+  background:rgba(47,74,62,.92);color:var(--cream);padding:11px 22px;border-radius:999px;
+  font-size:15.5px;font-weight:500;letter-spacing:.06em;white-space:nowrap;opacity:0;
+  box-shadow:0 8px 22px rgba(22,32,27,.35);
+}
+.cap b{color:var(--gold);font-weight:700;}
+.c1{animation:cap1 var(--loop) ease infinite;}
+.c2{animation:cap2 var(--loop) ease infinite;}
+.c3{animation:cap3 var(--loop) ease infinite;}
+.c4{animation:cap4 var(--loop) ease infinite;}
+@keyframes cap1{0%{opacity:0;transform:translate(-50%,16px)}3%{opacity:1;transform:translate(-50%,0)}22%{opacity:1}24%{opacity:0}100%{opacity:0}}
+@keyframes cap2{0%,26%{opacity:0;transform:translate(-50%,16px)}29%{opacity:1;transform:translate(-50%,0)}47%{opacity:1}49%{opacity:0}100%{opacity:0}}
+@keyframes cap3{0%,51%{opacity:0;transform:translate(-50%,16px)}54%{opacity:1;transform:translate(-50%,0)}72%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes cap4{0%,76%{opacity:0;transform:translate(-50%,16px)}79%{opacity:1;transform:translate(-50%,0)}97%{opacity:1}99%{opacity:0}100%{opacity:0}}
+
+/* ========== 共用元件 ========== */
+.phone{
+  width:78%;max-width:300px;border-radius:30px;background:#fdf4e0;
+  border:7px solid var(--green);box-shadow:0 18px 44px rgba(47,74,62,.28);
+  padding:16px 14px 20px;position:relative;
+}
+.phone::before{content:"";position:absolute;top:7px;left:50%;transform:translateX(-50%);
+  width:76px;height:5px;border-radius:99px;background:rgba(47,74,62,.35);}
+.serif{font-family:'Noto Serif TC',serif;}
+.num{font-family:'Fraunces',serif;font-style:italic;}
+.stamp{
+  position:absolute;width:86px;height:86px;border:3px dashed var(--orange);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:var(--orange);
+  font-family:'Noto Serif TC',serif;font-weight:700;font-size:13px;letter-spacing:.12em;
+  transform:rotate(-14deg);text-align:center;line-height:1.35;
+}
+.card{background:var(--cream);border-radius:16px;box-shadow:0 8px 20px rgba(107,66,38,.14);}
+
+/* ========== 鏡頭 1：特寫 ========== */
+.s1 .phone{animation:zoomIn var(--loop) ease infinite;}
+@keyframes zoomIn{0%{transform:scale(1.1) translateY(8px)}23%{transform:scale(1) translateY(0)}100%{transform:scale(1) translateY(0)}}
+.hero{
+  border-radius:18px;overflow:hidden;position:relative;height:150px;margin-top:14px;
+  background:linear-gradient(160deg,var(--green) 10%,var(--green2) 60%,#5d8264 100%);
+  display:flex;flex-direction:column;justify-content:flex-end;padding:14px;color:var(--cream);
+}
+.hero::before{content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 78% 22%, rgba(255,248,234,.85) 0 17px, transparent 18px),
+    radial-gradient(circle at 20% 30%, rgba(255,248,234,.12) 0 44px, transparent 45px);
+}
+.hero .peak{position:absolute;bottom:44px;left:0;right:0;height:66px;
+  clip-path:polygon(0 100%,16% 38%,30% 72%,45% 12%,60% 66%,76% 30%,100% 100%);
+  background:rgba(22,32,27,.35);}
+.hero h1{font-size:19px;position:relative;z-index:1;white-space:nowrap;}
+.hero p{font-size:11.5px;opacity:.85;position:relative;z-index:1;margin-top:2px;letter-spacing:.08em;}
+.countdown{display:flex;align-items:baseline;gap:8px;padding:13px 16px;margin-top:11px;}
+.countdown .num{font-size:40px;color:var(--orange);line-height:1;}
+.countdown span{font-size:13px;color:var(--green);font-weight:500;}
+.chips{display:flex;gap:7px;margin-top:11px;}
+.chip{flex:1;text-align:center;padding:8px 2px;border-radius:12px;background:rgba(63,107,79,.12);
+  font-size:11px;color:var(--green);font-weight:500;}
+.chip b{display:block;font-size:15px;color:var(--brown);font-family:'Fraunces',serif;font-style:italic;}
+.s1 .stamp{top:14%;right:8%;animation:stampIn var(--loop) ease infinite;}
+@keyframes stampIn{0%,4%{opacity:0;transform:scale(1.9) rotate(8deg)}7%{opacity:1;transform:scale(1) rotate(-14deg)}23%{opacity:1}24.5%{opacity:0}100%{opacity:0}}
+
+/* ========== 鏡頭 2：賣點 ========== */
+.s2 .headline{font-size:26px;color:var(--green);margin-bottom:26px;text-align:center;line-height:1.4;}
+.s2 .headline em{font-style:normal;color:var(--orange);}
+.feats{display:flex;flex-direction:column;gap:15px;width:84%;max-width:310px;}
+.feat{display:flex;align-items:center;gap:14px;padding:15px 17px;opacity:0;}
+.feat .ico{width:46px;height:46px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;}
+.feat:nth-child(1) .ico{background:rgba(193,104,58,.15);color:var(--orange);}
+.feat:nth-child(2) .ico{background:rgba(63,107,79,.15);color:var(--green2);}
+.feat:nth-child(3) .ico{background:rgba(201,154,60,.18);color:var(--gold);}
+.feat h3{font-size:15.5px;color:var(--green);}
+.feat p{font-size:12px;color:#7a7364;margin-top:2px;}
+.feat:nth-child(1){animation:pop var(--loop) ease infinite;animation-delay:0s;}
+.feat:nth-child(2){animation:pop2 var(--loop) ease infinite;}
+.feat:nth-child(3){animation:pop3 var(--loop) ease infinite;}
+@keyframes pop{0%,27%{opacity:0;transform:translateY(22px) scale(.92)}30%{opacity:1;transform:translateY(0) scale(1)}48%{opacity:1}49.5%{opacity:0}100%{opacity:0}}
+@keyframes pop2{0%,30%{opacity:0;transform:translateY(22px) scale(.92)}33%{opacity:1;transform:translateY(0) scale(1)}48%{opacity:1}49.5%{opacity:0}100%{opacity:0}}
+@keyframes pop3{0%,33%{opacity:0;transform:translateY(22px) scale(.92)}36%{opacity:1;transform:translateY(0) scale(1)}48%{opacity:1}49.5%{opacity:0}100%{opacity:0}}
+
+/* ========== 鏡頭 3：使用示範 ========== */
+.tabs{display:flex;gap:7px;margin-top:14px;}
+.tab{padding:7px 0;flex:1;text-align:center;border-radius:999px;font-size:12px;font-weight:500;
+  background:rgba(63,107,79,.12);color:var(--green);}
+.tab.on{background:var(--orange);color:var(--cream);box-shadow:0 4px 12px rgba(193,104,58,.4);}
+.s3 .tabs{animation:slideDown var(--loop) ease infinite;}
+@keyframes slideDown{0%,50%{opacity:0;transform:translateY(-14px)}53%{opacity:1;transform:translateY(0)}73%{opacity:1}74.5%{opacity:0}100%{opacity:0}}
+.tl{position:relative;margin-top:16px;padding-left:24px;}
+.tl::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:2px;
+  background:repeating-linear-gradient(180deg,var(--gold) 0 6px,transparent 6px 12px);}
+.stop{position:relative;padding:12px 14px;margin-bottom:12px;opacity:0;}
+.stop::before{content:"";position:absolute;left:-21px;top:18px;width:11px;height:11px;border-radius:50%;
+  background:var(--orange);border:2.5px solid var(--cream);box-shadow:0 0 0 2px var(--orange);}
+.stop .t{font-size:11px;color:var(--orange);font-weight:700;font-family:'Fraunces',serif;font-style:italic;}
+.stop h4{font-size:14.5px;color:var(--green);margin-top:1px;}
+.stop p{font-size:11px;color:#8a8272;margin-top:2px;}
+.stop.a{animation:stopA var(--loop) ease infinite;}
+.stop.b{animation:stopB var(--loop) ease infinite;}
+.stop.c{animation:stopC var(--loop) ease infinite;}
+@keyframes stopA{0%,52%{opacity:0;transform:translateX(26px)}55%{opacity:1;transform:translateX(0)}73%{opacity:1}74.5%{opacity:0}100%{opacity:0}}
+/* 卡 b 被「拖」落一格，卡 c 補上 — 交換位置 */
+@keyframes stopB{
+  0%,53.5%{opacity:0;transform:translateX(26px)}
+  56.5%{opacity:1;transform:translateX(0)}
+  60%{transform:translateY(0) scale(1);box-shadow:0 8px 20px rgba(107,66,38,.14)}
+  62%{transform:translateY(2px) scale(1.05);box-shadow:0 16px 30px rgba(107,66,38,.3)}
+  66%{transform:translateY(84px) scale(1.05);box-shadow:0 16px 30px rgba(107,66,38,.3);opacity:1}
+  68%{transform:translateY(84px) scale(1);box-shadow:0 8px 20px rgba(107,66,38,.14)}
+  73%{opacity:1;transform:translateY(84px)}
+  74.5%{opacity:0;transform:translateY(84px)}
+  100%{opacity:0}}
+@keyframes stopC{
+  0%,55%{opacity:0;transform:translateX(26px)}
+  58%{opacity:1;transform:translateX(0)}
+  62%{transform:translateY(0)}
+  66%{transform:translateY(-84px)}
+  73%{opacity:1;transform:translateY(-84px)}
+  74.5%{opacity:0;transform:translateY(-84px)}
+  100%{opacity:0}}
+.finger{position:absolute;width:34px;height:34px;border-radius:50%;z-index:5;right:16%;top:47%;
+  background:rgba(193,104,58,.4);border:2px solid var(--orange);opacity:0;
+  animation:finger var(--loop) ease infinite;}
+@keyframes finger{
+  0%,60%{opacity:0;transform:translateY(0) scale(1.5)}
+  62%{opacity:1;transform:translateY(2px) scale(1)}
+  66%{opacity:1;transform:translateY(84px) scale(1)}
+  68%{opacity:0;transform:translateY(84px) scale(1.6)}
+  100%{opacity:0}}
+
+/* ========== 鏡頭 4：CTA ========== */
+.s4{background:linear-gradient(170deg,var(--green) 0%,#243b31 90%);}
+.s4::before{content:"";position:absolute;inset:0;opacity:.6;
+  background:radial-gradient(circle at 80% 14%, rgba(201,154,60,.2) 0 110px, transparent 111px);}
+.s4 .plane{position:absolute;top:11%;left:0;color:var(--cream);opacity:0;
+  animation:plane var(--loop) linear infinite;}
+@keyframes plane{0%,75%{opacity:0;transform:translate(-40px,30px) rotate(8deg)}78%{opacity:.9}96%{opacity:.9;transform:translate(330px,-34px) rotate(8deg)}98%{opacity:0}100%{opacity:0}}
+.s4 .big{font-size:31px;color:var(--cream);text-align:center;line-height:1.45;opacity:0;
+  animation:rise var(--loop) ease infinite;}
+.s4 .big em{font-style:normal;color:var(--gold);}
+@keyframes rise{0%,76%{opacity:0;transform:translateY(22px)}79%{opacity:1;transform:translateY(0)}97%{opacity:1}99%{opacity:0}100%{opacity:0}}
+.share{
+  margin-top:24px;background:var(--cream);color:var(--green);border-radius:14px;
+  padding:11px 20px;font-size:13.5px;font-weight:500;display:flex;gap:10px;align-items:center;
+  opacity:0;animation:flyIn var(--loop) ease infinite;box-shadow:0 10px 26px rgba(0,0,0,.3);
+}
+.share b{font-family:'Fraunces',serif;font-style:italic;color:var(--orange);font-size:16px;letter-spacing:.1em;}
+@keyframes flyIn{0%,79%{opacity:0;transform:translateX(130px) rotate(5deg)}83%{opacity:1;transform:translateX(0) rotate(0)}97%{opacity:1}99%{opacity:0}100%{opacity:0}}
+.cta{
+  margin-top:22px;background:var(--orange);color:var(--cream);border-radius:999px;
+  padding:15px 44px;font-size:17.5px;font-weight:700;letter-spacing:.14em;position:relative;
+  opacity:0;animation:ctaIn var(--loop) ease infinite;
+}
+@keyframes ctaIn{0%,81%{opacity:0;transform:scale(.7)}84%{opacity:1;transform:scale(1.06)}86%{transform:scale(1)}97%{opacity:1}99%{opacity:0}100%{opacity:0}}
+.cta::after{content:"";position:absolute;inset:-5px;border-radius:999px;border:2px solid var(--orange);
+  animation:pulse 1.6s ease-out infinite;}
+@keyframes pulse{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.22)}}
+.url{margin-top:20px;font-size:12px;letter-spacing:.1em;color:rgba(255,248,234,.75);opacity:0;
+  animation:urlIn var(--loop) ease infinite;}
+@keyframes urlIn{0%,84%{opacity:0}87%{opacity:1}97%{opacity:1}99%{opacity:0}100%{opacity:0}}
+.s4 .stamp{bottom:19%;right:9%;border-color:var(--gold);color:var(--gold);
+  animation:stamp4 var(--loop) ease infinite;opacity:0;}
+@keyframes stamp4{0%,86%{opacity:0;transform:scale(1.9) rotate(6deg)}89%{opacity:1;transform:scale(1) rotate(-14deg)}97%{opacity:1}99%{opacity:0}100%{opacity:0}}
+
+/* ========== 播放前狀態＋播放掣 ========== */
+.stage.hold *{animation-play-state:paused!important;}
+.playgate{
+  position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;gap:18px;
+  align-items:center;justify-content:center;background:rgba(36,49,42,.72);
+  backdrop-filter:blur(3px);cursor:pointer;border:0;
+}
+.playgate .btn{
+  width:88px;height:88px;border-radius:50%;background:var(--cream);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 14px 34px rgba(0,0,0,.4);position:relative;
+}
+.playgate .btn::before{content:"";position:absolute;inset:-8px;border-radius:50%;
+  border:2px solid var(--cream);opacity:.6;animation:pulse 1.6s ease-out infinite;}
+.playgate .btn svg{margin-left:6px;}
+.playgate p{color:var(--cream);font-size:14px;letter-spacing:.14em;font-weight:500;}
+.playgate.off{display:none;}
+</style>
+</head>
+<body>
+<div class="stage hold" id="stage">
+
+  <!-- 鏡頭 1：特寫 -->
+  <section class="scene s1">
+    <div class="phone">
+      <div class="hero">
+        <div class="peak"></div>
+        <h1 class="serif">東京・五日之旅</h1>
+        <p>3月14日 — 3月18日 · 4 位旅伴</p>
+      </div>
+      <div class="countdown card">
+        <span class="num">12</span><span>天後出發</span>
+      </div>
+      <div class="chips">
+        <div class="chip"><b>5</b>天數</div>
+        <div class="chip"><b>4</b>同行</div>
+        <div class="chip"><b>2</b>航班</div>
+      </div>
+    </div>
+    <div class="stamp">TRAVEL<br>PLANNER</div>
+  </section>
+
+  <!-- 鏡頭 2：賣點 -->
+  <section class="scene s2">
+    <h2 class="headline serif">旅程大小事<br><em>一個 App 全部搞定</em></h2>
+    <div class="feats">
+      <div class="feat card">
+        <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div><h3>行程 × 地圖</h3><p>時間軸連地圖，順路自動分析</p></div>
+      </div>
+      <div class="feat card">
+        <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20h12a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 20V7M15 20V7"/></svg></div>
+        <div><h3>智能行李清單</h3><p>按目的地、天氣自動建議</p></div>
+      </div>
+      <div class="feat card">
+        <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="6"/><path d="M14.09 5.5A6 6 0 1 1 11 17.2"/><path d="M6 9h4M8 7v4"/></svg></div>
+        <div><h3>夾錢即時結算</h3><p>多貨幣分帳，即時算清</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 鏡頭 3：使用示範 -->
+  <section class="scene s3">
+    <div class="phone">
+      <div class="tabs">
+        <div class="tab">Day 1</div><div class="tab on">Day 2</div><div class="tab">Day 3</div>
+      </div>
+      <div class="tl">
+        <div class="stop a card">
+          <div class="t">09:30</div><h4>築地市場</h4><p>早餐 · 步行 8 分鐘</p>
+        </div>
+        <div class="stop b card">
+          <div class="t">13:00</div><h4>銀座逛街</h4><p>購物 · 地鐵 2 個站</p>
+        </div>
+        <div class="stop c card">
+          <div class="t">11:00</div><h4>淺草寺</h4><p>觀光 · 地鐵 15 分鐘</p>
+        </div>
+      </div>
+      <div class="finger"></div>
+    </div>
+  </section>
+
+  <!-- 鏡頭 4：CTA -->
+  <section class="scene s4">
+    <svg class="plane" width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 15.5 13 11V4.5a1.5 1.5 0 0 0-3 0V11l-8.5 4.5v2l8.5-2.5v5l-2.5 2v1.5l4-1 4 1V22l-2.5-2v-5l8.5 2.5v-2Z"/></svg>
+    <h2 class="big serif">下一趟旅程<br><em>與朋友一起規劃</em></h2>
+    <div class="share">分享碼 <b>TRVL-2026</b></div>
+    <div class="cta">開始規劃</div>
+    <div class="url">travel-ochre-rho.vercel.app</div>
+    <div class="stamp">LET'S<br>GO!</div>
+  </section>
+
+  <!-- 字幕 -->
+  <div class="cap c1">一個 App，<b>成個旅程</b></div>
+  <div class="cap c2">行程、行李、夾錢 <b>一站搞掂</b></div>
+  <div class="cap c3">拖一拖，<b>行程自動排好</b></div>
+  <div class="cap c4">撳連結，<b>即刻同朋友夾團</b></div>
+
+  <!-- 撕紙轉場 -->
+  <div class="wipe"></div>
+
+  <!-- 播放掣（瀏覽器要求用戶互動先可以播聲） -->
+  <button class="playgate" id="playgate" aria-label="播放">
+    <span class="btn"><svg width="34" height="34" viewBox="0 0 24 24" fill="#c1683a"><path d="M8 5v14l11-7z"/></svg></span>
+    <p>播放 SHOWREEL（有旁白）</p>
+  </button>
+</div>
+
+<audio id="vo1" src="vo1.mp3" preload="auto"></audio>
+<audio id="vo2" src="vo2.mp3" preload="auto"></audio>
+<audio id="vo3" src="vo3.mp3" preload="auto"></audio>
+<audio id="vo4" src="vo4.mp3" preload="auto"></audio>
+
+<script>
+(function(){
+  const LOOP = 20000;                     // 同 CSS --loop 一致
+  const END  = 19000;                     // 鏡頭 4 完整顯示時定格（避開撕紙轉場）
+  const cues = [                          // 每鏡頭開始後 0.5s 播旁白
+    {t:500,  id:'vo1'},
+    {t:5500, id:'vo2'},
+    {t:10500,id:'vo3'},
+    {t:15500,id:'vo4'},
+  ];
+  const stage = document.getElementById('stage');
+  const gate  = document.getElementById('playgate');
+  const gateLabel = gate.querySelector('p');
+  let master = null, fired = new Set(), ended = false, timer = null;
+
+  function start(){
+    gate.classList.add('off');
+    stage.classList.remove('hold');
+    fired.clear(); ended = false;
+    cues.forEach(c => {
+      const a = document.getElementById(c.id);
+      a.pause();
+      if (a.readyState === 0) a.load();   // 背景分頁可能 defer 咗載入，強制載
+      a.currentTime = 0;
+    });
+    const anims = document.getAnimations();
+    anims.forEach(a => { a.currentTime = 0; a.play(); });   // 由頭開始，動畫做 master clock
+    master = anims.find(a => a.effect.getTiming().duration === LOOP) || anims[0];
+    if (!timer) timer = setInterval(tick, 150);
+  }
+  gate.addEventListener('click', start);
+
+  function tick(){
+    if (!master || ended) return;
+    const t = Number(master.currentTime);
+    if (t >= END) {                       // 播完一次：定格＋顯示重播掣
+      ended = true;
+      document.getAnimations().forEach(a => {
+        const d = a.effect.getTiming().duration;
+        if (d === LOOP || d === LOOP/4) { a.currentTime = END; a.pause(); }
+      });
+      gateLabel.textContent = '重播';
+      gate.classList.remove('off');
+      return;
+    }
+    cues.forEach((c, i) => {
+      if (t >= c.t && t < c.t + 1200 && !fired.has(i)) {
+        fired.add(i);
+        const el = document.getElementById(c.id);
+        el.currentTime = 0;
+        el.play().catch(()=>{});
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

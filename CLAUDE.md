@@ -84,10 +84,16 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - Token 內嵌喺 `remote.origin.url`（本機 `.git/config`，唔 commit）；亦支援 `GITHUB_TOKEN` / `.gh-token`(gitignored)。
 - 重大更新後：更新 CLAUDE.md → `python3 github_push.py "…"`。
 
+## 8c. 產品 Showreel（2026-07-04）
+- `public/showreel.html`＋`public/vo1–vo4.mp3`：9:16 純 HTML/CSS 產品展示動畫，4 鏡頭（特寫→賣點→使用→CTA）每鏡 5 秒，撕紙轉場＋字幕，cartography 主題色。
+- 播一次後定格 CTA 畫面，撳「重播」由頭再播（唔循環）。
+- 旁白：edge-tts `zh-HK-HiuMaanNeural` 廣東話，每鏡開始後 0.5s 播；因 autoplay 限制加咗 ▶ 播放掣起動。
+- 線上網址：https://travel-ochre-rho.vercel.app/showreel.html （mp3 要同 HTML 同一目錄）。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-04（補回加航班表單 redesign 記錄）*
+*最後更新：2026-07-04（新增 8c 產品 Showreel）*
