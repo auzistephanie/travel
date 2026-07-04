@@ -158,10 +158,17 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **朋友流程完全冇變**：一樣係撳連結揀名，唔理個連結有冇 `?m=`；呢個純粹係加返一個「點攞到條連結」嘅入口，之前呢步係漏咗。
 - **測試**：`SettingsPanel.test.tsx`（+2）、`CreateTrip.test.tsx`（+1）、`TripShell.test.tsx`（+1），改動涉及嘅 3 個檔（32 條 test）全綠、`tsc -b` 零錯、`vite build` 乾淨。
 
+## 8l. 修「同一部機撳邀請連結，無得加自己入行程」（2026-07-05）
+- **問題**：Stephanie 用 8k 個邀請連結測試，發現撳完之後冇得揀身份/加自己——用 Chrome MCP 開多個 tab 重現：`localStorage` 係跟瀏覽器嘅，唔係跟 tab；如果呢部機/呢個瀏覽器之前已經對呢個 trip 記低過身份（例如自己就係 owner，一開始建立行程嗰陣已經寫低），噉之後喺**同一部機**任何 tab 撳個冇 `?m=` 嘅邀請連結，`getWhoAmI(shareCode)` 一樣攞到舊身份，會自動跳過「哪位是你？」畫面直接帶返入去做返嗰個人，冇機會揀第二個人或者加新名。連 Google 已連結咗 owner account 嘅情況重會被「auth 自動識別」效果二次確認返，更加走唔甩。
+- **做法**：`TripShell.tsx` 行程頭度（trip-header）加多個「切換身份」掣（`Repeat` icon，放喺設定掣隔籬），撳咗會：① `clearWhoAmI(shareCode)` 清走呢部機對呢個 trip 嘅身份記錄；② 網址列刪走 `?m=`；③ 開多個 `manualOverride` state 旗標，喺呢個 session 入面擋住「auth 自動識別」效果搶返身份（否則 owner 一撳「切換身份」就即刻俾自己已連結嘅 Google account 彈返做返 owner，個掣形同虛設）；之後就翻返去「哪位是你？」畫面，可以揀返其他人或者用「自訂新名字」加多個人。
+- `src/lib/whoAmI.ts` 加咗 `clearWhoAmI(shareCode)`。
+- **已知限制**：`manualOverride` 淨係嗰個 session（即係冇 reload 頁面之前）有效——如果之後用「自訂新名字」加咗一個新人，之後重新整個頁（例如朋友第二日先再開），auth 自動識別效果會重新跑，Google 已連結嘅 owner 帳戶又會贏，跳返做返 owner，唔會記得住個新加嘅人（除非嗰個新人自己嗰部機／瀏覽器揀名）。呢個係「一部機一個 Google 帳戶」設計本身嘅限制，冇喺呢次改埋，日後如果要做到「一部機可以畀唔同人長期記住身份」要再諗過個架構（例如每個 member 各自一個 code，而唔淨係得 owner 個 Google 帳戶咁強勢）。
+- **測試**：`TripShell.test.tsx` 加咗 2 個新 case（撳「切換身份」清走記錄翻去揀名畫面；已連結 Google 嘅 owner 撳咗都唔會即刻俾自動識別搶返身份），連原有 12 個一齊全 14 個 test 全綠、`tsc -b` 零錯、`vite build` 乾淨。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-05（新增 8k 邀請朋友連結功能）*
+*最後更新：2026-07-05（新增 8l 切換身份掣，修邀請連結同機無得加自己嘅問題）*
