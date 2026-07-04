@@ -1,8 +1,8 @@
 import { lazy, Suspense, useEffect, useState, type ComponentType } from 'react'
-import { Compass, Settings } from 'lucide-react'
+import { Compass, Repeat, Settings } from 'lucide-react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useTrip } from '../hooks/useTrip'
-import { getWhoAmI, setWhoAmI } from '../lib/whoAmI'
+import { clearWhoAmI, getWhoAmI, setWhoAmI } from '../lib/whoAmI'
 import { getCurrentAuthUser, linkMemberToAuthUser, onAuthUserChange, signInWithGoogle, type AuthUser } from '../lib/ownerAuth'
 import { lazyImportWithReload } from '../lib/lazyWithReload'
 import { WhoAmIPicker } from '../components/WhoAmIPicker'
@@ -42,6 +42,9 @@ export function TripShell() {
   const [themeId, setThemeId] = useState<ThemeId>(() => getStoredThemeId(shareCode))
   const [accent, setAccent] = useState<string | null>(() => getStoredAccent(shareCode))
   const [showSettings, setShowSettings] = useState(false)
+  // 用戶主動撳「切換身份」之後，呢個 session 唔再畀下面個 auth 自動識別效果搶返個身份，
+  // 否則 owner 一撳「切換身份」就即刻俾自己個已連結 Google account 彈返做返 owner，冇得揀第二個人/加新人。
+  const [manualOverride, setManualOverride] = useState(false)
 
   // 身份一旦確定，將佢寫返落網址列（唔留 history）。用戶之後複製呢條連結
   // 去重新加主畫面圖示或者分享畀自己，就算换過 storage context 都認得返係邊個。
@@ -72,7 +75,7 @@ export function TripShell() {
   // 唔理 URL/localStorage 講乜（例如全新裝置都認得返）；若果仲未連結過，
   // 就喺 owner 第一次登入嗰陣自動幫佢綁定返而家嘅身份。
   useEffect(() => {
-    if (!authUser) return
+    if (!authUser || manualOverride) return
     const linkedMember = members.find((m) => m.auth_user_id === authUser.id)
     if (linkedMember) {
       if (linkedMember.id !== whoAmI) setWhoAmIState(linkedMember.id)
@@ -82,7 +85,19 @@ export function TripShell() {
     if (currentMember?.is_owner && !currentMember.auth_user_id) {
       linkMemberToAuthUser(currentMember.id, authUser.id).then(refetch)
     }
-  }, [authUser, members, whoAmI, refetch])
+  }, [authUser, members, whoAmI, refetch, manualOverride])
+
+  // 「切換身份」：清走呢部裝置對呢個 trip 嘅身份記錄，翻返去揀名畫面。
+  // 主要應付「同一部機想加多個人 / 想睇下朋友視角」——冇呢個掣嘅話，
+  // 一撳邀請連結就會俾番 localStorage（或者已連結嘅 Google account）自動認返上次個身份，冇得揀第二個人。
+  function handleSwitchIdentity() {
+    clearWhoAmI(shareCode)
+    setManualOverride(true)
+    setWhoAmIState(null)
+    const next = new URLSearchParams(searchParams)
+    next.delete('m')
+    setSearchParams(next, { replace: true })
+  }
 
   let content: React.JSX.Element
 
@@ -111,6 +126,14 @@ export function TripShell() {
             <Compass size={18} />
           </span>
           <span className="trip-title">{trip.name}</span>
+          <button
+            type="button"
+            className="trip-switch-identity"
+            aria-label="切換身份"
+            onClick={handleSwitchIdentity}
+          >
+            <Repeat size={16} aria-hidden="true" />
+          </button>
           <button
             type="button"
             className="trip-settings"

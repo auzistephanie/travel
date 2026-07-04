@@ -9,7 +9,12 @@ vi.mock('../hooks/useTrip', () => ({ useTrip: () => useTrip() }))
 
 const getWhoAmI = vi.fn()
 const setWhoAmI = vi.fn()
-vi.mock('../lib/whoAmI', () => ({ getWhoAmI: (...a: unknown[]) => getWhoAmI(...a), setWhoAmI: (...a: unknown[]) => setWhoAmI(...a) }))
+const clearWhoAmI = vi.fn()
+vi.mock('../lib/whoAmI', () => ({
+  getWhoAmI: (...a: unknown[]) => getWhoAmI(...a),
+  setWhoAmI: (...a: unknown[]) => setWhoAmI(...a),
+  clearWhoAmI: (...a: unknown[]) => clearWhoAmI(...a),
+}))
 
 const getCurrentAuthUser = vi.fn()
 const onAuthUserChange = vi.fn()
@@ -57,6 +62,7 @@ describe('TripShell', () => {
     useTrip.mockReset()
     getWhoAmI.mockReset()
     setWhoAmI.mockReset()
+    clearWhoAmI.mockReset()
     getCurrentAuthUser.mockReset().mockResolvedValue(null)
     onAuthUserChange.mockReset().mockReturnValue(vi.fn())
     linkMemberToAuthUser.mockReset().mockResolvedValue(undefined)
@@ -193,5 +199,35 @@ describe('TripShell', () => {
 
     expect(screen.getByText('邀請朋友')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '複製邀請連結' })).toBeInTheDocument()
+  })
+
+  it('lets a member switch identity, clearing the local record and returning to the who-am-i picker', async () => {
+    const user = userEvent.setup()
+    useTrip.mockReturnValue({ trip, members, loading: false, error: null, joinAsNewMember: vi.fn() })
+    getWhoAmI.mockReturnValue('m1')
+    renderShell()
+
+    expect(screen.getAllByText('東京五日').length).toBeGreaterThan(0)
+    await user.click(screen.getByRole('button', { name: '切換身份' }))
+
+    expect(clearWhoAmI).toHaveBeenCalledWith('ABC234')
+    expect(screen.getByText('哪位是你？')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByTestId('location-search')).not.toHaveTextContent('m='))
+  })
+
+  it('does not let the linked-auth auto-recognition immediately override a manual identity switch', async () => {
+    const user = userEvent.setup()
+    const linkedMembers: TripMember[] = [
+      { id: 'm1', trip_id: 't1', name: '阿明', color: null, is_owner: true, auth_user_id: 'u1' },
+    ]
+    useTrip.mockReturnValue({ trip, members: linkedMembers, loading: false, error: null, joinAsNewMember: vi.fn(), refetch: vi.fn() })
+    getWhoAmI.mockReturnValue('m1')
+    getCurrentAuthUser.mockResolvedValue({ id: 'u1', email: 'stephanie@example.com' })
+    renderShell()
+
+    await waitFor(() => expect(screen.getAllByText('東京五日').length).toBeGreaterThan(0))
+    await user.click(screen.getByRole('button', { name: '切換身份' }))
+
+    expect(screen.getByText('哪位是你？')).toBeInTheDocument()
   })
 })

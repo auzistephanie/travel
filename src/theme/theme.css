@@ -441,7 +441,8 @@
   text-overflow: ellipsis;
 }
 
-.theme-root button.trip-settings {
+.theme-root button.trip-settings,
+.theme-root button.trip-switch-identity {
   background: rgba(255, 255, 255, 0.2);
   color: #fff;
   border: none;
