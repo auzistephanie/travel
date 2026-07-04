@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -10,6 +10,17 @@ vi.mock('../hooks/useTrip', () => ({ useTrip: () => useTrip() }))
 const getWhoAmI = vi.fn()
 const setWhoAmI = vi.fn()
 vi.mock('../lib/whoAmI', () => ({ getWhoAmI: (...a: unknown[]) => getWhoAmI(...a), setWhoAmI: (...a: unknown[]) => setWhoAmI(...a) }))
+
+const getCurrentAuthUser = vi.fn()
+const onAuthUserChange = vi.fn()
+const linkMemberToAuthUser = vi.fn()
+const sendOwnerLoginLink = vi.fn()
+vi.mock('../lib/ownerAuth', () => ({
+  getCurrentAuthUser: (...a: unknown[]) => getCurrentAuthUser(...a),
+  onAuthUserChange: (...a: unknown[]) => onAuthUserChange(...a),
+  linkMemberToAuthUser: (...a: unknown[]) => linkMemberToAuthUser(...a),
+  sendOwnerLoginLink: (...a: unknown[]) => sendOwnerLoginLink(...a),
+}))
 
 const { TripShell } = await import('./TripShell')
 
@@ -46,6 +57,10 @@ describe('TripShell', () => {
     useTrip.mockReset()
     getWhoAmI.mockReset()
     setWhoAmI.mockReset()
+    getCurrentAuthUser.mockReset().mockResolvedValue(null)
+    onAuthUserChange.mockReset().mockReturnValue(vi.fn())
+    linkMemberToAuthUser.mockReset().mockResolvedValue(undefined)
+    sendOwnerLoginLink.mockReset()
   })
 
   it('shows a loading indicator while the trip is being fetched', () => {
@@ -114,6 +129,38 @@ describe('TripShell', () => {
     getWhoAmI.mockReturnValue('m1')
     renderShell('/t/ABC234')
     await waitFor(() => expect(screen.getByTestId('location-search')).toHaveTextContent('?m=m1'))
+  })
+
+  it('auto-recognises identity from a linked owner auth session, skipping the picker entirely', async () => {
+    const linkedMembers: TripMember[] = [
+      { id: 'm1', trip_id: 't1', name: '阿明', color: null, is_owner: true, auth_user_id: 'u1' },
+    ]
+    useTrip.mockReturnValue({ trip, members: linkedMembers, loading: false, error: null, joinAsNewMember: vi.fn(), refetch: vi.fn() })
+    getWhoAmI.mockReturnValue(null)
+    getCurrentAuthUser.mockResolvedValue({ id: 'u1', email: 'stephanie@example.com' })
+    renderShell()
+    await waitFor(() => expect(screen.getAllByText('東京五日').length).toBeGreaterThan(0))
+    expect(screen.queryByText('哪位是你？')).not.toBeInTheDocument()
+  })
+
+  it('links the owner member to their auth account the first time they log in', async () => {
+    const refetch = vi.fn()
+    useTrip.mockReturnValue({ trip, members, loading: false, error: null, joinAsNewMember: vi.fn(), refetch })
+    getWhoAmI.mockReturnValue('m1')
+    let authChangeCallback: ((user: { id: string; email: string | null } | null) => void) | undefined
+    onAuthUserChange.mockImplementation((cb) => {
+      authChangeCallback = cb
+      return vi.fn()
+    })
+    renderShell()
+    await waitFor(() => expect(screen.getAllByText('東京五日').length).toBeGreaterThan(0))
+
+    act(() => {
+      authChangeCallback?.({ id: 'u1', email: 'stephanie@example.com' })
+    })
+
+    await waitFor(() => expect(linkMemberToAuthUser).toHaveBeenCalledWith('m1', 'u1'))
+    expect(refetch).toHaveBeenCalled()
   })
 
   it('opens the settings panel when the gear icon is clicked', async () => {

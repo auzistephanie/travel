@@ -20,8 +20,13 @@ create table trip_members (
   trip_id uuid not null references trips(id) on delete cascade,
   name text not null,
   color text,
-  is_owner boolean not null default false
+  is_owner boolean not null default false,
+  -- 2026-07-04：得 owner 可以連結返自己嘅 Supabase Auth account（email magic link），
+  -- 令佢喺唔同瀏覽器 context（例如 iOS 主畫面圖示 vs Safari）都認得返自己，唔使淨係靠 localStorage/URL token。
+  -- 一般朋友唔使有 account，繼續用「揀名」機制。
+  auth_user_id uuid references auth.users(id) on delete set null
 );
+create index if not exists trip_members_auth_user_id_idx on trip_members(auth_user_id);
 
 -- ============ flights ============
 create table flights (

@@ -7,13 +7,23 @@ import { ThemeProvider } from '../theme/ThemeContext'
 import { THEMES } from '../theme/tokens'
 import type { ThemeId } from '../types/models'
 
-function Harness({ onClose = vi.fn() }: { onClose?: () => void }) {
+function Harness({
+  onClose = vi.fn(),
+  isOwner,
+  authEmail,
+  onSendLoginLink,
+}: {
+  onClose?: () => void
+  isOwner?: boolean
+  authEmail?: string | null
+  onSendLoginLink?: (email: string) => Promise<void>
+}) {
   const [themeId, setThemeId] = useState<ThemeId>('cartography')
   const [accent, setAccent] = useState<string | undefined>(undefined)
 
   return (
     <ThemeProvider themeId={themeId} accent={accent} onThemeChange={setThemeId} onAccentChange={setAccent}>
-      <SettingsPanel onClose={onClose} />
+      <SettingsPanel onClose={onClose} isOwner={isOwner} authEmail={authEmail} onSendLoginLink={onSendLoginLink} />
     </ThemeProvider>
   )
 }
@@ -81,5 +91,29 @@ describe('SettingsPanel', () => {
 
     expect(writeText).toHaveBeenCalledWith(window.location.href)
     expect(screen.getByRole('button', { name: '已複製' })).toBeInTheDocument()
+  })
+
+  it('hides the account section for non-owner members', () => {
+    render(<Harness isOwner={false} />)
+    expect(screen.queryByText('帳戶')).not.toBeInTheDocument()
+  })
+
+  it('lets the owner send themselves a login link by email', async () => {
+    const user = userEvent.setup()
+    const onSendLoginLink = vi.fn().mockResolvedValue(undefined)
+    render(<Harness isOwner onSendLoginLink={onSendLoginLink} />)
+
+    expect(screen.getByText('帳戶')).toBeInTheDocument()
+    await user.type(screen.getByLabelText('Email'), 'stephanie@example.com')
+    await user.click(screen.getByRole('button', { name: '寄登入連結' }))
+
+    expect(onSendLoginLink).toHaveBeenCalledWith('stephanie@example.com')
+    expect(await screen.findByText(/登入連結已寄去 stephanie@example.com/)).toBeInTheDocument()
+  })
+
+  it('shows the logged-in email instead of the login form once the owner is authenticated', () => {
+    render(<Harness isOwner authEmail="stephanie@example.com" />)
+    expect(screen.getByText(/已用 stephanie@example.com 登入/)).toBeInTheDocument()
+    expect(screen.queryByLabelText('Email')).not.toBeInTheDocument()
   })
 })

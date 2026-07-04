@@ -3,6 +3,7 @@ import { Compass, Settings } from 'lucide-react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useTrip } from '../hooks/useTrip'
 import { getWhoAmI, setWhoAmI } from '../lib/whoAmI'
+import { getCurrentAuthUser, linkMemberToAuthUser, onAuthUserChange, sendOwnerLoginLink, type AuthUser } from '../lib/ownerAuth'
 import { WhoAmIPicker } from '../components/WhoAmIPicker'
 import { BottomNav, type TabId } from '../components/BottomNav'
 import { SettingsPanel } from '../components/SettingsPanel'
@@ -27,9 +28,10 @@ const PAGES: Record<TabId, ComponentType<TripPageProps>> = {
 
 export function TripShell() {
   const { shareCode = '' } = useParams<{ shareCode: string }>()
-  const { trip, members, loading, error, joinAsNewMember } = useTrip(shareCode)
+  const { trip, members, loading, error, joinAsNewMember, refetch } = useTrip(shareCode)
   const [activeTab, setActiveTab] = useState<TabId>('overview')
   const [searchParams, setSearchParams] = useSearchParams()
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null)
   // 身份識別：優先信網址帶嘅 ?m=，冇先睇返呢部裝置呢個瀏覽器 context 嘅 localStorage。
   // 咁樣加到主畫面嘅圖示同喺瀏覽器打開個連結（iOS 兩者 storage 分開）先可以認到同一個人。
   const [whoAmI, setWhoAmIState] = useState<string | null>(
@@ -51,6 +53,35 @@ export function TripShell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [whoAmI, shareCode])
 
+  // 讀返而家呢個瀏覽器 context 有冇登入咗嘅 owner account（見 SettingsPanel 嘅「帳戶」）。
+  useEffect(() => {
+    let cancelled = false
+    getCurrentAuthUser().then((user) => {
+      if (!cancelled) setAuthUser(user)
+    })
+    const unsubscribe = onAuthUserChange((user) => setAuthUser(user))
+    return () => {
+      cancelled = true
+      unsubscribe()
+    }
+  }, [])
+
+  // 得 owner 有 account：若果呢個 auth user 已經連結咗某個 member，優先用嚟識別身份，
+  // 唔理 URL/localStorage 講乜（例如全新裝置都認得返）；若果仲未連結過，
+  // 就喺 owner 第一次登入嗰陣自動幫佢綁定返而家嘅身份。
+  useEffect(() => {
+    if (!authUser) return
+    const linkedMember = members.find((m) => m.auth_user_id === authUser.id)
+    if (linkedMember) {
+      if (linkedMember.id !== whoAmI) setWhoAmIState(linkedMember.id)
+      return
+    }
+    const currentMember = members.find((m) => m.id === whoAmI)
+    if (currentMember?.is_owner && !currentMember.auth_user_id) {
+      linkMemberToAuthUser(currentMember.id, authUser.id).then(refetch)
+    }
+  }, [authUser, members, whoAmI, refetch])
+
   let content: React.JSX.Element
 
   if (loading) {
@@ -70,6 +101,7 @@ export function TripShell() {
     )
   } else {
     const ActivePage = PAGES[activeTab]
+    const currentMember = members.find((m) => m.id === whoAmI)
     content = (
       <>
         <header className="trip-header">
@@ -93,7 +125,14 @@ export function TripShell() {
           </Suspense>
         </main>
         <BottomNav active={activeTab} onChange={setActiveTab} />
-        {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
+        {showSettings && (
+          <SettingsPanel
+            onClose={() => setShowSettings(false)}
+            isOwner={currentMember?.is_owner ?? false}
+            authEmail={authUser?.email ?? null}
+            onSendLoginLink={sendOwnerLoginLink}
+          />
+        )}
       </>
     )
   }

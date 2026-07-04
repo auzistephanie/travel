@@ -107,10 +107,21 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 驗證方式：CSS brace 平衡 check、`vitest run HeroCard/SettingsPanel test`（12 個全過）、push 後用 Chrome MCP 清 SW cache 重新 load 實測截圖確認（唔止睇 code）。
 - **補做確認（2026-07-04 later）**：之前 4 主題花磚 doc 已寫「都有」，但實際 `theme.css` 淨係 `[data-theme='cartography']` 有規則，neon/indigo/scrapbook 3 個主題冇對應 `.hero-body::before`，用戶截圖對比 3 個主題發現分隔條冇跟色。已補齊 3 段規則令代碼同呢份 doc 一致。`tsc -b` 零錯、`vite build` 乾淨，編譯後 CSS 8 隻新色（`1f1830 ff3ec9 2ee6d6 1f4166 d4af37 c0392b c2434a e8a33d`）各出現一次，確認冇打錯冇重複。
 
+## 8f. Owner-only 登入（2026-07-04）
+- **背景**：8d 個 URL token 方案解決咗一部分「跨 context 揀名」問題，但用戶想淨係自己（trip owner）一個人有真.account，其他朋友繼續免登入揀名。
+- **做法**：`trip_members` 加 `auth_user_id`（連 `auth.users`）；Supabase Auth email magic link（`signInWithOtp`，`emailRedirectTo` 帶埋而家個網址，即帶埋 `?m=`）；`src/lib/ownerAuth.ts` 包 `sendOwnerLoginLink` / `getCurrentAuthUser` / `onAuthUserChange` / `linkMemberToAuthUser`。
+- **TripShell 邏輯**：有 auth session 且 match 到 `trip_members.auth_user_id` → 最高優先自動識別身份（跳過 URL/localStorage/揀名畫面），全新裝置都得；owner 第一次登入（`is_owner` 嗰行仲未 link）就自動幫佢綁定。
+- **SettingsPanel**：加「帳戶」section，**得 `is_owner` 嘅人先見到**——未登入顯示 email 輸入 + 「寄登入連結」，登入咗顯示已用邊個 email。
+- **重要限制（老實講）**：Supabase 嘅 auth session 底層都係存喺 localStorage，一樣會撞返 iOS「主畫面圖示 vs Safari 分開儲存」嗰個問題——login 唔係就此徹底解決根源，分別在於撞到嗰陣係「請登入」（識做）而唔係亂咁樣嘅揀名畫面，兼且换新裝置都可以憑 email 攞返身份。真正徹底解決要包裝做 native app（用 iOS Keychain），呢個未做。
+- **順便發現／修咗**：`trip_members` 表原本 RLS 完全 disabled（同 `schema.sql` 原意唔一致，其他表都有開 RLS + `public access` policy，淨係呢個表冧咗），已跑 migration 補返 `enable row level security`（同其他表一致，注意呢個 app 全部表都係「知個 share_code 即可讀寫」嘅開放式設計，唔係真正嘅多租戶隔離，schema.sql 本身有註明係 MVP 已知限制）。
+- **DB migration**：`enable_rls_trip_members`、`add_trip_members_auth_user_id`（已喺 Supabase project `cmtubaxlniglklmdwlzs` 跑咗，`schema.sql` 同步更新）。
+- **測試**：新增 `src/lib/ownerAuth.test.ts`（6 個）、`TripShell.test.tsx`／`SettingsPanel.test.tsx` 加咗 owner-login 相關 case，全 80 個 test 檔（480+ 條 test）全綠、`tsc -b` 零錯、`vite build` 乾淨。
+- **未驗證**：實際 email 有冇收到 magic link（sandbox 冇辦法寄真 email），Stephanie 要親身入 Settings 試一次先算完全過關。Supabase 內建寄信服務（免費版）有速率限制，一開始測試冇問題，都要留意。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-04（8e 花磚：補齊 neon/indigo/scrapbook 3 主題 hero 分隔條，同 doc 對齊）*
+*最後更新：2026-07-04（新增 8f owner-only 登入）*

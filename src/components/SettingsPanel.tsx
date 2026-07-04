@@ -6,12 +6,19 @@ import { GenericIllustration } from '../theme/illustrations/GenericIllustration'
 
 interface SettingsPanelProps {
   onClose: () => void
+  isOwner?: boolean
+  authEmail?: string | null
+  onSendLoginLink?: (email: string) => Promise<void>
 }
 
-export function SettingsPanel({ onClose }: SettingsPanelProps) {
+export function SettingsPanel({ onClose, isOwner = false, authEmail = null, onSendLoginLink }: SettingsPanelProps) {
   const { themeId, accent, setThemeId, setAccent } = useTheme()
   const currentTheme = THEMES[themeId]
   const [copied, setCopied] = useState(false)
+  const [loginEmail, setLoginEmail] = useState('')
+  const [linkSent, setLinkSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
 
   async function handleCopyLink() {
     try {
@@ -20,6 +27,21 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
       setTimeout(() => setCopied(false), 2000)
     } catch {
       // 部分瀏覽器/情況攞唔到 clipboard 權限，靜靜哋唔做嘢，用戶可以自己揀網址列複製
+    }
+  }
+
+  async function handleSendLoginLink() {
+    const trimmed = loginEmail.trim()
+    if (!trimmed || sending || !onSendLoginLink) return
+    setSending(true)
+    setSendError(null)
+    try {
+      await onSendLoginLink(trimmed)
+      setLinkSent(true)
+    } catch {
+      setSendError('寄唔到登入連結，請檢查 email 或者遲啲再試')
+    } finally {
+      setSending(false)
     }
   }
 
@@ -75,6 +97,34 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
           </li>
         ))}
       </ul>
+
+        {isOwner && (
+          <>
+            <h3>帳戶</h3>
+            {authEmail ? (
+              <p className="settings-hint">已用 {authEmail} 登入，呢部裝置隨時都認得返你。</p>
+            ) : linkSent ? (
+              <p className="settings-hint">登入連結已寄去 {loginEmail}，請去信箱撳連結完成登入。</p>
+            ) : (
+              <>
+                <p className="settings-hint">
+                  留低 email 登入，就算換裝置或瀏覽器都認得返你，唔使再揀名。
+                </p>
+                <label htmlFor="owner-login-email">Email</label>
+                <input
+                  id="owner-login-email"
+                  type="email"
+                  value={loginEmail}
+                  onChange={(event) => setLoginEmail(event.target.value)}
+                />
+                <button type="button" onClick={handleSendLoginLink} disabled={sending}>
+                  寄登入連結
+                </button>
+                {sendError && <p role="alert">{sendError}</p>}
+              </>
+            )}
+          </>
+        )}
 
         <h3>個人連結</h3>
         <p className="settings-hint">
