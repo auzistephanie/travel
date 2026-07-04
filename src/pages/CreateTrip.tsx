@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createTrip } from '../lib/tripApi'
 import { setWhoAmI } from '../lib/whoAmI'
-import { sendOwnerLoginLink } from '../lib/ownerAuth'
+import { signInWithGoogle } from '../lib/ownerAuth'
 import { DESTINATIONS } from '../lib/destinations'
 import type { Trip, TripMember } from '../types/models'
 import '../styles/journalCard.css'
@@ -21,9 +21,7 @@ export function CreateTrip() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [created, setCreated] = useState<{ trip: Trip; owner: TripMember } | null>(null)
-  const [loginEmail, setLoginEmail] = useState('')
-  const [linkSent, setLinkSent] = useState(false)
-  const [sendingLink, setSendingLink] = useState(false)
+  const [signingIn, setSigningIn] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
 
   async function handleSubmit(e: FormEvent) {
@@ -51,22 +49,15 @@ export function CreateTrip() {
     navigate(`/t/${created.trip.share_code}`)
   }
 
-  async function handleSendLoginLink() {
-    if (!created) return
-    const trimmed = loginEmail.trim()
-    if (!trimmed || sendingLink) return
-    setSendingLink(true)
+  async function handleGoogleSignIn() {
+    if (!created || signingIn) return
+    setSigningIn(true)
     setLoginError(null)
     try {
-      await sendOwnerLoginLink(
-        trimmed,
-        `${window.location.origin}/t/${created.trip.share_code}?m=${created.owner.id}`,
-      )
-      setLinkSent(true)
+      await signInWithGoogle(`${window.location.origin}/t/${created.trip.share_code}?m=${created.owner.id}`)
     } catch {
-      setLoginError('寄唔到登入連結，請檢查 email，或者遲啲入行程嘅「設定」度再試')
-    } finally {
-      setSendingLink(false)
+      setLoginError('登入失敗，請遲啲入行程嘅「設定」度再試')
+      setSigningIn(false)
     }
   }
 
@@ -75,29 +66,13 @@ export function CreateTrip() {
       <div className="journal-page">
         <div className="journal-card">
           <h1>行程建立成功！</h1>
-          <p>
-            留低你個 email，就算之後換裝置或瀏覽器都認得返你，唔使再揀名。呢步可以跳過，遲啲入
-            設定 都做得到。
-          </p>
-          {linkSent ? (
-            <p>登入連結已寄去 {loginEmail}，請去信箱撳連結完成登入。</p>
-          ) : (
-            <>
-              <label htmlFor="owner-login-email">Email</label>
-              <input
-                id="owner-login-email"
-                type="email"
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-              />
-              <button type="button" onClick={handleSendLoginLink} disabled={sendingLink}>
-                寄登入連結
-              </button>
-              {loginError && <p role="alert">{loginError}</p>}
-            </>
-          )}
+          <p>用 Google 登入，就算之後換裝置或瀏覽器都認得返你，唔使再揀名。呢步可以跳過，遲啲入 設定 都做得到。</p>
+          <button type="button" onClick={handleGoogleSignIn} disabled={signingIn}>
+            用 Google 登入
+          </button>
+          {loginError && <p role="alert">{loginError}</p>}
           <button type="button" onClick={goToTrip}>
-            {linkSent ? '入去行程' : '遲啲先，直接入去行程'}
+            遲啲先，直接入去行程
           </button>
         </div>
       </div>

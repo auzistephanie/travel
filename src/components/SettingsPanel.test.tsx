@@ -11,19 +11,19 @@ function Harness({
   onClose = vi.fn(),
   isOwner,
   authEmail,
-  onSendLoginLink,
+  onSignInWithGoogle,
 }: {
   onClose?: () => void
   isOwner?: boolean
   authEmail?: string | null
-  onSendLoginLink?: (email: string) => Promise<void>
+  onSignInWithGoogle?: () => Promise<void>
 }) {
   const [themeId, setThemeId] = useState<ThemeId>('cartography')
   const [accent, setAccent] = useState<string | undefined>(undefined)
 
   return (
     <ThemeProvider themeId={themeId} accent={accent} onThemeChange={setThemeId} onAccentChange={setAccent}>
-      <SettingsPanel onClose={onClose} isOwner={isOwner} authEmail={authEmail} onSendLoginLink={onSendLoginLink} />
+      <SettingsPanel onClose={onClose} isOwner={isOwner} authEmail={authEmail} onSignInWithGoogle={onSignInWithGoogle} />
     </ThemeProvider>
   )
 }
@@ -98,17 +98,25 @@ describe('SettingsPanel', () => {
     expect(screen.queryByText('帳戶')).not.toBeInTheDocument()
   })
 
-  it('lets the owner send themselves a login link by email', async () => {
+  it('lets the owner sign in with Google', async () => {
     const user = userEvent.setup()
-    const onSendLoginLink = vi.fn().mockResolvedValue(undefined)
-    render(<Harness isOwner onSendLoginLink={onSendLoginLink} />)
+    const onSignInWithGoogle = vi.fn().mockResolvedValue(undefined)
+    render(<Harness isOwner onSignInWithGoogle={onSignInWithGoogle} />)
 
     expect(screen.getByText('帳戶')).toBeInTheDocument()
-    await user.type(screen.getByLabelText('Email'), 'stephanie@example.com')
-    await user.click(screen.getByRole('button', { name: '寄登入連結' }))
+    await user.click(screen.getByRole('button', { name: '用 Google 登入' }))
 
-    expect(onSendLoginLink).toHaveBeenCalledWith('stephanie@example.com')
-    expect(await screen.findByText(/登入連結已寄去 stephanie@example.com/)).toBeInTheDocument()
+    expect(onSignInWithGoogle).toHaveBeenCalled()
+  })
+
+  it('shows an error if Google sign-in fails', async () => {
+    const user = userEvent.setup()
+    const onSignInWithGoogle = vi.fn().mockRejectedValue(new Error('provider not enabled'))
+    render(<Harness isOwner onSignInWithGoogle={onSignInWithGoogle} />)
+
+    await user.click(screen.getByRole('button', { name: '用 Google 登入' }))
+
+    expect(await screen.findByText('登入失敗，請遲啲再試')).toBeInTheDocument()
   })
 
   it('shows the logged-in email instead of the login form once the owner is authenticated', () => {

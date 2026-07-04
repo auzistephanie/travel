@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, Copy, X } from 'lucide-react'
+import { Check, Copy, LogIn, X } from 'lucide-react'
 import { THEMES } from '../theme/tokens'
 import { useTheme } from '../theme/ThemeContext'
 import { GenericIllustration } from '../theme/illustrations/GenericIllustration'
@@ -8,17 +8,15 @@ interface SettingsPanelProps {
   onClose: () => void
   isOwner?: boolean
   authEmail?: string | null
-  onSendLoginLink?: (email: string) => Promise<void>
+  onSignInWithGoogle?: () => Promise<void>
 }
 
-export function SettingsPanel({ onClose, isOwner = false, authEmail = null, onSendLoginLink }: SettingsPanelProps) {
+export function SettingsPanel({ onClose, isOwner = false, authEmail = null, onSignInWithGoogle }: SettingsPanelProps) {
   const { themeId, accent, setThemeId, setAccent } = useTheme()
   const currentTheme = THEMES[themeId]
   const [copied, setCopied] = useState(false)
-  const [loginEmail, setLoginEmail] = useState('')
-  const [linkSent, setLinkSent] = useState(false)
-  const [sending, setSending] = useState(false)
-  const [sendError, setSendError] = useState<string | null>(null)
+  const [signingIn, setSigningIn] = useState(false)
+  const [signInError, setSignInError] = useState<string | null>(null)
 
   async function handleCopyLink() {
     try {
@@ -30,18 +28,15 @@ export function SettingsPanel({ onClose, isOwner = false, authEmail = null, onSe
     }
   }
 
-  async function handleSendLoginLink() {
-    const trimmed = loginEmail.trim()
-    if (!trimmed || sending || !onSendLoginLink) return
-    setSending(true)
-    setSendError(null)
+  async function handleGoogleSignIn() {
+    if (signingIn || !onSignInWithGoogle) return
+    setSigningIn(true)
+    setSignInError(null)
     try {
-      await onSendLoginLink(trimmed)
-      setLinkSent(true)
+      await onSignInWithGoogle()
     } catch {
-      setSendError('寄唔到登入連結，請檢查 email 或者遲啲再試')
-    } finally {
-      setSending(false)
+      setSignInError('登入失敗，請遲啲再試')
+      setSigningIn(false)
     }
   }
 
@@ -103,24 +98,14 @@ export function SettingsPanel({ onClose, isOwner = false, authEmail = null, onSe
             <h3>帳戶</h3>
             {authEmail ? (
               <p className="settings-hint">已用 {authEmail} 登入，呢部裝置隨時都認得返你。</p>
-            ) : linkSent ? (
-              <p className="settings-hint">登入連結已寄去 {loginEmail}，請去信箱撳連結完成登入。</p>
             ) : (
               <>
-                <p className="settings-hint">
-                  留低 email 登入，就算換裝置或瀏覽器都認得返你，唔使再揀名。
-                </p>
-                <label htmlFor="owner-login-email">Email</label>
-                <input
-                  id="owner-login-email"
-                  type="email"
-                  value={loginEmail}
-                  onChange={(event) => setLoginEmail(event.target.value)}
-                />
-                <button type="button" onClick={handleSendLoginLink} disabled={sending}>
-                  寄登入連結
+                <p className="settings-hint">用 Google 登入，就算換裝置或瀏覽器都認得返你，唔使再揀名。</p>
+                <button type="button" onClick={handleGoogleSignIn} disabled={signingIn}>
+                  <LogIn size={16} aria-hidden="true" />
+                  用 Google 登入
                 </button>
-                {sendError && <p role="alert">{sendError}</p>}
+                {signInError && <p role="alert">{signInError}</p>}
               </>
             )}
           </>

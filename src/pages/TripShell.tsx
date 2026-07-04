@@ -3,7 +3,7 @@ import { Compass, Settings } from 'lucide-react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useTrip } from '../hooks/useTrip'
 import { getWhoAmI, setWhoAmI } from '../lib/whoAmI'
-import { getCurrentAuthUser, linkMemberToAuthUser, onAuthUserChange, sendOwnerLoginLink, type AuthUser } from '../lib/ownerAuth'
+import { getCurrentAuthUser, linkMemberToAuthUser, onAuthUserChange, signInWithGoogle, type AuthUser } from '../lib/ownerAuth'
 import { lazyImportWithReload } from '../lib/lazyWithReload'
 import { WhoAmIPicker } from '../components/WhoAmIPicker'
 import { BottomNav, type TabId } from '../components/BottomNav'
@@ -132,7 +132,7 @@ export function TripShell() {
             onClose={() => setShowSettings(false)}
             isOwner={currentMember?.is_owner ?? false}
             authEmail={authUser?.email ?? null}
-            onSendLoginLink={sendOwnerLoginLink}
+            onSignInWithGoogle={() => signInWithGoogle()}
           />
         )}
       </>

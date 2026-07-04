@@ -14,12 +14,12 @@ vi.mock('../lib/whoAmI', () => ({ getWhoAmI: (...a: unknown[]) => getWhoAmI(...a
 const getCurrentAuthUser = vi.fn()
 const onAuthUserChange = vi.fn()
 const linkMemberToAuthUser = vi.fn()
-const sendOwnerLoginLink = vi.fn()
+const signInWithGoogle = vi.fn()
 vi.mock('../lib/ownerAuth', () => ({
   getCurrentAuthUser: (...a: unknown[]) => getCurrentAuthUser(...a),
   onAuthUserChange: (...a: unknown[]) => onAuthUserChange(...a),
   linkMemberToAuthUser: (...a: unknown[]) => linkMemberToAuthUser(...a),
-  sendOwnerLoginLink: (...a: unknown[]) => sendOwnerLoginLink(...a),
+  signInWithGoogle: (...a: unknown[]) => signInWithGoogle(...a),
 }))
 
 const { TripShell } = await import('./TripShell')
@@ -60,7 +60,7 @@ describe('TripShell', () => {
     getCurrentAuthUser.mockReset().mockResolvedValue(null)
     onAuthUserChange.mockReset().mockReturnValue(vi.fn())
     linkMemberToAuthUser.mockReset().mockResolvedValue(undefined)
-    sendOwnerLoginLink.mockReset()
+    signInWithGoogle.mockReset()
     // 分頁 chunk 用真.dynamic import()（見 lazyImportWithReload），jsdom 冇真正 navigation，
     // 淨係 stub 走 reload 避免測試噪音；唔係測緊 reload 本身嘅邏輯（嗰個喺 lazyWithReload.test.ts）。
     Object.defineProperty(window, 'location', {

@@ -133,10 +133,17 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **測試**：新增 `src/lib/lazyWithReload.test.ts`（3 個：成功清 flag／第一次失敗會 reload 且 promise 唔 resolve／已經 reload 過就正常拋錯）；`TripShell.test.tsx` 加咗 `window.location.reload` stub 避免測試環境嘅 jsdom navigation 噪音。`tsc -b` 零錯、`vite build` 乾淨。
 - **後續補救建議（未做）**：目前修復係「畀用戶靜雞雞自動 reload 一次」，用戶完全唔會見到發生咗咩事；如果想更透明，可以加一個小提示「偵測到新版本，重新載入緊…」。呢個屬於錦上添花，唔係緊要，未做。
 
+## 8i. Owner 登入由 email magic link 改做 Google OAuth（2026-07-04）
+- **問題**：查 Supabase auth log（`get_logs` service=auth）發現：email magic link 撞正 Gmail 自動幫封信「預先掃描」連結做安全檢查，掃描嗰吓已經用咗個一次性 token，搞到 Stephanie 自己撳嗰吓話「連結已失效」（log 見到多個 `error: "One-time token not found"`，remote_addr 嚟自 Google IP range）——唔係我哋個 code 有 bug，係 magic link 呢種機制本身嘅通病。log 亦見到有兩次真係成功登入過，證實個機制本身冇壞，淨係唔穩陣。
+- **做法**：`ownerAuth.ts` 嘅 `sendOwnerLoginLink`（email OTP）完全換成 `signInWithGoogle`（`supabase.auth.signInWithOAuth({provider:'google'})`），`SettingsPanel` 帳戶 section 同 `CreateTrip` 建立成功畫面嘅 email 輸入都換做單一「用 Google 登入」掣。TripShell 嗰套「auth session match 到 member 就自動識別身份」邏輯完全唔使改，因為佢唔理你用邊個 provider 登入。
+- **前置條件（Stephanie 要做，我做唔到）**：① Google Cloud Console 開 OAuth Client（redirect URI 填 `https://cmtubaxlniglklmdwlzs.supabase.co/auth/v1/callback`）；② Supabase Dashboard → Authentication → Providers → Google，填返 Client ID/Secret 開啟。呢兩步未做之前，撳「用 Google 登入」會出錯（`provider not enabled`），已加咗錯誤處理唔會全黑，會顯示「登入失敗，請遲啲再試」+ 保留「遲啲先」skip 選項。
+- **測試**：`ownerAuth.test.ts`／`SettingsPanel.test.tsx`／`CreateTrip.test.tsx`／`TripShell.test.tsx` 全部改咗去對應 Google 登入，加埋新嘅 lazyWithReload test，5 個改動涉及嘅 test 檔（38 條 test）一次過跑晒全綠，`tsc -b` 零錯、`vite build` 乾淨。
+- **未驗證**：Stephanie 未做完 Google Cloud + Supabase 嗰兩步前，「用 Google 登入」實際撳落去會見到錯誤訊息係預期行為，唔係新 bug；做完之後要再測一次真實登入流程。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-04（新增 8h lazy-load chunk 404 全黑修復）*
+*最後更新：2026-07-04（新增 8i owner 登入改用 Google OAuth）*

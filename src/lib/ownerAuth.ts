@@ -1,6 +1,9 @@
-// Owner-only 登入：得 trip 擁有人可以連結返自己嘅 Supabase Auth account（email magic link），
+// Owner-only 登入：得 trip 擁有人可以連結返自己嘅 Supabase Auth account（Google OAuth），
 // 令佢喺唔同瀏覽器 context（例如 iOS 主畫面圖示 vs Safari）都自動認得返自己，
 // 唔使淨係靠 localStorage/URL token。一般朋友唔受影響，繼續用「揀名」機制。
+// 2026-07-04：由 email magic link 改用 Google 登入——magic link 撞正 Gmail 自動幫封信
+// 「預先掃描」連結做安全檢查，掃描嗰吓已經用咗個一次性 token，搞到用戶自己撳嗰吓話連結失效
+// （Supabase auth log 見到多次 "One-time token not found"）。Google OAuth 冇呢個問題。
 import { supabase } from './supabaseClient'
 
 export interface AuthUser {
@@ -9,13 +12,14 @@ export interface AuthUser {
 }
 
 /**
- * 寄 magic link 去個 email，撳咗個連結會跳去 redirectTo（預設係而家個網址，通常已經帶埋 ?m= 身份）並自動登入。
- * 喺「開新行程」流程用嘅時候要明確傳個 trip 頁網址，因為嗰陣仲喺 /new 度，唔想個連結撳咗跳返去建立行程嗰頁。
+ * 用 Google account 登入，會跳去 Google 嘅授權畫面，完成後跳返嚟 redirectTo
+ * （預設係而家個網址，通常已經帶埋 ?m= 身份）並自動登入。
+ * 喺「開新行程」流程用嘅時候要明確傳個 trip 頁網址，因為嗰陣仲喺 /new 度，唔想撳完跳返去建立行程嗰頁。
  */
-export async function sendOwnerLoginLink(email: string, redirectTo: string = window.location.href): Promise<void> {
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: redirectTo },
+export async function signInWithGoogle(redirectTo: string = window.location.href): Promise<void> {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo },
   })
   if (error) throw error
 }

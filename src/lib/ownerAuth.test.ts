@@ -4,7 +4,7 @@ const { supabase } = vi.hoisted(() => ({
   supabase: {
     from: vi.fn(),
     auth: {
-      signInWithOtp: vi.fn(),
+      signInWithOAuth: vi.fn(),
       getSession: vi.fn(),
       onAuthStateChange: vi.fn(),
     },
@@ -12,34 +12,34 @@ const { supabase } = vi.hoisted(() => ({
 }))
 vi.mock('./supabaseClient', () => ({ supabase }))
 
-import { getCurrentAuthUser, linkMemberToAuthUser, onAuthUserChange, sendOwnerLoginLink } from './ownerAuth'
+import { getCurrentAuthUser, linkMemberToAuthUser, onAuthUserChange, signInWithGoogle } from './ownerAuth'
 import { makeQuery } from '../test/supabaseQueryMock'
 
-describe('sendOwnerLoginLink', () => {
+describe('signInWithGoogle', () => {
   beforeEach(() => {
-    supabase.auth.signInWithOtp.mockReset()
+    supabase.auth.signInWithOAuth.mockReset()
   })
 
-  it('sends a magic link to the given email, redirecting back to the current URL', async () => {
-    supabase.auth.signInWithOtp.mockResolvedValue({ error: null })
-    await sendOwnerLoginLink('stephanie@example.com')
-    expect(supabase.auth.signInWithOtp).toHaveBeenCalledWith({
-      email: 'stephanie@example.com',
-      options: { emailRedirectTo: window.location.href },
+  it('starts a Google OAuth sign-in, redirecting back to the current URL by default', async () => {
+    supabase.auth.signInWithOAuth.mockResolvedValue({ error: null })
+    await signInWithGoogle()
+    expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: { redirectTo: window.location.href },
     })
   })
 
   it('throws when Supabase returns an error', async () => {
-    supabase.auth.signInWithOtp.mockResolvedValue({ error: new Error('rate limited') })
-    await expect(sendOwnerLoginLink('stephanie@example.com')).rejects.toThrow('rate limited')
+    supabase.auth.signInWithOAuth.mockResolvedValue({ error: new Error('provider not enabled') })
+    await expect(signInWithGoogle()).rejects.toThrow('provider not enabled')
   })
 
   it('redirects to an explicit URL when given one (e.g. the trip page right after creation)', async () => {
-    supabase.auth.signInWithOtp.mockResolvedValue({ error: null })
-    await sendOwnerLoginLink('stephanie@example.com', 'https://travel-ochre-rho.vercel.app/t/ABC234?m=m1')
-    expect(supabase.auth.signInWithOtp).toHaveBeenCalledWith({
-      email: 'stephanie@example.com',
-      options: { emailRedirectTo: 'https://travel-ochre-rho.vercel.app/t/ABC234?m=m1' },
+    supabase.auth.signInWithOAuth.mockResolvedValue({ error: null })
+    await signInWithGoogle('https://travel-ochre-rho.vercel.app/t/ABC234?m=m1')
+    expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: { redirectTo: 'https://travel-ochre-rho.vercel.app/t/ABC234?m=m1' },
     })
   })
 })
