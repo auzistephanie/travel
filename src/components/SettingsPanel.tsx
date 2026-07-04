@@ -9,12 +9,20 @@ interface SettingsPanelProps {
   isOwner?: boolean
   authEmail?: string | null
   onSignInWithGoogle?: () => Promise<void>
+  shareCode?: string
 }
 
-export function SettingsPanel({ onClose, isOwner = false, authEmail = null, onSignInWithGoogle }: SettingsPanelProps) {
+export function SettingsPanel({
+  onClose,
+  isOwner = false,
+  authEmail = null,
+  onSignInWithGoogle,
+  shareCode,
+}: SettingsPanelProps) {
   const { themeId, accent, setThemeId, setAccent } = useTheme()
   const currentTheme = THEMES[themeId]
   const [copied, setCopied] = useState(false)
+  const [inviteCopied, setInviteCopied] = useState(false)
   const [signingIn, setSigningIn] = useState(false)
   const [signInError, setSignInError] = useState<string | null>(null)
 
@@ -25,6 +33,17 @@ export function SettingsPanel({ onClose, isOwner = false, authEmail = null, onSi
       setTimeout(() => setCopied(false), 2000)
     } catch {
       // 部分瀏覽器/情況攞唔到 clipboard 權限，靜靜哋唔做嘢，用戶可以自己揀網址列複製
+    }
+  }
+
+  async function handleCopyInviteLink() {
+    if (!shareCode) return
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/t/${shareCode}`)
+      setInviteCopied(true)
+      setTimeout(() => setInviteCopied(false), 2000)
+    } catch {
+      // 同上，攞唔到 clipboard 權限就靜靜哋唔做嘢
     }
   }
 
@@ -108,6 +127,19 @@ export function SettingsPanel({ onClose, isOwner = false, authEmail = null, onSi
                 {signInError && <p role="alert">{signInError}</p>}
               </>
             )}
+          </>
+        )}
+
+        {shareCode && (
+          <>
+            <h3>邀請朋友</h3>
+            <p className="settings-hint">
+              把呢條連結傳畀朋友，佢哋撳開揀返自己個名就可以一齊編輯，唔使登入、唔使開帳戶。
+            </p>
+            <button type="button" className="settings-copy-link" onClick={handleCopyInviteLink}>
+              {inviteCopied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
+              {inviteCopied ? '已複製' : '複製邀請連結'}
+            </button>
           </>
         )}
 

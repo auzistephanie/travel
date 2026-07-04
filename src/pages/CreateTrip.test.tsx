@@ -59,6 +59,34 @@ describe('CreateTrip', () => {
     expect(await screen.findByText('行程建立成功！')).toBeInTheDocument()
   })
 
+  it('copies a share-code-only invite link for friends, separate from the Google login', async () => {
+    const user = userEvent.setup()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    createTrip.mockResolvedValue({
+      trip: { id: 't1', share_code: 'ABC234' },
+      owner: { id: 'm1', name: '阿明' },
+    })
+
+    render(
+      <MemoryRouter>
+        <CreateTrip />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByLabelText('行程名'), '東京五日')
+    await user.type(screen.getByLabelText('開始日期'), '2026-08-01')
+    await user.type(screen.getByLabelText('結束日期'), '2026-08-05')
+    await user.type(screen.getByLabelText('你的名字'), '阿明')
+    await user.click(screen.getByRole('button', { name: '建立行程' }))
+
+    await user.click(await screen.findByRole('button', { name: '複製邀請連結' }))
+
+    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/t/ABC234`)
+    expect(await screen.findAllByText('已複製')).toHaveLength(1)
+    expect(signInWithGoogle).not.toHaveBeenCalled()
+  })
+
   it('starts Google sign-in redirecting to the new trip page', async () => {
     const user = userEvent.setup()
     createTrip.mockResolvedValue({

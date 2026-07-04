@@ -12,18 +12,26 @@ function Harness({
   isOwner,
   authEmail,
   onSignInWithGoogle,
+  shareCode,
 }: {
   onClose?: () => void
   isOwner?: boolean
   authEmail?: string | null
   onSignInWithGoogle?: () => Promise<void>
+  shareCode?: string
 }) {
   const [themeId, setThemeId] = useState<ThemeId>('cartography')
   const [accent, setAccent] = useState<string | undefined>(undefined)
 
   return (
     <ThemeProvider themeId={themeId} accent={accent} onThemeChange={setThemeId} onAccentChange={setAccent}>
-      <SettingsPanel onClose={onClose} isOwner={isOwner} authEmail={authEmail} onSignInWithGoogle={onSignInWithGoogle} />
+      <SettingsPanel
+        onClose={onClose}
+        isOwner={isOwner}
+        authEmail={authEmail}
+        onSignInWithGoogle={onSignInWithGoogle}
+        shareCode={shareCode}
+      />
     </ThemeProvider>
   )
 }
@@ -90,6 +98,24 @@ describe('SettingsPanel', () => {
     await user.click(screen.getByRole('button', { name: '複製我的個人連結' }))
 
     expect(writeText).toHaveBeenCalledWith(window.location.href)
+    expect(screen.getByRole('button', { name: '已複製' })).toBeInTheDocument()
+  })
+
+  it('hides the invite-friends section when no share code is given', () => {
+    render(<Harness />)
+    expect(screen.queryByText('邀請朋友')).not.toBeInTheDocument()
+  })
+
+  it('copies a share-code-only invite link (no personal member id) for friends to join', async () => {
+    const user = userEvent.setup()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    render(<Harness shareCode="ABC234" />)
+
+    expect(screen.getByText('邀請朋友')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '複製邀請連結' }))
+
+    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/t/ABC234`)
     expect(screen.getByRole('button', { name: '已複製' })).toBeInTheDocument()
   })
 

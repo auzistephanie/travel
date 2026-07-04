@@ -182,4 +182,16 @@ describe('TripShell', () => {
     expect(screen.getByRole('dialog', { name: '設定' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '復古探險地圖' })).toBeInTheDocument()
   })
+
+  it('passes the trip share code into settings so members can copy a friend-invite link', async () => {
+    const user = userEvent.setup()
+    useTrip.mockReturnValue({ trip, members, loading: false, error: null, joinAsNewMember: vi.fn() })
+    getWhoAmI.mockReturnValue('m1')
+    renderShell()
+
+    await user.click(screen.getByRole('button', { name: '設定' }))
+
+    expect(screen.getByText('邀請朋友')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '複製邀請連結' })).toBeInTheDocument()
+  })
 })

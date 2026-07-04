@@ -148,10 +148,20 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **實測（用 Chrome MCP，真人流程）**：開新行程 → 撳「用 Google 登入」→ 揀 `auzistephanie@gmail.com` → 授權 → 成功跳返 `travel-ochre-rho.vercel.app/t/:shareCode?m=...`、trip 正常載入、Settings 帳戶 section 顯示「已用 auzistephanie@gmail.com 登入，呢部裝置隨時都認得返你」。**Google OAuth owner 登入全流程確認行得通**，8i 嗰個「未驗證」已經解決。
 - 遺留：test user cap 100 人（而家淨係 Stephanie 一個），app 仲喺 Google 「Testing」publishing status——如果之後想任何人都可以用呢個 Google login（唔止 Stephanie），要做 Google OAuth consent screen 嘅 verification 先可以出返 Production，呢個未做，亦都冇必要做（得 owner 一個人需要呢個功能）。
 
+## 8k. 邀請朋友連結（2026-07-05）
+- **背景**：8f–8j 做齊咗 owner 嘅 Google 登入，但查完成個 app 先發現漏咗一樣更基本嘅嘢——完全冇地方畀 owner 攞到「純分享連結」去傳畀朋友！Settings 原有嘅「個人連結」其實係帶住 `?m=memberId` 嘅個人身份連結（用嚟認返自己跨裝置），唔係用嚟出街分享；朋友加入一直得靠自己手打分享碼入 `/join` 頁。
+- **做法**：加多一個獨立功能，同「個人連結」分開：
+  - `SettingsPanel.tsx` 新增 `shareCode` prop + 「邀請朋友」section（放喺「個人連結」之前），複製 `{origin}/t/{shareCode}`（**冇** `?m=`），文案講明「唔使登入、唔使開帳戶」。
+  - `TripShell.tsx` 傳 `trip.share_code` 落 `SettingsPanel`。
+  - `CreateTrip.tsx` 建立成功畫面都加返呢個「邀請朋友」複製掣（放喺 Google 登入之前，因為呢個先係大部分人建立完行程即刻需要嘅嘢），同 Google 登入分開兩個獨立 section。
+  - Landing page（`Landing.tsx` 同 marketing 版 `landing-preview.html`）文案已經夠清楚（「一鍵即可加入，無須註冊帳戶」／「一個分享碼、一條連結」），無改動。
+- **朋友流程完全冇變**：一樣係撳連結揀名，唔理個連結有冇 `?m=`；呢個純粹係加返一個「點攞到條連結」嘅入口，之前呢步係漏咗。
+- **測試**：`SettingsPanel.test.tsx`（+2）、`CreateTrip.test.tsx`（+1）、`TripShell.test.tsx`（+1），改動涉及嘅 3 個檔（32 條 test）全綠、`tsc -b` 零錯、`vite build` 乾淨。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-05（新增 8j Google OAuth 外部設定完成 + 實測登入成功）*
+*最後更新：2026-07-05（新增 8k 邀請朋友連結功能）*

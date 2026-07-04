@@ -133,6 +133,7 @@ export function TripShell() {
             isOwner={currentMember?.is_owner ?? false}
             authEmail={authUser?.email ?? null}
             onSignInWithGoogle={() => signInWithGoogle()}
+            shareCode={trip.share_code}
           />
         )}
       </>

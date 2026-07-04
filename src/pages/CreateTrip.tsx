@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Check, Copy } from 'lucide-react'
 import { createTrip } from '../lib/tripApi'
 import { setWhoAmI } from '../lib/whoAmI'
 import { signInWithGoogle } from '../lib/ownerAuth'
@@ -23,6 +24,7 @@ export function CreateTrip() {
   const [created, setCreated] = useState<{ trip: Trip; owner: TripMember } | null>(null)
   const [signingIn, setSigningIn] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
+  const [inviteCopied, setInviteCopied] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -49,6 +51,17 @@ export function CreateTrip() {
     navigate(`/t/${created.trip.share_code}`)
   }
 
+  async function handleCopyInviteLink() {
+    if (!created) return
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/t/${created.trip.share_code}`)
+      setInviteCopied(true)
+      setTimeout(() => setInviteCopied(false), 2000)
+    } catch {
+      // 攞唔到 clipboard 權限就靜靜哋唔做嘢，用戶可以自己揀網址列複製
+    }
+  }
+
   async function handleGoogleSignIn() {
     if (!created || signingIn) return
     setSigningIn(true)
@@ -66,6 +79,15 @@ export function CreateTrip() {
       <div className="journal-page">
         <div className="journal-card">
           <h1>行程建立成功！</h1>
+
+          <h2>邀請朋友</h2>
+          <p>把呢條連結傳畀朋友，佢哋撳開揀返自己個名就可以一齊編輯，唔使登入、唔使開帳戶。</p>
+          <button type="button" onClick={handleCopyInviteLink}>
+            {inviteCopied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
+            {inviteCopied ? '已複製' : '複製邀請連結'}
+          </button>
+
+          <h2>你自己嘅登入</h2>
           <p>用 Google 登入，就算之後換裝置或瀏覽器都認得返你，唔使再揀名。呢步可以跳過，遲啲入 設定 都做得到。</p>
           <button type="button" onClick={handleGoogleSignIn} disabled={signingIn}>
             用 Google 登入
