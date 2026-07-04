@@ -92,10 +92,17 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **無聲 debug（2026-07-04）**：三層修復 — ① `sw.js` 跳過 mp3/Range request（SW 攔截會整跛 audio）；② `sw.js` HTML/導航改 network-first（原本 cache-first 令用戶永遠食舊一版 HTML）；③ showreel 音檔 fetch→blob 預載＋播放掣手勢內 muted-unlock 4 個 audio（iOS/Safari 要求）。SW cache 而家係 v3。注意：Chrome MCP 背景視窗完全封鎖 media loading，測聲一定要前景真人測。
 - **Landing 合併**：`public/landing-preview.html` 加咗 `#showreel` section（iframe 嵌 showreel，marquee 同 features 之間），nav「產品影片」＋rail dot 都有入口；landing-preview 已搬入 `public/`，線上 https://travel-ochre-rho.vercel.app/landing-preview.html 。
 
+## 8d. 身份識別跨 context 修復（2026-07-04）
+- **問題**：同一部機、加咗主畫面圖示又用開 Safari 連結，兩邊會分別跳出「哪位是你？」— iOS 對 home-screen 圖示 same-origin 標準網頁分開兩個獨立 localStorage context，`whoami:分享碼` 存喺其中一邊，另一邊讀唔到。
+- **修復**：`TripShell.tsx` 身份識別改做「URL `?m=memberId` 優先，冇先 fallback localStorage」；一旦揀咗/讀到身份，自動用 `setSearchParams(..., {replace:true})` 寫返落網址列（唔留 history），同時仍寫返 localStorage 做 cache。咁樣個「連結」本身就帶身份，唔淨係靠瀏覽器儲存。
+- **配套**：Settings 新增「個人連結」section + 「複製我的個人連結」掣（`navigator.clipboard.writeText(window.location.href)`），畀用戶攞返條帶身份嘅連結去重新 pin 主畫面圖示，兩邊就會一致。
+- 唔影響朋友入數嘅原本流程（佢哋唔理 URL 有冇 `?m=`，一樣揀名就得）。
+- 測試：`TripShell.test.tsx`／`SettingsPanel.test.tsx` 加咗對應 case，全 78 個 test 檔（含新增）全綠、`tsc -b` 零錯、`vite build` 乾淨（實測用 `--outDir` 因為 sandbox 舊 `dist/` 有殘留鎖檔，非代碼問題）。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-04（新增 8c 產品 Showreel）*
+*最後更新：2026-07-04（新增 8d 身份識別跨 context 修復）*

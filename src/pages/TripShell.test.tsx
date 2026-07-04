@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Trip, TripMember } from '../types/models'
 
@@ -25,9 +25,15 @@ const trip: Trip = {
 
 const members: TripMember[] = [{ id: 'm1', trip_id: 't1', name: '阿明', color: null, is_owner: true }]
 
-function renderShell() {
+function LocationProbe() {
+  const location = useLocation()
+  return <div data-testid="location-search">{location.search}</div>
+}
+
+function renderShell(initialEntry = '/t/ABC234') {
   return render(
-    <MemoryRouter initialEntries={['/t/ABC234']}>
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <LocationProbe />
       <Routes>
         <Route path="/t/:shareCode" element={<TripShell />} />
       </Routes>
@@ -93,6 +99,21 @@ describe('TripShell', () => {
     await user.click(screen.getByRole('button', { name: '阿明' }))
     expect(setWhoAmI).toHaveBeenCalledWith('ABC234', 'm1')
     expect(screen.getAllByText('東京五日').length).toBeGreaterThan(0)
+  })
+
+  it('recognises the member from the URL even when this browser context has no localStorage record', () => {
+    useTrip.mockReturnValue({ trip, members, loading: false, error: null, joinAsNewMember: vi.fn() })
+    getWhoAmI.mockReturnValue(null)
+    renderShell('/t/ABC234?m=m1')
+    expect(screen.getAllByText('東京五日').length).toBeGreaterThan(0)
+    expect(screen.queryByText('哪位是你？')).not.toBeInTheDocument()
+  })
+
+  it('writes the resolved member id back into the URL so the link can be reused across contexts', async () => {
+    useTrip.mockReturnValue({ trip, members, loading: false, error: null, joinAsNewMember: vi.fn() })
+    getWhoAmI.mockReturnValue('m1')
+    renderShell('/t/ABC234')
+    await waitFor(() => expect(screen.getByTestId('location-search')).toHaveTextContent('?m=m1'))
   })
 
   it('opens the settings panel when the gear icon is clicked', async () => {

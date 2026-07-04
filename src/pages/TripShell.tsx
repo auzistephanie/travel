@@ -1,6 +1,6 @@
-import { lazy, Suspense, useState, type ComponentType } from 'react'
+import { lazy, Suspense, useEffect, useState, type ComponentType } from 'react'
 import { Compass, Settings } from 'lucide-react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { useTrip } from '../hooks/useTrip'
 import { getWhoAmI, setWhoAmI } from '../lib/whoAmI'
 import { WhoAmIPicker } from '../components/WhoAmIPicker'
@@ -29,10 +29,27 @@ export function TripShell() {
   const { shareCode = '' } = useParams<{ shareCode: string }>()
   const { trip, members, loading, error, joinAsNewMember } = useTrip(shareCode)
   const [activeTab, setActiveTab] = useState<TabId>('overview')
-  const [whoAmI, setWhoAmIState] = useState<string | null>(() => getWhoAmI(shareCode))
+  const [searchParams, setSearchParams] = useSearchParams()
+  // 身份識別：優先信網址帶嘅 ?m=，冇先睇返呢部裝置呢個瀏覽器 context 嘅 localStorage。
+  // 咁樣加到主畫面嘅圖示同喺瀏覽器打開個連結（iOS 兩者 storage 分開）先可以認到同一個人。
+  const [whoAmI, setWhoAmIState] = useState<string | null>(
+    () => searchParams.get('m') ?? getWhoAmI(shareCode),
+  )
   const [themeId, setThemeId] = useState<ThemeId>(() => getStoredThemeId(shareCode))
   const [accent, setAccent] = useState<string | null>(() => getStoredAccent(shareCode))
   const [showSettings, setShowSettings] = useState(false)
+
+  // 身份一旦確定，將佢寫返落網址列（唔留 history）。用戶之後複製呢條連結
+  // 去重新加主畫面圖示或者分享畀自己，就算换過 storage context 都認得返係邊個。
+  useEffect(() => {
+    if (!whoAmI) return
+    setWhoAmI(shareCode, whoAmI)
+    if (searchParams.get('m') === whoAmI) return
+    const next = new URLSearchParams(searchParams)
+    next.set('m', whoAmI)
+    setSearchParams(next, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [whoAmI, shareCode])
 
   let content: React.JSX.Element
 

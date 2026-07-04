@@ -70,4 +70,16 @@ describe('SettingsPanel', () => {
     await user.click(screen.getByRole('button', { name: '關閉' }))
     expect(onClose).toHaveBeenCalled()
   })
+
+  it('copies the current URL as the personal link when the copy button is clicked', async () => {
+    const user = userEvent.setup()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    render(<Harness />)
+
+    await user.click(screen.getByRole('button', { name: '複製我的個人連結' }))
+
+    expect(writeText).toHaveBeenCalledWith(window.location.href)
+    expect(screen.getByRole('button', { name: '已複製' })).toBeInTheDocument()
+  })
 })
