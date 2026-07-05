@@ -79,6 +79,40 @@ export async function findTripByShareCode(shareCode: string): Promise<FindTripRe
   return { trip: trip as Trip, members: (members ?? []) as TripMember[] }
 }
 
+export interface AuthUserTrip {
+  shareCode: string
+  name: string
+  role: 'owner' | 'member'
+  startDate: string | null
+  endDate: string | null
+}
+
+// 登入後攞返呢個 auth user 連結咗嘅所有行程（跨裝置同步用）。
+// 靠 trip_members.auth_user_id 認人，join 返 trips 攞名／日期／分享碼。
+export async function getTripsForAuthUser(authUserId: string): Promise<AuthUserTrip[]> {
+  const { data, error } = await supabase
+    .from('trip_members')
+    .select('is_owner, trips(share_code, name, start_date, end_date)')
+    .eq('auth_user_id', authUserId)
+
+  if (error) throw error
+
+  type TripJoin = { share_code: string; name: string; start_date: string | null; end_date: string | null }
+  // Supabase 將 join 出嚟嘅 trips 型別成 array（其實一對一），統一先正規化成單一物件。
+  const rows = (data ?? []) as unknown as Array<{ is_owner: boolean; trips: TripJoin | TripJoin[] | null }>
+
+  return rows
+    .map((row) => ({ is_owner: row.is_owner, trip: Array.isArray(row.trips) ? row.trips[0] : row.trips }))
+    .filter((row): row is { is_owner: boolean; trip: TripJoin } => !!row.trip)
+    .map((row) => ({
+      shareCode: row.trip.share_code,
+      name: row.trip.name,
+      role: row.is_owner ? 'owner' : 'member',
+      startDate: row.trip.start_date,
+      endDate: row.trip.end_date,
+    }))
+}
+
 export async function addTripMember(tripId: string, name: string): Promise<TripMember> {
   const { data, error } = await supabase
     .from('trip_members')

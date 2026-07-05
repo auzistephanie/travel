@@ -171,10 +171,22 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 新增 CSS 喺 `theme.css`「App shell」段，avatar 圓圈刻意 `aria-hidden`，唔影響 button 嘅 accessible name（test 仲係用返 member 個名揾button）。
 - **測試**：`WhoAmIPicker.test.tsx`（3 個原有 test 冇改都全過）、`TripShell.test.tsx`（14 個）全綠、`tsc -b` 零錯、`vite build` 乾淨；用 Chrome MCP 喺線上實測撳「切換身份」睇真身版面，確認顏色/卡片/頭像/分隔線都出返晒。
 
+## 8n. 「我的行程」首頁 + 一人多行程 + 首頁登入掣（2026-07-05）
+- **背景**：Stephanie 指出 app 第一個版面直接係「開新行程」——如果已經開過行程，冇任何「我的行程」清單入口攞返（只能靠 URL/localStorage 記住條連結）；亦想 login 更前置、一人可以有多個行程。採用方案 C（混合，preview 批準）。
+- **做法**：
+  - 新增 `src/lib/myTrips.ts`（+`myTrips.test.ts` 8 個）：localStorage「我的行程」清單，`getMyTrips / addMyTrip(upsert) / touchMyTrip / removeMyTrip / mergeMyTrips`，存 `{shareCode,name,role,startDate,endDate,lastOpened}`，按 lastOpened 由新到舊排、容錯 corrupt storage。純本地零登入即用。
+  - `tripApi.ts` 加 `getTripsForAuthUser(authUserId)`：登入後由 `trip_members.auth_user_id` join `trips` 攞返所有連結行程（跨裝置同步）。注意 Supabase join `trips` 型別成 array，已正規化成單一物件。
+  - `Landing.tsx` 由「淨係開新行程/加入」改成**「我的行程」home**：本地清單有行程 → 顯示行程卡列表（Link 入 `/t/:shareCode`，owner=「我建立」綠 badge、member=「已加入」金 badge）＋開新行程＋用分享碼加入；清單空 → 顯示返原本 cover 卡。**兩態底部都有「用 Google 登入」掣**（保留 journal 復古風：米色底、啡框、Google G 標、虛線分隔），登入後顯示「已用 email 登入」並自動 `mergeMyTrips` 併入雲端行程。**login 顯眼但唔強制**，朋友照樣免登入揀名。
+  - `Landing.css` 加 `.journal-trip-list/.journal-trip-card/.journal-login/.journal-login-btn/.journal-google-g` 等樣式，全跟 cartography 手繪風，冇加新色系。
+  - 寫入時機：`CreateTrip`（建立成功 role=owner）、`JoinTrip`（分享碼加入 role=member）、`TripShell`（識別身份後按 `is_owner` upsert，令經朋友連結入嚟嘅行程都出現喺清單）。
+- **朋友流程完全冇變**：一樣撳連結揀名，唔理 URL 有冇 `?m=`。
+- **測試**：`myTrips.test.ts`(8)、`tripApi.test.ts`(7)、`CreateTrip/JoinTrip/TripShell.test.tsx`(23) 全綠共 38 條、`tsc -b` 零錯、`vite build` 乾淨（Landing 打包入主 bundle 非 lazy）。
+- **已知限制**：純本地清單換機/清 cache 會唔見（正如設計），要靠 Google 登入嗰層攞返雲端行程。`getTripsForAuthUser` 未寫獨立 unit test（靠 build/tsc 保型別；實際查詢喺線上實測）。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-05（新增 8m「哪位是你？」畫面重新設計）*
+*最後更新：2026-07-05（新增 8n「我的行程」首頁 + 一人多行程 + 首頁登入掣）*

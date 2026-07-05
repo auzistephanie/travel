@@ -3,6 +3,7 @@ import { Compass, Repeat, Settings } from 'lucide-react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useTrip } from '../hooks/useTrip'
 import { clearWhoAmI, getWhoAmI, setWhoAmI } from '../lib/whoAmI'
+import { addMyTrip } from '../lib/myTrips'
 import { getCurrentAuthUser, linkMemberToAuthUser, onAuthUserChange, signInWithGoogle, type AuthUser } from '../lib/ownerAuth'
 import { lazyImportWithReload } from '../lib/lazyWithReload'
 import { WhoAmIPicker } from '../components/WhoAmIPicker'
@@ -86,6 +87,21 @@ export function TripShell() {
       linkMemberToAuthUser(currentMember.id, authUser.id).then(refetch)
     }
   }, [authUser, members, whoAmI, refetch, manualOverride])
+
+  // 身份確定後，將呢個行程記入「我的行程」本地清單（首頁列得返），
+  // 令經朋友連結入嚟嘅行程都會出現，唔使死記條 URL。
+  useEffect(() => {
+    if (!trip || !whoAmI) return
+    const currentMember = members.find((m) => m.id === whoAmI)
+    if (!currentMember) return
+    addMyTrip({
+      shareCode: trip.share_code,
+      name: trip.name,
+      role: currentMember.is_owner ? 'owner' : 'member',
+      startDate: trip.start_date,
+      endDate: trip.end_date,
+    })
+  }, [trip, whoAmI, members])
 
   // 「切換身份」：清走呢部裝置對呢個 trip 嘅身份記錄，翻返去揀名畫面。
   // 主要應付「同一部機想加多個人 / 想睇下朋友視角」——冇呢個掣嘅話，

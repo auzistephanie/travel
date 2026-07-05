@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Check, Copy } from 'lucide-react'
 import { createTrip } from '../lib/tripApi'
 import { setWhoAmI } from '../lib/whoAmI'
+import { addMyTrip } from '../lib/myTrips'
 import { signInWithGoogle } from '../lib/ownerAuth'
 import { DESTINATIONS } from '../lib/destinations'
 import type { Trip, TripMember } from '../types/models'
@@ -39,6 +40,13 @@ export function CreateTrip() {
         destinationCountry: destinationCountry || null,
       })
       setWhoAmI(trip.share_code, owner.id)
+      addMyTrip({
+        shareCode: trip.share_code,
+        name: trip.name,
+        role: 'owner',
+        startDate: trip.start_date,
+        endDate: trip.end_date,
+      })
       setCreated({ trip, owner })
     } catch {
       setError('建立失敗，請再試一次')
