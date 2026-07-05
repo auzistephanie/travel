@@ -9,6 +9,15 @@ import { supabase } from './supabaseClient'
 export interface AuthUser {
   id: string
   email: string | null
+  /** Google profile 個顯示名（user_metadata.full_name / name），冇就 null。用嚟預填「你的名字」。 */
+  name: string | null
+}
+
+/** 由 Supabase auth user 抽返顯示名（Google OAuth 會放喺 user_metadata）。 */
+function readDisplayName(meta: Record<string, unknown> | undefined): string | null {
+  if (!meta) return null
+  const full = meta.full_name ?? meta.name
+  return typeof full === 'string' && full.trim() ? full : null
 }
 
 /**
@@ -29,14 +38,14 @@ export async function getCurrentAuthUser(): Promise<AuthUser | null> {
   const { data } = await supabase.auth.getSession()
   const user = data.session?.user
   if (!user) return null
-  return { id: user.id, email: user.email ?? null }
+  return { id: user.id, email: user.email ?? null, name: readDisplayName(user.user_metadata) }
 }
 
 /** 監聽 auth 狀態變化（例如撳咗 magic link 之後先至有 session）。返個 unsubscribe function。 */
 export function onAuthUserChange(callback: (user: AuthUser | null) => void): () => void {
   const { data } = supabase.auth.onAuthStateChange((_event, session) => {
     const user = session?.user
-    callback(user ? { id: user.id, email: user.email ?? null } : null)
+    callback(user ? { id: user.id, email: user.email ?? null, name: readDisplayName(user.user_metadata) } : null)
   })
   return () => data.subscription.unsubscribe()
 }

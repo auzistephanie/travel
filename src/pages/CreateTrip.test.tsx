@@ -16,7 +16,16 @@ const setWhoAmI = vi.fn()
 vi.mock('../lib/whoAmI', () => ({ setWhoAmI }))
 
 const signInWithGoogle = vi.fn()
-vi.mock('../lib/ownerAuth', () => ({ signInWithGoogle: (...a: unknown[]) => signInWithGoogle(...a) }))
+const getCurrentAuthUser = vi.fn()
+const linkMemberToAuthUser = vi.fn()
+vi.mock('../lib/ownerAuth', () => ({
+  signInWithGoogle: (...a: unknown[]) => signInWithGoogle(...a),
+  getCurrentAuthUser: (...a: unknown[]) => getCurrentAuthUser(...a),
+  linkMemberToAuthUser: (...a: unknown[]) => linkMemberToAuthUser(...a),
+}))
+
+const addMyTrip = vi.fn()
+vi.mock('../lib/myTrips', () => ({ addMyTrip: (...a: unknown[]) => addMyTrip(...a) }))
 
 const { CreateTrip } = await import('./CreateTrip')
 
@@ -26,6 +35,9 @@ describe('CreateTrip', () => {
     createTrip.mockReset()
     setWhoAmI.mockClear()
     signInWithGoogle.mockReset()
+    getCurrentAuthUser.mockReset().mockResolvedValue(null)
+    linkMemberToAuthUser.mockReset().mockResolvedValue(undefined)
+    addMyTrip.mockClear()
   })
 
   it('creates a trip, remembers who the owner is, and shows the post-creation login prompt', async () => {
@@ -184,6 +196,41 @@ describe('CreateTrip', () => {
     await user.click(screen.getByRole('button', { name: '建立行程' }))
 
     expect(createTrip).toHaveBeenCalledWith(expect.objectContaining({ destinationCountry: 'TH' }))
+  })
+
+  it('prefills the name from the logged-in Google profile, auto-links the owner, and skips the login button', async () => {
+    const user = userEvent.setup()
+    getCurrentAuthUser.mockResolvedValue({ id: 'u1', email: 'stephanie@example.com', name: 'Stephanie Au' })
+    createTrip.mockResolvedValue({
+      trip: { id: 't1', share_code: 'ABC234' },
+      owner: { id: 'm1', name: 'Stephanie Au' },
+    })
+
+    render(
+      <MemoryRouter>
+        <CreateTrip />
+      </MemoryRouter>,
+    )
+
+    // 個名應該由 Google profile 預填
+    const nameInput = await screen.findByLabelText<HTMLInputElement>('你的名字')
+    expect(nameInput.value).toBe('Stephanie Au')
+
+    await user.type(screen.getByLabelText('行程名'), '東京五日')
+    await user.type(screen.getByLabelText('開始日期'), '2026-08-01')
+    await user.type(screen.getByLabelText('結束日期'), '2026-08-05')
+    await user.click(screen.getByRole('button', { name: '建立行程' }))
+
+    // 建立後即刻綁定個 owner member
+    await screen.findByText('行程建立成功！')
+    expect(linkMemberToAuthUser).toHaveBeenCalledWith('m1', 'u1')
+
+    // 已登入就唔應該再出「用 Google 登入」掣，改出已登入狀態
+    expect(screen.queryByRole('button', { name: '用 Google 登入' })).not.toBeInTheDocument()
+    expect(screen.getByText(/已用 stephanie@example.com 登入/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '入去行程' }))
+    expect(navigate).toHaveBeenCalledWith('/t/ABC234')
   })
 
   it('shows an error message when creation fails', async () => {

@@ -1,10 +1,10 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Check, Copy } from 'lucide-react'
 import { createTrip } from '../lib/tripApi'
 import { setWhoAmI } from '../lib/whoAmI'
 import { addMyTrip } from '../lib/myTrips'
-import { signInWithGoogle } from '../lib/ownerAuth'
+import { getCurrentAuthUser, linkMemberToAuthUser, signInWithGoogle, type AuthUser } from '../lib/ownerAuth'
 import { DESTINATIONS } from '../lib/destinations'
 import type { Trip, TripMember } from '../types/models'
 import '../styles/journalCard.css'
@@ -26,6 +26,21 @@ export function CreateTrip() {
   const [signingIn, setSigningIn] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
   const [inviteCopied, setInviteCopied] = useState(false)
+  // 已登入嘅 owner：用嚟預填名 + 建立後即刻綁定，唔使再喺成功畫面撳一次「用 Google 登入」。
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null)
+
+  // 開頁 check 呢個瀏覽器 context 有冇登入咗嘅 account；有就用 Google profile 個名預填「你的名字」。
+  useEffect(() => {
+    let cancelled = false
+    getCurrentAuthUser().then((user) => {
+      if (cancelled || !user) return
+      setAuthUser(user)
+      if (user.name) setOwnerName((prev) => prev || user.name!)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -47,6 +62,14 @@ export function CreateTrip() {
         startDate: trip.start_date,
         endDate: trip.end_date,
       })
+      // 已登入就即刻將個新 owner member 綁返個 account，之後換裝置都認得返，唔使再叫佢登入一次。
+      if (authUser) {
+        try {
+          await linkMemberToAuthUser(owner.id, authUser.id)
+        } catch {
+          // 綁定失敗唔阻礙入行程；TripShell 之後仍會再試綁定。
+        }
+      }
       setCreated({ trip, owner })
     } catch {
       setError('建立失敗，請再試一次')
@@ -96,14 +119,25 @@ export function CreateTrip() {
           </button>
 
           <h2>你自己嘅登入</h2>
-          <p>用 Google 登入，就算之後換裝置或瀏覽器都認得返你，唔使再揀名。呢步可以跳過，遲啲入 設定 都做得到。</p>
-          <button type="button" onClick={handleGoogleSignIn} disabled={signingIn}>
-            用 Google 登入
-          </button>
-          {loginError && <p role="alert">{loginError}</p>}
-          <button type="button" onClick={goToTrip}>
-            遲啲先，直接入去行程
-          </button>
+          {authUser ? (
+            <>
+              <p>已用 {authUser.email ?? 'Google'} 登入，呢個行程已經綁定咗你嘅帳戶，換裝置都認得返你。</p>
+              <button type="button" onClick={goToTrip}>
+                入去行程
+              </button>
+            </>
+          ) : (
+            <>
+              <p>用 Google 登入，就算之後換裝置或瀏覽器都認得返你，唔使再揀名。呢步可以跳過，遲啲入 設定 都做得到。</p>
+              <button type="button" onClick={handleGoogleSignIn} disabled={signingIn}>
+                用 Google 登入
+              </button>
+              {loginError && <p role="alert">{loginError}</p>}
+              <button type="button" onClick={goToTrip}>
+                遲啲先，直接入去行程
+              </button>
+            </>
+          )}
         </div>
       </div>
     )

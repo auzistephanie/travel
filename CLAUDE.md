@@ -196,10 +196,19 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **測試**：`tripApi.test.ts`(+3 updateTrip/delete)、`myTrips.test.ts`(8)、`SettingsPanel.test.tsx`(13)、`TripShell.test.tsx`(14) 全綠共 45 條、`tsc -b` 零錯、`vite build` 乾淨。
 - **朋友流程冇變**；member 喺清單只有「從清單移除」，冇「徹底刪除」。
 
+## 8p. 開新行程感知已登入狀態（2026-07-05）
+- **問題**：Stephanie 反映登入（Google）之後開新行程，`CreateTrip` 仍然：① 硬性要佢再填「你的名字」；② 建立成功畫面又出「用 Google 登入」掣叫佢再登入一次。根因係 `CreateTrip.tsx` 完全冇 check `getCurrentAuthUser()`，當每個人都係未登入嘅陌生人。（行程本身冇壞——入到 `TripShell` 後 owner 會被自動綁定返 account，純粹係流程重複／confusing。）
+- **做法**（Stephanie 揀咗「名字欄預填可改」）：
+  - `ownerAuth.ts`：`AuthUser` 加 `name`（由 `user_metadata.full_name / name` 讀，即 Google profile 顯示名），`getCurrentAuthUser` / `onAuthUserChange` 一齊回傳。
+  - `CreateTrip.tsx`：開頁 `getCurrentAuthUser()` → 有登入就用 Google 個名**預填**「你的名字」（仍可改）；建立成功後如已登入即刻 `linkMemberToAuthUser(owner.id, authUser.id)` 綁定；成功畫面已登入就顯示「已用 xxx 登入…」+「入去行程」掣，**唔再出登入掣**。未登入嘅流程完全不變。
+- **朋友流程冇變**：一樣撳連結揀名，唔受影響。
+- **測試**：`CreateTrip.test.tsx`（+1，登入預填/自動綁定/唔出登入掣）、`ownerAuth.test.ts`（+1 且更新既有 case 對應新 `name` 欄），`CreateTrip`(8)／`ownerAuth`(8)／`TripShell`(14) 共 30 條全綠、`tsc -b` 零錯、`vite build` 乾淨（211 modules）。
+- **未驗證**：實際線上「登入 → 開新行程 → 睇名有冇預填、成功畫面唔再叫登入」要 Stephanie 用真 Google account 行一次確認。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-05（新增 8o 行程可設定 + 可刪：本地移除 / 徹底刪 DB）*
+*最後更新：2026-07-05（新增 8p 開新行程感知已登入：預填名 + 自動綁定 + 唔再叫登入）*

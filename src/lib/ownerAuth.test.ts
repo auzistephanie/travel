@@ -54,11 +54,22 @@ describe('getCurrentAuthUser', () => {
     expect(await getCurrentAuthUser()).toBeNull()
   })
 
-  it('returns the user id and email when a session exists', async () => {
+  it('returns the user id, email and display name when a session exists', async () => {
+    supabase.auth.getSession.mockResolvedValue({
+      data: {
+        session: {
+          user: { id: 'u1', email: 'stephanie@example.com', user_metadata: { full_name: 'Stephanie Au' } },
+        },
+      },
+    })
+    expect(await getCurrentAuthUser()).toEqual({ id: 'u1', email: 'stephanie@example.com', name: 'Stephanie Au' })
+  })
+
+  it('returns name null when the session has no display name metadata', async () => {
     supabase.auth.getSession.mockResolvedValue({
       data: { session: { user: { id: 'u1', email: 'stephanie@example.com' } } },
     })
-    expect(await getCurrentAuthUser()).toEqual({ id: 'u1', email: 'stephanie@example.com' })
+    expect(await getCurrentAuthUser()).toEqual({ id: 'u1', email: 'stephanie@example.com', name: null })
   })
 })
 
@@ -74,8 +85,10 @@ describe('onAuthUserChange', () => {
     const callback = vi.fn()
     const stop = onAuthUserChange(callback)
 
-    capturedHandler?.('SIGNED_IN', { user: { id: 'u1', email: 'stephanie@example.com' } })
-    expect(callback).toHaveBeenCalledWith({ id: 'u1', email: 'stephanie@example.com' })
+    capturedHandler?.('SIGNED_IN', {
+      user: { id: 'u1', email: 'stephanie@example.com', user_metadata: { name: 'Stephanie Au' } },
+    })
+    expect(callback).toHaveBeenCalledWith({ id: 'u1', email: 'stephanie@example.com', name: 'Stephanie Au' })
 
     capturedHandler?.('SIGNED_OUT', null)
     expect(callback).toHaveBeenCalledWith(null)
