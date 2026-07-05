@@ -204,6 +204,13 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **朋友流程冇變**：一樣撳連結揀名，唔受影響。
 - **測試**：`CreateTrip.test.tsx`（+1，登入預填/自動綁定/唔出登入掣）、`ownerAuth.test.ts`（+1 且更新既有 case 對應新 `name` 欄），`CreateTrip`(8)／`ownerAuth`(8)／`TripShell`(14) 共 30 條全綠、`tsc -b` 零錯、`vite build` 乾淨（211 modules）。
 - **未驗證**：實際線上「登入 → 開新行程 → 睇名有冇預填、成功畫面唔再叫登入」要 Stephanie 用真 Google account 行一次確認。
+- **已驗證（2026-07-05）**：用 Chrome MCP 真人流程實測——Google 登入 → 開新行程，「你的名字」自動預填「Stephanie Au」、成功畫面顯示「已用 auzistephanie@gmail.com 登入…」冇再出登入掣、撳「入去行程」直入總覽冇彈揀名畫面。三點全部確認。
+
+## 8q. 移除 Settings「行程設定」編輯段（2026-07-05）
+- **背景**：Stephanie 睇實測時見到 Settings 內 8o 加嘅「行程設定」（改名/開始日/結束日/目的地 + 儲存掣）排版迫、覺得唔需要，要求拎走；順帶要刪走「危險區」個標題字。
+- **做法**：`SettingsPanel.tsx` 移除成段「行程設定」表單（連 `tripName/tripStart/tripEnd/tripDest/savingTrip/tripSaved/tripSaveError` state、`handleSaveTrip`、`updateTrip`／`DESTINATIONS`／`DESTINATION_OPTIONS` import、未再用嘅 `onTripChanged` 解構）。**保留刪除行程功能**，但標題由「危險區」改做「刪除行程」（掣本身已寫「刪除呢個行程」／確認流程不變）。`tripApi.updateTrip` 本身冇刪（仲有 unit test），淨係 UI 唔再用。
+- **朋友流程 / owner 刪除流程冇變**；Landing 每張行程卡右上角嗰個「從清單移除 / 徹底刪除」入口都冇郁。
+- **測試**：`SettingsPanel.test.tsx`(13)、`TripShell.test.tsx`(14) 全綠、`tsc -b` 零錯、`vite build` 乾淨（211 modules）。呢啲 test 個 Harness 本身冇傳 `trip`，所以冇 exercise 到被移除嗰段，無需改 test。
 
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
@@ -211,4 +218,4 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-05（新增 8p 開新行程感知已登入：預填名 + 自動綁定 + 唔再叫登入）*
+*最後更新：2026-07-05（新增 8q 移除 Settings「行程設定」編輯段、8p 實測確認）*
