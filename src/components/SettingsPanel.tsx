@@ -1,8 +1,13 @@
 import { useState } from 'react'
-import { Check, Copy, LogIn, X } from 'lucide-react'
+import { Check, Copy, LogIn, Trash2, X } from 'lucide-react'
 import { THEMES } from '../theme/tokens'
 import { useTheme } from '../theme/ThemeContext'
 import { GenericIllustration } from '../theme/illustrations/GenericIllustration'
+import { deleteTripByShareCode, updateTrip } from '../lib/tripApi'
+import { DESTINATIONS } from '../lib/destinations'
+import type { Trip } from '../types/models'
+
+const DESTINATION_OPTIONS = ['JP', 'TH', 'KR', 'TW', 'VN', 'SG', 'MY'] as const
 
 interface SettingsPanelProps {
   onClose: () => void
@@ -10,6 +15,9 @@ interface SettingsPanelProps {
   authEmail?: string | null
   onSignInWithGoogle?: () => Promise<void>
   shareCode?: string
+  trip?: Trip | null
+  onTripChanged?: () => void
+  onTripDeleted?: () => void
 }
 
 export function SettingsPanel({
@@ -18,6 +26,9 @@ export function SettingsPanel({
   authEmail = null,
   onSignInWithGoogle,
   shareCode,
+  trip = null,
+  onTripChanged,
+  onTripDeleted,
 }: SettingsPanelProps) {
   const { themeId, accent, setThemeId, setAccent } = useTheme()
   const currentTheme = THEMES[themeId]
@@ -25,6 +36,51 @@ export function SettingsPanel({
   const [inviteCopied, setInviteCopied] = useState(false)
   const [signingIn, setSigningIn] = useState(false)
   const [signInError, setSignInError] = useState<string | null>(null)
+  const [tripName, setTripName] = useState(trip?.name ?? '')
+  const [tripStart, setTripStart] = useState(trip?.start_date ?? '')
+  const [tripEnd, setTripEnd] = useState(trip?.end_date ?? '')
+  const [tripDest, setTripDest] = useState(trip?.destination_country ?? '')
+  const [savingTrip, setSavingTrip] = useState(false)
+  const [tripSaved, setTripSaved] = useState(false)
+  const [tripSaveError, setTripSaveError] = useState<string | null>(null)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deletingTrip, setDeletingTrip] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  async function handleSaveTrip() {
+    if (!trip || savingTrip) return
+    setSavingTrip(true)
+    setTripSaved(false)
+    setTripSaveError(null)
+    try {
+      await updateTrip(trip.id, {
+        name: tripName,
+        startDate: tripStart,
+        endDate: tripEnd,
+        destinationCountry: tripDest || null,
+      })
+      setTripSaved(true)
+      setTimeout(() => setTripSaved(false), 2000)
+      onTripChanged?.()
+    } catch {
+      setTripSaveError('儲存失敗，請再試一次')
+    } finally {
+      setSavingTrip(false)
+    }
+  }
+
+  async function handleDeleteTrip() {
+    if (!trip || deletingTrip) return
+    setDeletingTrip(true)
+    setDeleteError(null)
+    try {
+      await deleteTripByShareCode(trip.share_code)
+      onTripDeleted?.()
+    } catch {
+      setDeleteError('刪除失敗，請再試一次')
+      setDeletingTrip(false)
+    }
+  }
 
   async function handleCopyLink() {
     try {
@@ -127,6 +183,89 @@ export function SettingsPanel({
                 {signInError && <p role="alert">{signInError}</p>}
               </>
             )}
+          </>
+        )}
+
+        {isOwner && trip && (
+          <>
+            <h3>行程設定</h3>
+            <label htmlFor="settings-trip-name">行程名</label>
+            <input
+              id="settings-trip-name"
+              value={tripName}
+              onChange={(e) => setTripName(e.target.value)}
+            />
+            <label htmlFor="settings-trip-start">開始日期</label>
+            <input
+              id="settings-trip-start"
+              type="date"
+              value={tripStart}
+              onChange={(e) => setTripStart(e.target.value)}
+            />
+            <label htmlFor="settings-trip-end">結束日期</label>
+            <input
+              id="settings-trip-end"
+              type="date"
+              value={tripEnd}
+              onChange={(e) => setTripEnd(e.target.value)}
+            />
+            <label htmlFor="settings-trip-dest">目的地國家</label>
+            <select
+              id="settings-trip-dest"
+              value={tripDest ?? ''}
+              onChange={(e) => setTripDest(e.target.value)}
+            >
+              <option value="">未定（加入航班後自動判斷）</option>
+              {DESTINATION_OPTIONS.map((code) => (
+                <option key={code} value={code}>
+                  {DESTINATIONS[code].countryName}
+                </option>
+              ))}
+            </select>
+            <button type="button" className="settings-copy-link" onClick={handleSaveTrip} disabled={savingTrip}>
+              {tripSaved ? <Check size={16} aria-hidden="true" /> : null}
+              {tripSaved ? '已儲存' : savingTrip ? '儲存中…' : '儲存行程設定'}
+            </button>
+            {tripSaveError && <p role="alert">{tripSaveError}</p>}
+
+            <h3 className="settings-danger-head">危險區</h3>
+            {confirmingDelete ? (
+              <>
+                <p className="settings-hint">
+                  徹底刪除「{trip.name}」？連夾錢、行李、行程、手信全部一次過清走，不可還原。
+                </p>
+                <button
+                  type="button"
+                  className="settings-danger-btn"
+                  onClick={handleDeleteTrip}
+                  disabled={deletingTrip}
+                >
+                  <Trash2 size={16} aria-hidden="true" />
+                  {deletingTrip ? '刪除中…' : '確認徹底刪除'}
+                </button>
+                <button
+                  type="button"
+                  className="settings-copy-link"
+                  onClick={() => setConfirmingDelete(false)}
+                  disabled={deletingTrip}
+                >
+                  取消
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="settings-danger-btn"
+                onClick={() => {
+                  setDeleteError(null)
+                  setConfirmingDelete(true)
+                }}
+              >
+                <Trash2 size={16} aria-hidden="true" />
+                刪除呢個行程
+              </button>
+            )}
+            {deleteError && <p role="alert">{deleteError}</p>}
           </>
         )}
 

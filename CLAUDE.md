@@ -183,10 +183,23 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **測試**：`myTrips.test.ts`(8)、`tripApi.test.ts`(7)、`CreateTrip/JoinTrip/TripShell.test.tsx`(23) 全綠共 38 條、`tsc -b` 零錯、`vite build` 乾淨（Landing 打包入主 bundle 非 lazy）。
 - **已知限制**：純本地清單換機/清 cache 會唔見（正如設計），要靠 Google 登入嗰層攞返雲端行程。`getTripsForAuthUser` 未寫獨立 unit test（靠 build/tsc 保型別；實際查詢喺線上實測）。
 
+## 8o. 行程可設定 + 可刪（本地移除 / 徹底刪 DB）（2026-07-05）
+- **背景**：8n 之後 Stephanie 話「太多 testing 行程」，要「行程可設定可刪」。採用推薦全範圍（preview 批準）。
+- **兩層刪除（分清隱藏 vs 真刪，避免手殘）**：
+  - **從清單移除**（本地）：`removeMyTrip`，淨係喺呢部裝置 localStorage 隱藏，DB 資料仲喺、朋友照用、日後連結/登入搵得返。
+  - **徹底刪除**（owner，DB）：`deleteTripByShareCode` = `delete from trips where share_code`；schema 所有子表 trip_id 都 `on delete cascade`，一句連 members/flights/itinerary/packing/wishlist/expenses/gifts/settings 全清，不可還原，要二次確認。
+- **入口**：
+  - `Landing.tsx` 每張行程卡右上角加垃圾桶掣 → 確認蓋面（`.journal-confirm-overlay`）：「從清單移除」（人人）／「徹底刪除行程」（淨係 role=owner 先出，紅掣）／取消。垃圾桶掣 `preventDefault+stopPropagation` 唔會誤觸卡片 navigate。
+  - `SettingsPanel.tsx`（owner + 有 trip 先出）加「行程設定」section：改名／開始日／結束日／目的地 + 「儲存行程設定」（`updateTrip`）；下面「危險區」inline 二次確認刪除（`deleteTripByShareCode`）。`TripShell` 傳 `trip / onTripChanged=refetch / onTripDeleted`（刪完 `removeMyTrip`+`clearWhoAmI`+`window.location.assign('/')` 返首頁）。
+- **tripApi 新增**：`updateTrip(id, {name?,startDate?,endDate?,destinationCountry?})`（只 patch 有傳嘅欄）、`deleteTripByShareCode(shareCode)`。
+- **樣式**：Landing.css 加 `.journal-trip-delete`/`.journal-confirm-*`；theme.css 加 `.settings-danger-head`/`.settings-danger-btn`（紅），全用手繪風，冇加新 token。
+- **測試**：`tripApi.test.ts`(+3 updateTrip/delete)、`myTrips.test.ts`(8)、`SettingsPanel.test.tsx`(13)、`TripShell.test.tsx`(14) 全綠共 45 條、`tsc -b` 零錯、`vite build` 乾淨。
+- **朋友流程冇變**；member 喺清單只有「從清單移除」，冇「徹底刪除」。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-05（新增 8n「我的行程」首頁 + 一人多行程 + 首頁登入掣）*
+*最後更新：2026-07-05（新增 8o 行程可設定 + 可刪：本地移除 / 徹底刪 DB）*

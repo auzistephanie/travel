@@ -3,7 +3,7 @@ import { Compass, Repeat, Settings } from 'lucide-react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useTrip } from '../hooks/useTrip'
 import { clearWhoAmI, getWhoAmI, setWhoAmI } from '../lib/whoAmI'
-import { addMyTrip } from '../lib/myTrips'
+import { addMyTrip, removeMyTrip } from '../lib/myTrips'
 import { getCurrentAuthUser, linkMemberToAuthUser, onAuthUserChange, signInWithGoogle, type AuthUser } from '../lib/ownerAuth'
 import { lazyImportWithReload } from '../lib/lazyWithReload'
 import { WhoAmIPicker } from '../components/WhoAmIPicker'
@@ -173,6 +173,13 @@ export function TripShell() {
             authEmail={authUser?.email ?? null}
             onSignInWithGoogle={() => signInWithGoogle()}
             shareCode={trip.share_code}
+            trip={trip}
+            onTripChanged={refetch}
+            onTripDeleted={() => {
+              removeMyTrip(trip.share_code)
+              clearWhoAmI(trip.share_code)
+              window.location.assign('/')
+            }}
           />
         )}
       </>

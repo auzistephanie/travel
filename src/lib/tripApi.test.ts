@@ -4,7 +4,7 @@ import type { PostgrestError } from '@supabase/supabase-js'
 const { supabase } = vi.hoisted(() => ({ supabase: { from: vi.fn() } }))
 vi.mock('./supabaseClient', () => ({ supabase }))
 
-import { addTripMember, createTrip, findTripByShareCode } from './tripApi'
+import { addTripMember, createTrip, deleteTripByShareCode, findTripByShareCode, updateTrip } from './tripApi'
 import { makeQuery } from '../test/supabaseQueryMock'
 
 const uniqueViolation = {
@@ -133,6 +133,49 @@ describe('findTripByShareCode', () => {
 
     const result = await findTripByShareCode('ABC234')
     expect(result).toEqual({ trip, members })
+  })
+})
+
+describe('updateTrip', () => {
+  it('updates only the provided fields and returns the trip', async () => {
+    const updated = { id: 't1', name: '新名', start_date: '2026-09-01' }
+    let q: ReturnType<typeof makeQuery> | undefined
+    supabase.from.mockReset()
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'trips') {
+        q = makeQuery({ data: updated, error: null })
+        return q
+      }
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    const result = await updateTrip('t1', { name: '新名', destinationCountry: null })
+    expect(q?.update).toHaveBeenCalledWith({ name: '新名', destination_country: null })
+    expect(result).toEqual(updated)
+  })
+})
+
+describe('deleteTripByShareCode', () => {
+  it('deletes the trip row by share code', async () => {
+    let q: ReturnType<typeof makeQuery> | undefined
+    supabase.from.mockReset()
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'trips') {
+        q = makeQuery({ data: null, error: null })
+        return q
+      }
+      throw new Error(`unexpected table ${table}`)
+    })
+
+    await deleteTripByShareCode('ABC234')
+    expect(q?.delete).toHaveBeenCalled()
+    expect(q?.eq).toHaveBeenCalledWith('share_code', 'ABC234')
+  })
+
+  it('throws when the delete errors', async () => {
+    supabase.from.mockReset()
+    supabase.from.mockImplementation(() => makeQuery({ data: null, error: { message: 'boom' } }))
+    await expect(deleteTripByShareCode('ABC234')).rejects.toBeTruthy()
   })
 })
 

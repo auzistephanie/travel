@@ -936,6 +936,27 @@
   margin-top: 18px;
 }
 
+.settings-sheet h3.settings-danger-head {
+  color: #a1341f;
+  margin-top: 22px;
+}
+
+.theme-root button.settings-danger-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #a1341f;
+  color: #fff;
+  border: 2px solid #a1341f;
+  margin-top: 4px;
+}
+
+.theme-root button.settings-danger-btn:disabled {
+  opacity: 0.6;
+}
+
 /* =======================================================================
    行程 Itinerary（redesign 2026-07-02）
    ======================================================================= */

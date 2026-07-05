@@ -113,6 +113,33 @@ export async function getTripsForAuthUser(authUserId: string): Promise<AuthUserT
     }))
 }
 
+export interface UpdateTripInput {
+  name?: string
+  startDate?: string
+  endDate?: string
+  destinationCountry?: string | null
+}
+
+// 更新行程基本資料（改名／日期／目的地）。owner 喺設定度用。
+export async function updateTrip(tripId: string, patch: UpdateTripInput): Promise<Trip> {
+  const row: Record<string, unknown> = {}
+  if (patch.name !== undefined) row.name = patch.name
+  if (patch.startDate !== undefined) row.start_date = patch.startDate
+  if (patch.endDate !== undefined) row.end_date = patch.endDate
+  if (patch.destinationCountry !== undefined) row.destination_country = patch.destinationCountry
+
+  const { data, error } = await supabase.from('trips').update(row).eq('id', tripId).select().single()
+  if (error) throw error
+  return data as Trip
+}
+
+// 徹底刪除行程：schema 所有子表 trip_id 都係 on delete cascade，
+// 所以刪 trips 一行就連 members/flights/itinerary/packing/wishlist/expenses/gifts/settings 全部清走。不可還原。
+export async function deleteTripByShareCode(shareCode: string): Promise<void> {
+  const { error } = await supabase.from('trips').delete().eq('share_code', shareCode)
+  if (error) throw error
+}
+
 export async function addTripMember(tripId: string, name: string): Promise<TripMember> {
   const { data, error } = await supabase
     .from('trip_members')
