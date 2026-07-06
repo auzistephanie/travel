@@ -71,7 +71,7 @@ export function Itinerary({ trip }: TripPageProps) {
     setPlaceSearching(true)
     setPlaceHint(null)
     try {
-      const found = await searchPlaces(query)
+      const found = await searchPlaces(query, trip.destination_country)
       setPlaceResults(found)
       if (found.length === 0) setPlaceHint('找不到相關地點')
     } finally {

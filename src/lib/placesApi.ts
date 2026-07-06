@@ -13,24 +13,30 @@ interface TomTomSearchResponse {
   }[]
 }
 
-interface LocationBias {
-  lat: number
-  lng: number
-  radiusMeters: number
+interface SearchOptions {
+  lat?: number
+  lng?: number
+  radiusMeters?: number
+  countryCode?: string | null
 }
 
 const SEARCH_LIMIT = 8
 
-async function searchTomTom(query: string, bias?: LocationBias): Promise<PlaceResult[]> {
+async function searchTomTom(query: string, options?: SearchOptions): Promise<PlaceResult[]> {
   const key = import.meta.env.VITE_TOMTOM_KEY
   if (!key) return []
 
   try {
     const params = new URLSearchParams({ key, limit: String(SEARCH_LIMIT) })
-    if (bias) {
-      params.set('lat', String(bias.lat))
-      params.set('lon', String(bias.lng))
-      params.set('radius', String(bias.radiusMeters))
+    if (options?.lat != null && options?.lng != null) {
+      params.set('lat', String(options.lat))
+      params.set('lon', String(options.lng))
+      if (options.radiusMeters != null) params.set('radius', String(options.radiusMeters))
+    }
+    // countrySet 篩選返同一個目的地國家嘅結果——冇呢個嘅話 TomTom 對通用景點名（例如「東京鐵塔」）
+    // 會撈埋其他國家撞名嘅小店（實測搵咗高雄一間叫「東京鐵板燒」嘅餐廳），加咗準好多。
+    if (options?.countryCode) {
+      params.set('countrySet', options.countryCode)
     }
 
     const response = await fetch(
@@ -51,8 +57,8 @@ async function searchTomTom(query: string, bias?: LocationBias): Promise<PlaceRe
   }
 }
 
-export async function searchPlaces(query: string): Promise<PlaceResult[]> {
-  return searchTomTom(query)
+export async function searchPlaces(query: string, countryCode?: string | null): Promise<PlaceResult[]> {
+  return searchTomTom(query, { countryCode })
 }
 
 const INDOOR_SEARCH_RADIUS_METERS = 5000

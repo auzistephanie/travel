@@ -220,6 +220,12 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **已知取捨**：TomTom 搜尋冇 Google 咁準（實測搜「清水寺」揀咗台灣廟宇高過京都清水寺，因為冇傳 geo bias——同 Google 版本行為一致，非新增回歸）；`priceLevel`（心願比價參考價位）TomTom 冇呢個資料，恆定 `null`，UI 已識靜默唔顯示。
 - **實測**：用真 TomTom key 直接 curl Search（清水寺/Tokyo Tower）同 Routing（Shibuya→Shinjuku 自駕 9.4 分鐘、Tokyo Station→Shibuya 步行）API，response shape 同寫落 code 嘅一致。`placesApi`/`storeSuggestApi`/`directionsApi`/`facilitiesApi` + `TransportSegment`/`AddWishlistForm` 共 39 個 test 全綠，`tsc -b` 零錯，`vite build` 乾淨（211 modules）。
 
+## 8t. TomTom 搜尋加 countrySet 篩選（2026-07-06）
+- **背景**：Redeploy 後用 Chrome MCP 上線實測「建立行程」全流程成功，但順便測地圖搜尋，發現搜「東京鐵塔」第一個結果係高雄一間叫「東京鐵板燒」嘅餐廳——8r 記低嘅「冇 geo bias」問題比預期更明顯。
+- **做法**：`placesApi.ts` 嘅 `searchTomTom` 加 `countryCode` 選項，變成 TomTom Search API 嘅 `countrySet` 參數；`searchPlaces(query, countryCode?)` 開多個可選參數；`Itinerary.tsx` 揾地方搜尋嗰陣傳 `trip.destination_country`（本身已經係 `JP`/`TH`/`KR`/`TW`/`VN`/`SG`/`MY` 呢種 ISO code，同 TomTom 格式啱好一致，零轉換成本）。
+- **仲有嘅限制（老實記低）**：加咗 `countrySet=JP` 之後，用中文「東京鐵塔」/日文「東京タワー」搜都仲係搵唔中正確景點（TomTom 對 CJK 別名/在地寫法嘅 fuzzy match 遠遜於 Google）；但用英文「Tokyo Tower」+ `countrySet=JP` 就準確搵到。即係話 `countrySet` 解決咗「撈埋第啲國家」呢個最嚴重嘅問題，但搜尋精準度（尤其中文輸入）依然係 TomTom 相對 Google 嘅弱項，冇進一步嘅平價解法。
+- **測試**：`placesApi.test.ts` 加 2 個 case（傳咗 country 就帶 `countrySet`、冇傳就唔帶），連原有 6 個共 8 個全綠；`Itinerary.test.tsx`(13)、`IndoorSuggestionCard.test.tsx`(2) 冇受影響；`tsc -b` 零錯、`vite build` 乾淨。
+
 ## 8s. 電車 mode 唔叫 API，改用 Google Maps 連結（2026-07-06）
 - **背景**：8r 原本打算「電車」用 HERE Public Transit API，但 Stephanie 實際去 platform.here.com 申請時發現而家 HERE free tier（Base Plan）都要留信用卡先註冊得，同查文檔嗰陣搵到嘅「Limited Plan 免卡」唔一致（可能已經落咗架或者變咗地區限定）。再查過 Rome2Rio（要申請 partner access，唔係即時自助攞 key，軌道覆蓋主力歐洲/印度/中國）同 OpenTripPlanner/Navitia（要自己 host + 逐個目的地搵 GTFS），確認市面冇一個「免信用卡又覆蓋夠亞洲」嘅公共交通 routing API。
 - **做法**：Stephanie 提議「電車」直接出個連結畀用戶自己去 Google Maps 查——`src/lib/directionsApi.ts` 加 `googleMapsTransitUrl(from, to)`，回傳 `https://www.google.com/maps/dir/?api=1&origin=...&destination=...&travelmode=transit`（純官方 URL scheme，唔係 Maps API，唔使 key／唔使登入／完全免費）；`fetchTransportEstimate` 遇到 `TRANSIT` 直接回傳 `null`（唔再叫任何 API）。`TransportSegment.tsx` 揀咗「電車」嗰陣，唔顯示分鐘數，改顯示一粒「喺 Google Maps 睇電車路線」連結掣，撳咗開新分頁——用返 Google 自己最強嘅日/韓/台鐵路資料，好過用一個覆蓋唔齊嘅免費 API 呃自己。
@@ -233,4 +239,4 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-06（新增 8s 電車改用 Google Maps 連結，取代 8r 原定嘅 HERE 方案）*
+*最後更新：2026-07-06（新增 8t TomTom 搜尋加 countrySet 篩選，實測發現並修）*

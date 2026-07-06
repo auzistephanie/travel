@@ -56,6 +56,26 @@ describe('searchPlaces', () => {
     expect(url as string).toContain(encodeURIComponent('淺草寺'))
     expect(url as string).toContain('key=test-key')
   })
+
+  it('biases results to the given country when destinationCountry is passed', async () => {
+    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
+    vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ results: [] }), { status: 200 }))
+
+    await searchPlaces('東京鐵塔', 'JP')
+
+    const [url] = vi.mocked(fetch).mock.calls[0]
+    expect(url as string).toContain('countrySet=JP')
+  })
+
+  it('does not set countrySet when no country is passed', async () => {
+    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
+    vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ results: [] }), { status: 200 }))
+
+    await searchPlaces('東京鐵塔')
+
+    const [url] = vi.mocked(fetch).mock.calls[0]
+    expect(url as string).not.toContain('countrySet')
+  })
 })
 
 describe('searchIndoorPlaces', () => {
