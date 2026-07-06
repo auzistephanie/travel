@@ -5,7 +5,22 @@ import { describe, expect, it, vi } from 'vitest'
 import { SettingsPanel } from './SettingsPanel'
 import { ThemeProvider } from '../theme/ThemeContext'
 import { THEMES } from '../theme/tokens'
-import type { ThemeId } from '../types/models'
+import type { ThemeId, Trip } from '../types/models'
+import { updateTrip } from '../lib/tripApi'
+
+vi.mock('../lib/tripApi', () => ({
+  updateTrip: vi.fn().mockResolvedValue({}),
+  deleteTripByShareCode: vi.fn().mockResolvedValue(undefined),
+}))
+
+const sampleTrip = {
+  id: 'trip-1',
+  name: 'Taiwan',
+  share_code: 'WH82BK',
+  destination_country: 'KR',
+  start_date: '2026-07-06',
+  end_date: '2026-07-09',
+} as unknown as Trip
 
 function Harness({
   onClose = vi.fn(),
@@ -13,12 +28,16 @@ function Harness({
   authEmail,
   onSignInWithGoogle,
   shareCode,
+  trip,
+  onTripChanged,
 }: {
   onClose?: () => void
   isOwner?: boolean
   authEmail?: string | null
   onSignInWithGoogle?: () => Promise<void>
   shareCode?: string
+  trip?: Trip | null
+  onTripChanged?: () => void
 }) {
   const [themeId, setThemeId] = useState<ThemeId>('cartography')
   const [accent, setAccent] = useState<string | undefined>(undefined)
@@ -31,6 +50,8 @@ function Harness({
         authEmail={authEmail}
         onSignInWithGoogle={onSignInWithGoogle}
         shareCode={shareCode}
+        trip={trip}
+        onTripChanged={onTripChanged}
       />
     </ThemeProvider>
   )
@@ -149,5 +170,30 @@ describe('SettingsPanel', () => {
     render(<Harness isOwner authEmail="stephanie@example.com" />)
     expect(screen.getByText(/已用 stephanie@example.com 登入/)).toBeInTheDocument()
     expect(screen.queryByLabelText('Email')).not.toBeInTheDocument()
+  })
+
+  it('shows the destination selector prefilled from the trip for an owner', () => {
+    render(<Harness isOwner trip={sampleTrip} />)
+    const select = screen.getByLabelText('目的地國家') as HTMLSelectElement
+    expect(select).toBeInTheDocument()
+    expect(select.value).toBe('KR')
+  })
+
+  it('hides the destination selector for non-owner members', () => {
+    render(<Harness isOwner={false} trip={sampleTrip} />)
+    expect(screen.queryByLabelText('目的地國家')).not.toBeInTheDocument()
+  })
+
+  it('saves a changed destination and refetches the trip', async () => {
+    const user = userEvent.setup()
+    const onTripChanged = vi.fn()
+    vi.mocked(updateTrip).mockResolvedValue(sampleTrip)
+    render(<Harness isOwner trip={sampleTrip} onTripChanged={onTripChanged} />)
+
+    await user.selectOptions(screen.getByLabelText('目的地國家'), 'TW')
+    await user.click(screen.getByRole('button', { name: /儲存目的地|已儲存/ }))
+
+    expect(updateTrip).toHaveBeenCalledWith('trip-1', { destinationCountry: 'TW' })
+    expect(onTripChanged).toHaveBeenCalled()
   })
 })

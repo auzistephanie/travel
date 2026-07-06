@@ -58,7 +58,15 @@ async function searchTomTom(query: string, options?: SearchOptions): Promise<Pla
 }
 
 export async function searchPlaces(query: string, countryCode?: string | null): Promise<PlaceResult[]> {
-  return searchTomTom(query, { countryCode })
+  const results = await searchTomTom(query, { countryCode })
+  // countrySet 篩得太緊會令結果變空——例如 trip 目的地國家揀錯（實例：一個名叫
+  // 「Taiwan」嘅行程 destination_country 誤存做 KR，搜台灣地點全部被鎖死喺韓國），
+  // 或者用戶想搜第二個國家嘅地方。有帶 countryCode 但搵唔到時，退一步再搜一次唔帶
+  // countrySet，至少畀返結果而唔係得個「找不到相關地點」。
+  if (results.length === 0 && countryCode) {
+    return searchTomTom(query, {})
+  }
+  return results
 }
 
 const INDOOR_SEARCH_RADIUS_METERS = 5000

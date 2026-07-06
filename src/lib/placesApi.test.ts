@@ -76,6 +76,50 @@ describe('searchPlaces', () => {
     const [url] = vi.mocked(fetch).mock.calls[0]
     expect(url as string).not.toContain('countrySet')
   })
+
+  it('retries without countrySet when the country-filtered search finds nothing', async () => {
+    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
+    const fallback = {
+      results: [
+        {
+          poi: { name: 'Taipei 101' },
+          address: { freeformAddress: 'Xinyi, Taipei' },
+          position: { lat: 25.0339, lon: 121.5645 },
+        },
+      ],
+    }
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(new Response(JSON.stringify({ results: [] }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(fallback), { status: 200 }))
+
+    // 目的地誤存做 KR，搜台灣地點——第一次帶 countrySet=KR 空手，退一步唔帶 countrySet 再搜。
+    const result = await searchPlaces('Taipei 101', 'KR')
+
+    expect(result).toEqual([{ name: 'Taipei 101', address: 'Xinyi, Taipei', lat: 25.0339, lng: 121.5645 }])
+    expect(fetch).toHaveBeenCalledTimes(2)
+    const [firstUrl] = vi.mocked(fetch).mock.calls[0]
+    const [secondUrl] = vi.mocked(fetch).mock.calls[1]
+    expect(firstUrl as string).toContain('countrySet=KR')
+    expect(secondUrl as string).not.toContain('countrySet')
+  })
+
+  it('does not retry when the country-filtered search already has results', async () => {
+    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
+    const body = {
+      results: [
+        {
+          poi: { name: '淺草寺' },
+          address: { freeformAddress: 'Asakusa, Tokyo' },
+          position: { lat: 35.7148, lon: 139.7967 },
+        },
+      ],
+    }
+    vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }))
+
+    await searchPlaces('淺草寺', 'JP')
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('searchIndoorPlaces', () => {

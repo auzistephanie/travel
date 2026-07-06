@@ -3,8 +3,12 @@ import { Check, Copy, LogIn, Trash2, X } from 'lucide-react'
 import { THEMES } from '../theme/tokens'
 import { useTheme } from '../theme/ThemeContext'
 import { GenericIllustration } from '../theme/illustrations/GenericIllustration'
-import { deleteTripByShareCode } from '../lib/tripApi'
+import { deleteTripByShareCode, updateTrip } from '../lib/tripApi'
+import { DESTINATIONS } from '../lib/destinations'
 import type { Trip } from '../types/models'
+
+// 同 CreateTrip 一致：HK 淨係本地參考用，唔擺入揀項。
+const DESTINATION_OPTIONS = ['JP', 'TH', 'KR', 'TW', 'VN', 'SG', 'MY'] as const
 
 interface SettingsPanelProps {
   onClose: () => void
@@ -24,6 +28,7 @@ export function SettingsPanel({
   onSignInWithGoogle,
   shareCode,
   trip = null,
+  onTripChanged,
   onTripDeleted,
 }: SettingsPanelProps) {
   const { themeId, accent, setThemeId, setAccent } = useTheme()
@@ -35,6 +40,26 @@ export function SettingsPanel({
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [deletingTrip, setDeletingTrip] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [destValue, setDestValue] = useState(trip?.destination_country ?? '')
+  const [savingDest, setSavingDest] = useState(false)
+  const [destSaved, setDestSaved] = useState(false)
+  const [destError, setDestError] = useState<string | null>(null)
+
+  async function handleSaveDestination() {
+    if (!trip || savingDest) return
+    setSavingDest(true)
+    setDestError(null)
+    try {
+      await updateTrip(trip.id, { destinationCountry: destValue || null })
+      setDestSaved(true)
+      setTimeout(() => setDestSaved(false), 2000)
+      onTripChanged?.()
+    } catch {
+      setDestError('儲存失敗，請再試一次')
+    } finally {
+      setSavingDest(false)
+    }
+  }
 
   async function handleDeleteTrip() {
     if (!trip || deletingTrip) return
@@ -150,6 +175,38 @@ export function SettingsPanel({
                 {signInError && <p role="alert">{signInError}</p>}
               </>
             )}
+          </>
+        )}
+
+        {isOwner && trip && (
+          <>
+            <h3>目的地</h3>
+            <p className="settings-hint">
+              改咗目的地，地圖搜尋會篩返當地結果，行李／簽證／交通卡建議亦會跟住更新。
+            </p>
+            <select
+              aria-label="目的地國家"
+              className="settings-dest-select"
+              value={destValue}
+              onChange={(e) => setDestValue(e.target.value)}
+            >
+              <option value="">未定（加入航班後自動判斷）</option>
+              {DESTINATION_OPTIONS.map((code) => (
+                <option key={code} value={code}>
+                  {DESTINATIONS[code].countryName}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="settings-copy-link"
+              onClick={handleSaveDestination}
+              disabled={savingDest}
+            >
+              {destSaved && <Check size={16} aria-hidden="true" />}
+              {savingDest ? '儲存中…' : destSaved ? '已儲存' : '儲存目的地'}
+            </button>
+            {destError && <p role="alert">{destError}</p>}
           </>
         )}
 
