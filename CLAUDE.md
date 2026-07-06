@@ -239,10 +239,20 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **順手修**：`.gitignore` 原本淨係列 `dist`/`dist-ssr`/`dist-verify`，驗證 build 用嘅 `dist-v2` 唔喺列表，一度被 `github_push.py` 誤推 26 個 build artifacts 上遠端；已加 `dist-v2` + `dist-*`，再 push 清走遠端誤推嗰批。
 - **測試**：`Itinerary.test.tsx`(13) 全綠、`tsc -b` 零錯、`vite build` 乾淨（211 modules）。已 push。
 
+## 8v. 修「找不到相關地點」+ 補返目的地修改入口（2026-07-06）
+- **問題**：Stephanie 截圖行程頁搜尋一直「找不到相關地點」。用 Chrome MCP 上線 debug + 睇 network：發現 TomTom request 有正常發出（key 有 baked，200 OK），但 URL 帶咗 **`countrySet=KR`**——個 trip 名叫「Taiwan」但 DB `destination_country` 誤存做 `KR`（8t 加嘅 `countrySet` 硬篩選 → 台灣地點全部被鎖死喺韓國 → 零結果）。即係 8t 個 feature 有個 failure mode：一旦國家錯／想搜第二國，就零結果兼冇 fallback，用戶淨係見到「找不到」唔知咩事。
+- **三部分修復**：
+  - ① **placesApi fallback**（最根本）：`searchPlaces` 帶 `countrySet` 若 **0 結果自動 retry 一次唔帶 countrySet**，至少畀返結果而唔係空手。保留 8t 減撞名嘅好處。（`placesApi.test.ts` +2：retry 案例、有結果就唔 retry，共 10 個全綠。）
+  - ② **修 DB 資料**：SQL `update trips set destination_country='TW' where share_code='WH82BK'`。
+  - ③ **補返目的地修改入口**：8q 移除咗 Settings「行程設定」段之後，app 內冇任何地方可以改 trip 目的地（所以 Stephanie 先冇得自己 fix）。`SettingsPanel.tsx` owner+trip 加返「目的地」section（select 7 個目的地 + 「儲存目的地」掣 → `updateTrip(id,{destinationCountry})` → `onTripChanged` refetch），`theme.css` 加 `.settings-dest-select` 樣式。（`SettingsPanel.test.tsx` +3：預填/非 owner 唔顯示/儲存呼叫 updateTrip，共 16 個全綠。）
+- **已知取捨**：TomTom 喺 country 內成日鬆散配到「某個」結果（例：TW trip 搜「Tokyo Tower」配到高雄一個 tower），所以真正觸發 fallback（country 內 0 結果）嘅情況唔多，主要係國家揀錯果種。fallback 屬安全網，unit test 覆蓋。
+- **實測（Chrome MCP 真人流程）**：修完目的地後喺線上 Taiwan trip 搜「台北101」→ 成功返「台北101・信義區台北市」有「加入今日」掣；network 確認 request 帶 `countrySet=TW`。hero 插畫亦跟住由韓國變返台北 101 塔。
+- **測試**：`placesApi.test.ts`(10)、`SettingsPanel.test.tsx`(16) 全綠、`tsc -b` 零錯、`vite build` 乾淨（211 modules）。已 push。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-06（新增 8u 修地圖 placeholder 巨型 pin bug + 過時 Google Maps 文案）*
+*最後更新：2026-07-06（新增 8v 修「找不到相關地點」= trip 目的地誤存 KR + countrySet fallback + Settings 補返目的地修改入口）*
