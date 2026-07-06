@@ -112,7 +112,7 @@ export function Itinerary({ trip }: TripPageProps) {
           </svg>
           <div className="map-note">
             <MapPin size={13} aria-hidden="true" />
-            {stops.length} 個景點 · 連 Google Maps key 後顯示 pin 同路線
+            {stops.length} 個景點
           </div>
         </div>
         <form className="map-search" onSubmit={handlePlaceSearch}>
