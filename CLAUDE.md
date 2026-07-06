@@ -16,7 +16,7 @@
 | 前端 | React (Vite) + PWA |
 | 後端/DB | Supabase (Postgres + Realtime + Storage) |
 | 部署 | Vercel |
-| 地圖/搜尋/路線 | TomTom Search + Routing API（免信用卡）；電車/公共交通 HERE Public Transit API；便利店/洗手間 OSM Overpass |
+| 地圖/搜尋/路線 | TomTom Search + Routing API（免信用卡）；電車/公共交通 Google Maps 連結（唔叫 API，畀用戶自己查）；便利店/洗手間 OSM Overpass |
 | 天氣 | Open-Meteo（免 key） |
 | 航班 | AviationStack / FlightAware AeroAPI |
 | OCR | Google Cloud Vision / Taggun |
@@ -214,12 +214,18 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 
 ## 8r. 地圖/交通 provider 由 Google 換做 TomTom + HERE + Overpass（2026-07-06）
 - **背景**：查「建立唔到行程」個 bug 過程中發現 Vercel 冇設 Supabase env var（另案已修）；順便診斷到 Google Maps/Places key 一路都未申請（`.env` 留空），而 Google 需要信用卡先攞到 key，Stephanie 想避免。
-- **改動範圍**：`src/lib/placesApi.ts`（Places 搜尋）、`src/lib/storeSuggestApi.ts`（心願比價搵店）改用 **TomTom Search API**（`api.tomtom.com/search/2/search`，免信用卡）；`src/lib/directionsApi.ts` 嘅 WALK/DRIVE 改用 **TomTom Routing API**（`api.tomtom.com/routing/1/calculateRoute`），TRANSIT（電車）改用 **HERE Public Transit API v8**（`transit.hereapi.com/v8/routes`，一樣免信用卡）——TomTom 冇公共交通 routing 功能，查過 OSM 生態（OpenTripPlanner/Navitia/Transitous）都要自己 host + 冇齊亞洲 GTFS 資料，唔切實際；HERE 係現存最好嘅免卡選擇，喺日本有實際落地項目，但韓/台/泰/越/馬嘅班次覆蓋未 100% confirm。
+- **改動範圍**：`src/lib/placesApi.ts`（Places 搜尋）、`src/lib/storeSuggestApi.ts`（心願比價搵店）改用 **TomTom Search API**（`api.tomtom.com/search/2/search`，免信用卡）；`src/lib/directionsApi.ts` 嘅 WALK/DRIVE 改用 **TomTom Routing API**（`api.tomtom.com/routing/1/calculateRoute`）。TRANSIT（電車）原本打算用 HERE Public Transit API，後來發現 HERE free tier 都要信用卡，最終方案見 8s。
 - **順便補漏**：`src/lib/facilitiesApi.ts` 嘅 `findNearbyConvenienceStore`（附近便利店 chip）原本都用緊 Google Places，preview 嗰陣漏咗提——實測 TomTom 對呢類日常小店 POI 覆蓋好差（搵到錯嘅 EV 充電站），改用返同 `findNearbyRestroom` 一致嘅 **OSM Overpass**（`shop=convenience`），完全免 key，實測 Shibuya 附近搵到 Ministop/FamilyMart 準確結果。
-- **env 變數改名**：`.env`/`.env.example` 攞走 `VITE_GOOGLE_MAPS_KEY`，加 `VITE_TOMTOM_KEY`（已攞到真 key，已寫入本機 `.env`）+ `VITE_HERE_API_KEY`（未攞，留空 fallback null，「電車」mode 暫時查唔到，其餘功能唔受影響）。**Vercel 度要另外補加 `VITE_TOMTOM_KEY`**（之前個 `VITE_GOOGLE_MAPS_KEY` 本身都係空嘅所以線上冇壞過，但而家 TomTom 有真 key 要記得同步上去先會生效）。
+- **env 變數改名**：`.env`/`.env.example` 攞走 `VITE_GOOGLE_MAPS_KEY`，加 `VITE_TOMTOM_KEY`（已攞到真 key，已寫入本機 `.env`）。**Vercel 度要另外補加 `VITE_TOMTOM_KEY`**（之前個 `VITE_GOOGLE_MAPS_KEY` 本身都係空嘅所以線上冇壞過，但而家 TomTom 有真 key 要記得同步上去先會生效）。
 - **已知取捨**：TomTom 搜尋冇 Google 咁準（實測搜「清水寺」揀咗台灣廟宇高過京都清水寺，因為冇傳 geo bias——同 Google 版本行為一致，非新增回歸）；`priceLevel`（心願比價參考價位）TomTom 冇呢個資料，恆定 `null`，UI 已識靜默唔顯示。
 - **實測**：用真 TomTom key 直接 curl Search（清水寺/Tokyo Tower）同 Routing（Shibuya→Shinjuku 自駕 9.4 分鐘、Tokyo Station→Shibuya 步行）API，response shape 同寫落 code 嘅一致。`placesApi`/`storeSuggestApi`/`directionsApi`/`facilitiesApi` + `TransportSegment`/`AddWishlistForm` 共 39 個 test 全綠，`tsc -b` 零錯，`vite build` 乾淨（211 modules）。
-- **未做**：HERE key 未攞（要免卡註冊 platform.here.com），攞到之後要**實測**（唔止睇 code）confirm 電車時間查唔查到、亞洲幾個目的地覆蓋夠唔夠，先算完全過關。
+
+## 8s. 電車 mode 唔叫 API，改用 Google Maps 連結（2026-07-06）
+- **背景**：8r 原本打算「電車」用 HERE Public Transit API，但 Stephanie 實際去 platform.here.com 申請時發現而家 HERE free tier（Base Plan）都要留信用卡先註冊得，同查文檔嗰陣搵到嘅「Limited Plan 免卡」唔一致（可能已經落咗架或者變咗地區限定）。再查過 Rome2Rio（要申請 partner access，唔係即時自助攞 key，軌道覆蓋主力歐洲/印度/中國）同 OpenTripPlanner/Navitia（要自己 host + 逐個目的地搵 GTFS），確認市面冇一個「免信用卡又覆蓋夠亞洲」嘅公共交通 routing API。
+- **做法**：Stephanie 提議「電車」直接出個連結畀用戶自己去 Google Maps 查——`src/lib/directionsApi.ts` 加 `googleMapsTransitUrl(from, to)`，回傳 `https://www.google.com/maps/dir/?api=1&origin=...&destination=...&travelmode=transit`（純官方 URL scheme，唔係 Maps API，唔使 key／唔使登入／完全免費）；`fetchTransportEstimate` 遇到 `TRANSIT` 直接回傳 `null`（唔再叫任何 API）。`TransportSegment.tsx` 揀咗「電車」嗰陣，唔顯示分鐘數，改顯示一粒「喺 Google Maps 睇電車路線」連結掣，撳咗開新分頁——用返 Google 自己最強嘅日/韓/台鐵路資料，好過用一個覆蓋唔齊嘅免費 API 呃自己。
+- 步行/自駕（TomTom）完全唔受影響，維持 in-app 即時分鐘數。
+- **拎走**：`VITE_HERE_API_KEY`（連 `.env`/`.env.example`/README 一齊清）——已經冚旗唔用 HERE，避免留低死 env var 誤導日後嘅人。
+- **測試**：`directionsApi.test.ts`（TRANSIT 唔叫 fetch、`googleMapsTransitUrl` 產生正確 URL）、`TransportSegment.test.tsx`（揀「電車」顯示連結而唔係分鐘數）共 11 個 test 全綠，連 `Itinerary.test.tsx`（13 個）一齊跑冇受影響，`tsc -b` 零錯、`vite build` 乾淨（211 modules）。
 
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
@@ -227,4 +233,4 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-06（新增 8r 地圖/交通 provider 換 TomTom+HERE+Overpass）*
+*最後更新：2026-07-06（新增 8s 電車改用 Google Maps 連結，取代 8r 原定嘅 HERE 方案）*

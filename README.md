@@ -40,17 +40,16 @@ React (Vite) + Supabase 嘅旅行規劃工具。完整功能規格見 [`TRAVEL_A
    VITE_SUPABASE_ANON_KEY=你個 anon public key
    ```
 
-   `VITE_AVIATIONSTACK_KEY`（航班自動查詢）、`VITE_TOMTOM_KEY`（Places 搜尋、步行/自駕路線）、
-   `VITE_HERE_API_KEY`（電車/公共交通路線）同 `VITE_TAGGUN_API_KEY`（手信影單 OCR）都可以留空 —
-   留空嘅話對應功能會自動降級（航班/手信變純手動輸入、地圖搜尋會回傳空結果、交通時間唔顯示），唔會出錯。
+   `VITE_AVIATIONSTACK_KEY`（航班自動查詢）、`VITE_TOMTOM_KEY`（Places 搜尋、步行/自駕路線）同
+   `VITE_TAGGUN_API_KEY`（手信影單 OCR）都可以留空 —
+   留空嘅話對應功能會自動降級（航班/手信變純手動輸入、地圖搜尋會回傳空結果），唔會出錯。
    - AviationStack key：[aviationstack.com](https://aviationstack.com) 註冊攞 free tier key，唔使信用卡。
    - TomTom key：[developer.tomtom.com](https://developer.tomtom.com/user/register) 註冊，
      My Apps → Create App 就有一個通用 key（Search API + Routing API 共用），唔使信用卡。
-   - HERE key：[platform.here.com](https://platform.here.com/portal) 註冊，
-     建 project → Access Manager → Register app → Create API key（電車/公共交通用，唔使信用卡）。
    - Taggun key：[taggun.io](https://taggun.io) 註冊攞 free tier key。
 
-   便利店/洗手間搜尋用 OpenStreetMap Overpass，完全免 key。
+   便利店/洗手間搜尋用 OpenStreetMap Overpass，完全免 key。電車路線冇 in-app 估算，
+   撳掣直接跳去 Google Maps 官方連結查（唔使 key、唔使註冊）。
 
 ## 開發
 
@@ -67,7 +66,7 @@ npm run lint      # Oxlint
 2. 喺 [vercel.com](https://vercel.com) 入面 import 呢個 repo（Vercel 會自動偵測 Vite 專案）。
 3. 喺 Vercel project 嘅 **Settings → Environment Variables**，填入同 `.env` 一樣嘅變數
    （`VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`，同埋已配置嘅 `VITE_AVIATIONSTACK_KEY` /
-   `VITE_TOMTOM_KEY` / `VITE_HERE_API_KEY` / `VITE_TAGGUN_API_KEY`）。
+   `VITE_TOMTOM_KEY` / `VITE_TAGGUN_API_KEY`）。
 4. Deploy。之後每次 push 去 main 都會自動重新部署。
 
 `vercel.json` 已包含 SPA rewrite 設定，確保 `/t/:shareCode` 呢類前端路由喺重新整理頁面時唔會 404。

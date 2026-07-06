@@ -40,45 +40,25 @@ async function fetchTomTomEstimate(from: LatLng, to: LatLng, mode: RoadTravelMod
   }
 }
 
-interface HereTransitResponse {
-  routes?: { sections?: { travelSummary?: { duration?: number } }[] }[]
-}
-
-// TomTom 冇公共交通 routing，「電車」mode 改用 HERE Public Transit API v8。
-// 一程可能分幾段（步行接駁+搭車+步行），呢度攞晒成程每段 travelSummary.duration 加埋做總時間。
-async function fetchHereTransitEstimate(from: LatLng, to: LatLng): Promise<TransportEstimate | null> {
-  const key = import.meta.env.VITE_HERE_API_KEY
-  if (!key) return null
-
-  try {
-    const params = new URLSearchParams({
-      apiKey: key,
-      origin: `${from.lat},${from.lng}`,
-      destination: `${to.lat},${to.lng}`,
-      return: 'travelSummary',
-    })
-
-    const response = await fetch(`https://transit.hereapi.com/v8/routes?${params.toString()}`)
-    if (!response.ok) return null
-
-    const body = (await response.json()) as HereTransitResponse
-    const sections = body.routes?.[0]?.sections ?? []
-    if (sections.length === 0) return null
-
-    const totalSeconds = sections.reduce((sum, section) => sum + (section.travelSummary?.duration ?? 0), 0)
-    if (totalSeconds <= 0) return null
-
-    return { mode: 'TRANSIT', durationMinutes: Math.round(totalSeconds / 60) }
-  } catch {
-    return null
-  }
-}
-
+// 電車：市面冇一個「免信用卡又齊亞洲覆蓋」嘅公共交通 routing API（TomTom 冇呢類產品；
+// HERE 而家個 free tier 都要留卡；Rome2Rio/OpenTripPlanner 要不就要申請要不就要自己 host）。
+// 所以「電車」mode 唔叫任何 API，改用 googleMapsTransitUrl() 出返個官方連結，
+// 用戶撳落去自己去 Google Maps 查（用返 Google 最強嘅日/韓/台鐵路資料），純 URL scheme 唔使 key。
 export async function fetchTransportEstimate(
   from: LatLng,
   to: LatLng,
   mode: TransportMode,
 ): Promise<TransportEstimate | null> {
-  if (mode === 'TRANSIT') return fetchHereTransitEstimate(from, to)
+  if (mode === 'TRANSIT') return null
   return fetchTomTomEstimate(from, to, mode)
+}
+
+export function googleMapsTransitUrl(from: LatLng, to: LatLng): string {
+  const params = new URLSearchParams({
+    api: '1',
+    origin: `${from.lat},${from.lng}`,
+    destination: `${to.lat},${to.lng}`,
+    travelmode: 'transit',
+  })
+  return `https://www.google.com/maps/dir/?${params.toString()}`
 }
