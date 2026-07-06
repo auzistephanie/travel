@@ -233,10 +233,16 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **拎走**：`VITE_HERE_API_KEY`（連 `.env`/`.env.example`/README 一齊清）——已經冚旗唔用 HERE，避免留低死 env var 誤導日後嘅人。
 - **測試**：`directionsApi.test.ts`（TRANSIT 唔叫 fetch、`googleMapsTransitUrl` 產生正確 URL）、`TransportSegment.test.tsx`（揀「電車」顯示連結而唔係分鐘數）共 11 個 test 全綠，連 `Itinerary.test.tsx`（13 個）一齊跑冇受影響，`tsc -b` 零錯、`vite build` 乾淨（211 modules）。
 
+## 8u. 修行程頁地圖 placeholder 巨型 pin + 過時文案（2026-07-06）
+- **問題**：Stephanie 截圖見到行程頁頂地圖區出現一個填滿成格嘅巨型橙色 pin，隔籬嘅提示文字被逼成一條窄欄斷行。根因：`theme.css` 個 `.map-canvas svg { width:100%; height:100% }` selector 太闊，連 `.map-note` 入面粒 `<MapPin size={13}>` icon 都中招被撐到 100%，谷大做巨型 pin 兼逼窄旁邊文字。
+- **做法**：① `theme.css` selector 收窄做直接子元素 `.map-canvas > svg`，只影響底圖 SVG，唔再撐大 `.map-note` 粒 icon；② `Itinerary.tsx` 拎走過時文案「連 Google Maps key 後顯示 pin 同路線」（8r 已轉 TomTom，個 placeholder 底圖仍係靜態），剩返「N 個景點」。
+- **順手修**：`.gitignore` 原本淨係列 `dist`/`dist-ssr`/`dist-verify`，驗證 build 用嘅 `dist-v2` 唔喺列表，一度被 `github_push.py` 誤推 26 個 build artifacts 上遠端；已加 `dist-v2` + `dist-*`，再 push 清走遠端誤推嗰批。
+- **測試**：`Itinerary.test.tsx`(13) 全綠、`tsc -b` 零錯、`vite build` 乾淨（211 modules）。已 push。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-06（新增 8t TomTom 搜尋加 countrySet 篩選，實測發現並修）*
+*最後更新：2026-07-06（新增 8u 修地圖 placeholder 巨型 pin bug + 過時 Google Maps 文案）*
