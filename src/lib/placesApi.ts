@@ -5,37 +5,46 @@ export interface PlaceResult {
   lng: number
 }
 
-interface PlacesSearchTextResponse {
-  places?: {
-    displayName?: { text?: string }
-    formattedAddress?: string
-    location?: { latitude?: number; longitude?: number }
+interface TomTomSearchResponse {
+  results?: {
+    poi?: { name?: string }
+    address?: { freeformAddress?: string }
+    position?: { lat?: number; lon?: number }
   }[]
 }
 
-async function searchTextPlaces(body: Record<string, unknown>): Promise<PlaceResult[]> {
-  const key = import.meta.env.VITE_GOOGLE_MAPS_KEY
+interface LocationBias {
+  lat: number
+  lng: number
+  radiusMeters: number
+}
+
+const SEARCH_LIMIT = 8
+
+async function searchTomTom(query: string, bias?: LocationBias): Promise<PlaceResult[]> {
+  const key = import.meta.env.VITE_TOMTOM_KEY
   if (!key) return []
 
   try {
-    const response = await fetch('https://places.googleapis.com/v1/places:searchText', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': key,
-        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location',
-      },
-      body: JSON.stringify(body),
-    })
+    const params = new URLSearchParams({ key, limit: String(SEARCH_LIMIT) })
+    if (bias) {
+      params.set('lat', String(bias.lat))
+      params.set('lon', String(bias.lng))
+      params.set('radius', String(bias.radiusMeters))
+    }
+
+    const response = await fetch(
+      `https://api.tomtom.com/search/2/search/${encodeURIComponent(query)}.json?${params.toString()}`,
+    )
     if (!response.ok) return []
 
-    const responseBody = (await response.json()) as PlacesSearchTextResponse
+    const body = (await response.json()) as TomTomSearchResponse
 
-    return (responseBody.places ?? []).map((place) => ({
-      name: place.displayName?.text ?? '',
-      address: place.formattedAddress ?? '',
-      lat: place.location?.latitude ?? 0,
-      lng: place.location?.longitude ?? 0,
+    return (body.results ?? []).map((result) => ({
+      name: result.poi?.name ?? '',
+      address: result.address?.freeformAddress ?? '',
+      lat: result.position?.lat ?? 0,
+      lng: result.position?.lon ?? 0,
     }))
   } catch {
     return []
@@ -43,16 +52,11 @@ async function searchTextPlaces(body: Record<string, unknown>): Promise<PlaceRes
 }
 
 export async function searchPlaces(query: string): Promise<PlaceResult[]> {
-  return searchTextPlaces({ textQuery: query })
+  return searchTomTom(query)
 }
 
 const INDOOR_SEARCH_RADIUS_METERS = 5000
 
 export async function searchIndoorPlaces(lat: number, lng: number): Promise<PlaceResult[]> {
-  return searchTextPlaces({
-    textQuery: '商場 博物館 水族館',
-    locationBias: {
-      circle: { center: { latitude: lat, longitude: lng }, radius: INDOOR_SEARCH_RADIUS_METERS },
-    },
-  })
+  return searchTomTom('商場 博物館 水族館', { lat, lng, radiusMeters: INDOOR_SEARCH_RADIUS_METERS })
 }

@@ -12,34 +12,34 @@ describe('searchPlaces', () => {
   })
 
   it('returns an empty list without calling the API when no key is configured', async () => {
-    vi.stubEnv('VITE_GOOGLE_MAPS_KEY', '')
+    vi.stubEnv('VITE_TOMTOM_KEY', '')
     const result = await searchPlaces('淺草寺')
     expect(result).toEqual([])
     expect(fetch).not.toHaveBeenCalled()
   })
 
   it('returns an empty list when the API responds with a non-ok status', async () => {
-    vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key')
+    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
     vi.mocked(fetch).mockResolvedValue(new Response('', { status: 500 }))
     const result = await searchPlaces('淺草寺')
     expect(result).toEqual([])
   })
 
   it('returns an empty list when the fetch call throws', async () => {
-    vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key')
+    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
     vi.mocked(fetch).mockRejectedValue(new Error('network down'))
     const result = await searchPlaces('淺草寺')
     expect(result).toEqual([])
   })
 
   it('maps places from the API response', async () => {
-    vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key')
+    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
     const body = {
-      places: [
+      results: [
         {
-          displayName: { text: '淺草寺' },
-          formattedAddress: '2 Chome-3-1 Asakusa, Taito City, Tokyo',
-          location: { latitude: 35.7148, longitude: 139.7967 },
+          poi: { name: '淺草寺' },
+          address: { freeformAddress: '2 Chome-3-1 Asakusa, Taito City, Tokyo' },
+          position: { lat: 35.7148, lon: 139.7967 },
         },
       ],
     }
@@ -51,11 +51,10 @@ describe('searchPlaces', () => {
       { name: '淺草寺', address: '2 Chome-3-1 Asakusa, Taito City, Tokyo', lat: 35.7148, lng: 139.7967 },
     ])
 
-    const [url, init] = vi.mocked(fetch).mock.calls[0]
-    expect(url).toBe('https://places.googleapis.com/v1/places:searchText')
-    expect(init?.method).toBe('POST')
-    expect((init?.headers as Record<string, string>)['X-Goog-Api-Key']).toBe('test-key')
-    expect(JSON.parse(init?.body as string)).toEqual({ textQuery: '淺草寺' })
+    const [url] = vi.mocked(fetch).mock.calls[0]
+    expect(url as string).toContain('https://api.tomtom.com/search/2/search/')
+    expect(url as string).toContain(encodeURIComponent('淺草寺'))
+    expect(url as string).toContain('key=test-key')
   })
 })
 
@@ -70,20 +69,20 @@ describe('searchIndoorPlaces', () => {
   })
 
   it('returns [] without calling the API when no key is configured', async () => {
-    vi.stubEnv('VITE_GOOGLE_MAPS_KEY', '')
+    vi.stubEnv('VITE_TOMTOM_KEY', '')
     const result = await searchIndoorPlaces(35.68, 139.69)
     expect(result).toEqual([])
     expect(fetch).not.toHaveBeenCalled()
   })
 
   it('biases the search near the given coordinates', async () => {
-    vi.stubEnv('VITE_GOOGLE_MAPS_KEY', 'test-key')
-    vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ places: [] }), { status: 200 }))
+    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
+    vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ results: [] }), { status: 200 }))
 
     await searchIndoorPlaces(35.68, 139.69)
 
-    const [, init] = vi.mocked(fetch).mock.calls[0]
-    const body = JSON.parse(init?.body as string)
-    expect(body.locationBias.circle.center).toEqual({ latitude: 35.68, longitude: 139.69 })
+    const [url] = vi.mocked(fetch).mock.calls[0]
+    expect(url as string).toContain('lat=35.68')
+    expect(url as string).toContain('lon=139.69')
   })
 })
