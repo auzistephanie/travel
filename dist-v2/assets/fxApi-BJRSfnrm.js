@@ -1,1 +1,0 @@
-async function e(e){if(e===`HKD`)return 1;try{let t=await fetch(`https://open.er-api.com/v6/latest/${e}`);return t.ok?(await t.json()).rates?.HKD??null:null}catch{return null}}export{e as t};
