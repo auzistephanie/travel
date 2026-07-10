@@ -28,3 +28,7 @@ dist-*
 *.njsproj
 *.sln
 *.sw?
+
+# Fable session prompt pack（唔屬於 app 本身，唔push 上 repo）
+FABLE_LAUNCH_PACK_B.md
+__pycache__/

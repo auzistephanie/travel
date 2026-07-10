@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient'
+import { UNIQUE_VIOLATION } from './postgrestErrors'
 import { autoClothingQuantities } from './autoClothing'
 import type { PackingItem } from '../types/models'
 
@@ -31,8 +32,6 @@ function buildSeedItems(dayCount: number): SeedItem[] {
   }))
   return [...DEFAULT_ITEMS, ...clothing]
 }
-
-const UNIQUE_VIOLATION = '23505'
 
 async function insertPackingItem(tripId: string, item: SeedItem): Promise<PackingItem> {
   const { data, error } = await supabase

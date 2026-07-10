@@ -4,11 +4,8 @@ import { THEMES } from '../theme/tokens'
 import { useTheme } from '../theme/ThemeContext'
 import { GenericIllustration } from '../theme/illustrations/GenericIllustration'
 import { deleteTripByShareCode, updateTrip } from '../lib/tripApi'
-import { DESTINATIONS } from '../lib/destinations'
+import { DESTINATION_OPTIONS, DESTINATIONS } from '../lib/destinations'
 import type { Trip } from '../types/models'
-
-// 同 CreateTrip 一致：HK 淨係本地參考用，唔擺入揀項。
-const DESTINATION_OPTIONS = ['JP', 'TH', 'KR', 'TW', 'VN', 'SG', 'MY'] as const
 
 interface SettingsPanelProps {
   onClose: () => void

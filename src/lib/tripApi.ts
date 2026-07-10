@@ -1,9 +1,9 @@
 import { supabase } from './supabaseClient'
 import { generateShareCode } from './shareCode'
+import { UNIQUE_VIOLATION } from './postgrestErrors'
 import type { Trip, TripMember } from '../types/models'
 
 const MAX_SHARE_CODE_ATTEMPTS = 5
-const UNIQUE_VIOLATION = '23505'
 
 export interface CreateTripInput {
   name: string

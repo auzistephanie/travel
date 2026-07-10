@@ -5,13 +5,9 @@ import { createTrip } from '../lib/tripApi'
 import { setWhoAmI } from '../lib/whoAmI'
 import { addMyTrip } from '../lib/myTrips'
 import { getCurrentAuthUser, linkMemberToAuthUser, signInWithGoogle, type AuthUser } from '../lib/ownerAuth'
-import { DESTINATIONS } from '../lib/destinations'
+import { DESTINATION_OPTIONS, DESTINATIONS } from '../lib/destinations'
 import type { Trip, TripMember } from '../types/models'
 import '../styles/journalCard.css'
-
-// HK 淨係做本地行程參考用，唔擺入揀項。SG/MY 未有自訂插畫（用返 Generic），
-// 之後想加插畫可以加落 src/theme/illustrations 同 DestinationIllustration.tsx 嘅 ILLUSTRATIONS map。
-const DESTINATION_OPTIONS = ['JP', 'TH', 'KR', 'TW', 'VN', 'SG', 'MY'] as const
 
 export function CreateTrip() {
   const navigate = useNavigate()

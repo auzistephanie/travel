@@ -8,18 +8,23 @@
 // 呢個 wrapper 令呢種情況第一次撞到就自動 reload 一次（攞返新版 index.html + 新 hash 嘅
 // chunk），用 sessionStorage 記住「啱啱 reload 咗一次」避免無限loop；如果 reload 完
 // 都仲係攞唔到（例如真係網絡問題），就正常拋錯，唔會靜雞雞。
+import { sessionGet, sessionRemove, sessionSet } from './safeStorage'
+
 const RELOAD_KEY = 'chunk-reload-attempted'
 
 export function lazyImportWithReload<T>(factory: () => Promise<T>): () => Promise<T> {
   return () =>
     factory()
       .then((module) => {
-        sessionStorage.removeItem(RELOAD_KEY)
+        sessionRemove(RELOAD_KEY)
         return module
       })
       .catch((error: unknown) => {
-        if (!sessionStorage.getItem(RELOAD_KEY)) {
-          sessionStorage.setItem(RELOAD_KEY, '1')
+        if (!sessionGet(RELOAD_KEY)) {
+          sessionSet(RELOAD_KEY, '1')
+          // read-back 驗證：如果 sessionStorage 根本寫唔入（私密模式/被封），
+          // 記唔住「已經試過 reload」就唔好 reload——否則會變無限 reload loop。
+          if (sessionGet(RELOAD_KEY) !== '1') throw error
           window.location.reload()
           // reload 緊，呢個 promise 唔使 resolve，等頁面重新載入接手
           return new Promise<T>(() => {})

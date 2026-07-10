@@ -249,10 +249,23 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **實測（Chrome MCP 真人流程）**：修完目的地後喺線上 Taiwan trip 搜「台北101」→ 成功返「台北101・信義區台北市」有「加入今日」掣；network 確認 request 帶 `countrySet=TW`。hero 插畫亦跟住由韓國變返台北 101 塔。
 - **測試**：`placesApi.test.ts`(10)、`SettingsPanel.test.tsx`(16) 全綠、`tsc -b` 零錯、`vite build` 乾淨（211 modules）。已 push。
 
+## 8w. 架構審視 + 安全級重構（2026-07-11）
+- **全面架構審視**：報告喺 `docs/ARCHITECTURE_REVIEW_2026-07-11.md`（整體分層評價、5 大技術債連風險標籤、identity／資料層深入診斷、按價值÷風險排序嘅重構清單）；交接手記喺 `docs/HANDOVER_2026-07-11.md`。
+- **落咗刀（全部安全級，每步 test + tsc + build 全綠先郁下一步）**：
+  - ① 刪 dead code：`MapPage.tsx`+test（grep 確認零引用先刪）、root `landing.html`（係 `public/landing-preview.html` 過時舊版）；清本地 `dist-*` build 殘留。
+  - ② 新增 `src/lib/safeStorage.ts`（+6 test）：localStorage/sessionStorage 統一防禦（私密模式／配額滿唔冧 app）；`whoAmI.ts`／`themeStorage.ts`／`lazyWithReload.ts` 改用。`lazyWithReload` 加 read-back 驗證，防「storage 完全跛咗」變無限 reload loop。
+  - ③ 常數去重：`UNIQUE_VIOLATION`('23505') 三份 → `src/lib/postgrestErrors.ts` 一份；`DESTINATION_OPTIONS` 兩份 → `destinations.ts` export。
+  - ④ `tripApi.test.ts` 補 `getTripsForAuthUser` 5 條 unit test（8n 自認欠嘅）。
+  - ⑤ 新增 `src/lib/README.md`：文檔化「Repo throw／Api 靜默降級」係刻意二分，免下一個人統一錯方向。
+- **冇郁（照規矩先出方案等批）**：TripShell identity 重構（`useTripIdentity`+resolver，方案喺報告第三節）、RLS DELETE 收窄（**而家任何知 share code 嘅人可以匿名徹底刪除成個 trip**，方案喺報告技術債 #2——建議下個 session 最優先）、文案書面語統一（CreateTrip/SettingsPanel/Landing 仲有口語，要 Stephanie 過目文案先改）。
+- **意外發現**：`TRAVEL_APP_BUILD_SPEC.md`／`_1.md` 本地唔知幾時唔見咗（遠端仲有）——push 前已由 GitHub 還原返，避免成棵樹同步時靜默刪走。`.gitignore` 加咗 `FABLE_LAUNCH_PACK_B.md`、`__pycache__/`。
+- **測試現況**：81 個 test 檔全綠（sandbox 45s 限制下分 chunk 實測）、`tsc -b` 零錯、`vite build` 乾淨。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
+- 架構審視報告：`docs/ARCHITECTURE_REVIEW_2026-07-11.md`（+ 交接手記 `docs/HANDOVER_2026-07-11.md`）
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-06（新增 8v 修「找不到相關地點」= trip 目的地誤存 KR + countrySet fallback + Settings 補返目的地修改入口）*
+*最後更新：2026-07-11（新增 8w 架構審視 + 安全級重構：刪 MapPage/landing.html dead code、safeStorage 防禦、常數去重、getTripsForAuthUser 補 test、資料層 convention 文檔化）*
