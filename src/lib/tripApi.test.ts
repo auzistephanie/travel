@@ -10,6 +10,7 @@ import {
   deleteTripByShareCode,
   findTripByShareCode,
   getTripsForAuthUser,
+  TRIP_DELETE_DENIED,
   updateTrip,
 } from './tripApi'
 import { makeQuery } from '../test/supabaseQueryMock'
@@ -163,12 +164,14 @@ describe('updateTrip', () => {
 })
 
 describe('deleteTripByShareCode', () => {
-  it('deletes the trip row by share code', async () => {
+  // 2026-07-11 RLS 收窄後行為改變：delete 要 .select() 驗證真係刪咗行，
+  // 所以成功 case 要回傳被刪嘅行；被 RLS 擋住（刪 0 行）要 throw TRIP_DELETE_DENIED。
+  it('deletes the trip row by share code and verifies a row was deleted', async () => {
     let q: ReturnType<typeof makeQuery> | undefined
     supabase.from.mockReset()
     supabase.from.mockImplementation((table: string) => {
       if (table === 'trips') {
-        q = makeQuery({ data: null, error: null })
+        q = makeQuery({ data: [{ id: 't1' }], error: null })
         return q
       }
       throw new Error(`unexpected table ${table}`)
@@ -177,6 +180,13 @@ describe('deleteTripByShareCode', () => {
     await deleteTripByShareCode('ABC234')
     expect(q?.delete).toHaveBeenCalled()
     expect(q?.eq).toHaveBeenCalledWith('share_code', 'ABC234')
+    expect(q?.select).toHaveBeenCalled()
+  })
+
+  it('throws TRIP_DELETE_DENIED when RLS blocks the delete (0 rows deleted, no error)', async () => {
+    supabase.from.mockReset()
+    supabase.from.mockImplementation(() => makeQuery({ data: [], error: null }))
+    await expect(deleteTripByShareCode('ABC234')).rejects.toThrow(TRIP_DELETE_DENIED)
   })
 
   it('throws when the delete errors', async () => {

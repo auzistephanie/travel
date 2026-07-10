@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { BookOpen, Compass, KeyRound, MapPin, Trash2, Users } from 'lucide-react'
 import { getMyTrips, mergeMyTrips, removeMyTrip, type MyTripEntry } from '../lib/myTrips'
 import { getCurrentAuthUser, onAuthUserChange, signInWithGoogle, type AuthUser } from '../lib/ownerAuth'
-import { deleteTripByShareCode, getTripsForAuthUser } from '../lib/tripApi'
+import { deleteTripByShareCode, getTripsForAuthUser, TRIP_DELETE_DENIED } from '../lib/tripApi'
 import '../styles/journalCard.css'
 import './Landing.css'
 
@@ -73,8 +73,12 @@ export function Landing() {
       removeMyTrip(entry.shareCode)
       setTrips(getMyTrips())
       setConfirmDelete(null)
-    } catch {
-      setDeleteError('刪除失敗，請再試一次')
+    } catch (err) {
+      setDeleteError(
+        err instanceof Error && err.message === TRIP_DELETE_DENIED
+          ? '刪除失敗：請確認已以建立行程的 Google 帳戶登入'
+          : '刪除失敗，請再試一次',
+      )
     } finally {
       setDeleting(false)
     }
@@ -216,16 +220,21 @@ export function Landing() {
               >
                 從清單移除
               </button>
-              {confirmDelete.role === 'owner' && (
-                <button
-                  type="button"
-                  className="journal-confirm-delete"
-                  disabled={deleting}
-                  onClick={() => handleDeleteForever(confirmDelete)}
-                >
-                  {deleting ? '刪除中…' : '徹底刪除行程'}
-                </button>
-              )}
+              {confirmDelete.role === 'owner' &&
+                (authUser ? (
+                  <button
+                    type="button"
+                    className="journal-confirm-delete"
+                    disabled={deleting}
+                    onClick={() => handleDeleteForever(confirmDelete)}
+                  >
+                    {deleting ? '刪除中…' : '徹底刪除行程'}
+                  </button>
+                ) : (
+                  <p className="journal-confirm-desc">
+                    要徹底刪除行程，請先以 Google 登入（頁面下方有登入按鈕），以防其他人誤刪。
+                  </p>
+                ))}
               <button
                 type="button"
                 className="journal-confirm-cancel"

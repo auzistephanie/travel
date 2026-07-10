@@ -172,6 +172,17 @@ describe('SettingsPanel', () => {
     expect(screen.queryByLabelText('Email')).not.toBeInTheDocument()
   })
 
+  it('hides the delete button and shows a login hint when the owner is not signed in', () => {
+    render(<Harness isOwner trip={sampleTrip} />)
+    expect(screen.queryByRole('button', { name: '刪除呢個行程' })).not.toBeInTheDocument()
+    expect(screen.getByText(/徹底刪除行程需要先在上面「帳戶」以 Google 登入/)).toBeInTheDocument()
+  })
+
+  it('shows the delete button once the owner is signed in', () => {
+    render(<Harness isOwner authEmail="stephanie@example.com" trip={sampleTrip} />)
+    expect(screen.getByRole('button', { name: '刪除呢個行程' })).toBeInTheDocument()
+  })
+
   it('shows the destination selector prefilled from the trip for an owner', () => {
     render(<Harness isOwner trip={sampleTrip} />)
     const select = screen.getByLabelText('目的地國家') as HTMLSelectElement

@@ -261,6 +261,13 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **意外發現**：`TRAVEL_APP_BUILD_SPEC.md`／`_1.md` 本地唔知幾時唔見咗（遠端仲有）——push 前已由 GitHub 還原返，避免成棵樹同步時靜默刪走。`.gitignore` 加咗 `FABLE_LAUNCH_PACK_B.md`、`__pycache__/`。
 - **測試現況**：81 個 test 檔全綠（sandbox 45s 限制下分 chunk 實測）、`tsc -b` 零錯、`vite build` 乾淨。
 
+## 8x. RLS 收窄：徹底刪除行程限 owner 登入（2026-07-11）
+- **背景**：8w 審視報告技術債 #2——以前 `trips` 一條 `public access`(ALL, true) policy，任何知 share code 嘅人可以**匿名 cascade delete 成個 trip**。方案 preview 後 Stephanie 批准執行。
+- **DB migration**（`restrict_trips_delete_to_owner`，已喺 prod 跑咗、`schema.sql` 同步）：`trips` 拆做 4 條 policy——select/insert/update 照舊全開（**朋友免登入共編完全不變**），DELETE 收窄做「`auth.uid()` match 到該 trip 一個 `is_owner` 兼已綁定 `auth_user_id` 嘅 member」，即係徹底刪除要用 Google 登入嘅 owner 先做到。
+- **Code 配套**：RLS 擋 delete 係「靜默刪 0 行」唔報錯，所以 `tripApi.deleteTripByShareCode` 改成 delete 加 `.select()` 驗證，0 行就 throw `TRIP_DELETE_DENIED`（export 咗個常數）；`SettingsPanel`（未登入 owner 唔出紅掣，改出「要先喺帳戶登入」提示）同 `Landing` 刪除確認框（未登入 owner 出「請先以 Google 登入」提示代替紅掣）都加咗 gate + 專屬錯誤文案。
+- **已知取捨**：owner 開完 trip 從未登入過 → 冇人徹底刪到個 trip（直至 owner 登入）——係防誤刪 feature。「從清單移除」（純本地隱藏）唔受任何影響。
+- **驗證**：① SQL 層面用 transaction+rollback 直接模擬——`set local role anon` 全表 delete 刪到 0 行；模擬已登入 owner（真實 auth_user_id 入 jwt claims）刪到自己個 trip（已 rollback 冇真刪）。② `tripApi.test.ts`（delete case 跟新行為改 + 加 TRIP_DELETE_DENIED case，17 條）、`SettingsPanel.test.tsx`（+2 gate case，18 條）、新增 `Landing.test.tsx`（2 條——呢頁一直冇 test）全綠；TripShell/CreateTrip 冇受影響；`tsc -b` 零錯、`vite build` 乾淨。③ 上線 UI 實測見下。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - 架構審視報告：`docs/ARCHITECTURE_REVIEW_2026-07-11.md`（+ 交接手記 `docs/HANDOVER_2026-07-11.md`）
@@ -268,4 +275,4 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-11（新增 8w 架構審視 + 安全級重構：刪 MapPage/landing.html dead code、safeStorage 防禦、常數去重、getTripsForAuthUser 補 test、資料層 convention 文檔化）*
+*最後更新：2026-07-11（新增 8x RLS 收窄：徹底刪除行程限已登入 owner，堵塞「知 share code 即可匿名刪成個 trip」漏洞）*

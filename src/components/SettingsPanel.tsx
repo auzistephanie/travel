@@ -3,7 +3,7 @@ import { Check, Copy, LogIn, Trash2, X } from 'lucide-react'
 import { THEMES } from '../theme/tokens'
 import { useTheme } from '../theme/ThemeContext'
 import { GenericIllustration } from '../theme/illustrations/GenericIllustration'
-import { deleteTripByShareCode, updateTrip } from '../lib/tripApi'
+import { deleteTripByShareCode, TRIP_DELETE_DENIED, updateTrip } from '../lib/tripApi'
 import { DESTINATION_OPTIONS, DESTINATIONS } from '../lib/destinations'
 import type { Trip } from '../types/models'
 
@@ -65,8 +65,12 @@ export function SettingsPanel({
     try {
       await deleteTripByShareCode(trip.share_code)
       onTripDeleted?.()
-    } catch {
-      setDeleteError('刪除失敗，請再試一次')
+    } catch (err) {
+      setDeleteError(
+        err instanceof Error && err.message === TRIP_DELETE_DENIED
+          ? '刪除失敗：請確認已以建立行程的 Google 帳戶登入'
+          : '刪除失敗，請再試一次',
+      )
       setDeletingTrip(false)
     }
   }
@@ -210,7 +214,11 @@ export function SettingsPanel({
         {isOwner && trip && (
           <>
             <h3>刪除行程</h3>
-            {confirmingDelete ? (
+            {!authEmail ? (
+              <p className="settings-hint">
+                徹底刪除行程需要先在上面「帳戶」以 Google 登入（僅限行程建立者），以防其他人誤刪。
+              </p>
+            ) : confirmingDelete ? (
               <>
                 <p className="settings-hint">
                   徹底刪除「{trip.name}」？連夾錢、行李、行程、手信全部一次過清走，不可還原。

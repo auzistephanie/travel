@@ -133,11 +133,18 @@ export async function updateTrip(tripId: string, patch: UpdateTripInput): Promis
   return data as Trip
 }
 
+// 刪除被 RLS 擋住嗰陣，Supabase 唔會報錯，只係「靜默刪咗 0 行」——
+// 所以要 .select() 攞返實際刪咗嘅行嚟驗證，先知道成唔成功。
+export const TRIP_DELETE_DENIED = 'TRIP_DELETE_DENIED'
+
 // 徹底刪除行程：schema 所有子表 trip_id 都係 on delete cascade，
 // 所以刪 trips 一行就連 members/flights/itinerary/packing/wishlist/expenses/gifts/settings 全部清走。不可還原。
+// RLS（migration restrict_trips_delete_to_owner，2026-07-11）：DELETE 只限「已用 Google 登入
+// 兼係該 trip owner」嘅人；未登入／唔係 owner 會刪到 0 行 → throw TRIP_DELETE_DENIED。
 export async function deleteTripByShareCode(shareCode: string): Promise<void> {
-  const { error } = await supabase.from('trips').delete().eq('share_code', shareCode)
+  const { data, error } = await supabase.from('trips').delete().eq('share_code', shareCode).select()
   if (error) throw error
+  if (!data || data.length === 0) throw new Error(TRIP_DELETE_DENIED)
 }
 
 export async function addTripMember(tripId: string, name: string): Promise<TripMember> {
