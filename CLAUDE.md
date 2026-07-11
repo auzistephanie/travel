@@ -289,6 +289,11 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **測試**：consumer 頁面（Overview/Money/Prep/Itinerary）+ hooks + 相關 form/component test 全綠，8 個 Api test（53 條）全綠，`tsc -b` 零錯、`vite build` 乾淨；上線 smoke test 總覽／錢／準備分頁正常載入資料。
 - 至此 8w 審視報告嘅重構清單全部完成（#1–#5 + 文案），剩低嘅只有錦上添花項（activeTab 入 URL deep link）。
 
+## 8ab. activeTab 入 URL：分頁 deep link（2026-07-11）
+- 8w 審視最後一項錦上添花：`TripShell` 嘅 `activeTab` 由 useState 改成直接由 URL `?tab=`（`overview`/`itinerary`/`prep`/`money`）導出——deep link 可以直達指定分頁、reload 唔會彈返總覽、條連結可以分享。
+- 細節：`overview` 係預設值唔寫入 URL（保持乾淨）；寫 URL 用 `setSearchParams` **functional updater**，避免同 `useTripIdentity` 寫 `?m=` 嗰下用咗 stale snapshot 互相冚；無效 `?tab=` 值 fallback 返總覽。
+- **測試**：`TripShell.test.tsx` +2（deep link 直達錢分頁 aria-selected；切換分頁寫入 `tab=prep`、返總覽清走），共 17 條全綠；BottomNav 唔使改；`tsc -b` 零錯、`vite build` 乾淨；上線實測 `?tab=prep` 直達準備分頁 + 切換分頁 URL 跟住變。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - 架構審視報告：`docs/ARCHITECTURE_REVIEW_2026-07-11.md`（+ 交接手記 `docs/HANDOVER_2026-07-11.md`）
@@ -296,4 +301,4 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-11（新增 8aa hooks 去重 useTripCollection + Api 層 console.warn 遙測——8w 審視清單全部完成）*
+*最後更新：2026-07-11（新增 8ab activeTab 入 URL 分頁 deep link——8w 審視連錦上添花項全部完成）*

@@ -120,6 +120,26 @@ describe('TripShell', () => {
     expect(screen.getByRole('main')).toHaveTextContent('載入中…')
   })
 
+  it('deep links straight into a tab via ?tab= (reload does not bounce back to overview)', () => {
+    useTrip.mockReturnValue({ trip, members, loading: false, error: null, joinAsNewMember: vi.fn() })
+    getWhoAmI.mockReturnValue('m1')
+    renderShell('/t/ABC234?tab=money')
+    expect(screen.getByRole('tab', { name: '錢' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: '總覽' })).toHaveAttribute('aria-selected', 'false')
+  })
+
+  it('writes the active tab into the URL when switching, so the link is shareable', async () => {
+    const user = userEvent.setup()
+    useTrip.mockReturnValue({ trip, members, loading: false, error: null, joinAsNewMember: vi.fn() })
+    getWhoAmI.mockReturnValue('m1')
+    renderShell()
+    await user.click(screen.getByRole('tab', { name: '準備' }))
+    await waitFor(() => expect(screen.getByTestId('location-search')).toHaveTextContent('tab=prep'))
+    // 返去預設分頁就唔留 ?tab=，條 URL 保持乾淨
+    await user.click(screen.getByRole('tab', { name: '總覽' }))
+    await waitFor(() => expect(screen.getByTestId('location-search')).not.toHaveTextContent('tab='))
+  })
+
   it('persists the chosen member when selected from the who-am-i picker', async () => {
     const user = userEvent.setup()
     useTrip.mockReturnValue({ trip, members, loading: false, error: null, joinAsNewMember: vi.fn() })

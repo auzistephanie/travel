@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState, type ComponentType } from 'react'
 import { Compass, Repeat, Settings } from 'lucide-react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { useTrip } from '../hooks/useTrip'
 import { useTripIdentity } from '../hooks/useTripIdentity'
 import { clearWhoAmI } from '../lib/whoAmI'
@@ -30,12 +30,29 @@ const PAGES: Record<TabId, ComponentType<TripPageProps>> = {
   money: Money,
 }
 
+const VALID_TABS = Object.keys(PAGES) as TabId[]
+
 export function TripShell() {
   const { shareCode = '' } = useParams<{ shareCode: string }>()
   const { trip, members, loading, error, joinAsNewMember, refetch } = useTrip(shareCode)
   // 身份識別全套（優先次序 + 副作用）喺 useTripIdentity／lib/identityResolver，唔再散落呢度。
   const identity = useTripIdentity(shareCode, members, refetch)
-  const [activeTab, setActiveTab] = useState<TabId>('overview')
+  // 分頁直接由 URL ?tab= 導出（deep link 直達／reload 唔會彈返總覽）；overview 係預設，唔寫入 URL。
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const activeTab: TabId = VALID_TABS.includes(tabParam as TabId) ? (tabParam as TabId) : 'overview'
+  function setActiveTab(tab: TabId) {
+    // functional updater：唔好用 render 時嘅 snapshot，免得同 useTripIdentity 寫 ?m= 嗰下互相冚
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (tab === 'overview') next.delete('tab')
+        else next.set('tab', tab)
+        return next
+      },
+      { replace: true },
+    )
+  }
   const [themeId, setThemeId] = useState<ThemeId>(() => getStoredThemeId(shareCode))
   const [accent, setAccent] = useState<string | null>(() => getStoredAccent(shareCode))
   const [showSettings, setShowSettings] = useState(false)
