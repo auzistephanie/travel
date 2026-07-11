@@ -1,3 +1,5 @@
+import { warnApiFailure } from './apiWarn'
+
 export interface FacilityResult {
   name: string
   lat: number
@@ -18,14 +20,18 @@ export async function findNearbyRestroom(lat: number, lng: number): Promise<Faci
       method: 'POST',
       body: `data=${encodeURIComponent(query)}`,
     })
-    if (!response.ok) return null
+    if (!response.ok) {
+      warnApiFailure('facilitiesApi', `HTTP ${response.status}`)
+      return null
+    }
 
     const body = (await response.json()) as OverpassResponse
     const first = body.elements?.[0]
     if (!first) return null
 
     return { name: first.tags?.name ?? '洗手間', lat: first.lat, lng: first.lon }
-  } catch {
+  } catch (error) {
+    warnApiFailure('facilitiesApi', error)
     return null
   }
 }
@@ -41,14 +47,18 @@ export async function findNearbyConvenienceStore(lat: number, lng: number): Prom
       method: 'POST',
       body: `data=${encodeURIComponent(query)}`,
     })
-    if (!response.ok) return null
+    if (!response.ok) {
+      warnApiFailure('facilitiesApi', `HTTP ${response.status}`)
+      return null
+    }
 
     const body = (await response.json()) as OverpassResponse
     const first = body.elements?.[0]
     if (!first) return null
 
     return { name: first.tags?.name ?? '便利店', lat: first.lat, lng: first.lon }
-  } catch {
+  } catch (error) {
+    warnApiFailure('facilitiesApi', error)
     return null
   }
 }

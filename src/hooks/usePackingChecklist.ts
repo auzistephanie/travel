@@ -1,32 +1,19 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { ensurePackingItems, togglePackingItem } from '../lib/packingRepo'
+import { useTripCollection } from './useTripCollection'
 import type { PackingItem } from '../types/models'
 
 export function usePackingChecklist(tripId: string, dayCount: number) {
-  const [items, setItems] = useState<PackingItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const loader = useCallback(() => ensurePackingItems(tripId, dayCount), [tripId, dayCount])
+  const { items, setItems, loading, error, refetch } = useTripCollection<PackingItem>(loader, '讀取行李清單失敗')
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      setItems(await ensurePackingItems(tripId, dayCount))
-    } catch {
-      setError('讀取行李清單失敗')
-    } finally {
-      setLoading(false)
-    }
-  }, [tripId, dayCount])
+  const toggle = useCallback(
+    async (id: string, checked: boolean) => {
+      setItems((prev) => prev.map((item) => (item.id === id ? { ...item, checked } : item)))
+      await togglePackingItem(id, checked)
+    },
+    [setItems],
+  )
 
-  useEffect(() => {
-    load()
-  }, [load])
-
-  const toggle = useCallback(async (id: string, checked: boolean) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, checked } : item)))
-    await togglePackingItem(id, checked)
-  }, [])
-
-  return { items, loading, error, toggle, refetch: load }
+  return { items, loading, error, toggle, refetch }
 }

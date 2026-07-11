@@ -1,3 +1,5 @@
+import { warnApiFailure } from './apiWarn'
+
 export interface ReceiptOcrResult {
   merchantName: string | null
   totalAmount: number | null
@@ -21,7 +23,10 @@ export async function scanReceipt(file: File): Promise<ReceiptOcrResult | null> 
       headers: { apikey: key },
       body: formData,
     })
-    if (!response.ok) return null
+    if (!response.ok) {
+      warnApiFailure('ocrApi', `HTTP ${response.status}`)
+      return null
+    }
 
     const body = (await response.json()) as TaggunSimpleResponse
 
@@ -29,7 +34,8 @@ export async function scanReceipt(file: File): Promise<ReceiptOcrResult | null> 
       merchantName: body.merchantName?.data ?? null,
       totalAmount: body.totalAmount?.data ?? null,
     }
-  } catch {
+  } catch (error) {
+    warnApiFailure('ocrApi', error)
     return null
   }
 }

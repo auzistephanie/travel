@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import {
   addWishlistItem,
   deleteWishlistItem,
@@ -7,28 +7,12 @@ import {
   type AddWishlistItemInput,
 } from '../lib/wishlistRepo'
 import { confirmWishlistPurchase } from '../lib/wishlistPurchase'
+import { useTripCollection } from './useTripCollection'
 import type { WishlistItem } from '../types/models'
 
 export function useWishlist(tripId: string) {
-  const [items, setItems] = useState<WishlistItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      setItems(await listWishlistItems(tripId))
-    } catch {
-      setError('讀取心願清單失敗')
-    } finally {
-      setLoading(false)
-    }
-  }, [tripId])
-
-  useEffect(() => {
-    load()
-  }, [load])
+  const loader = useCallback(() => listWishlistItems(tripId), [tripId])
+  const { items, setItems, loading, error, refetch } = useTripCollection<WishlistItem>(loader, '讀取心願清單失敗')
 
   const create = useCallback(
     async (input: Omit<AddWishlistItemInput, 'tripId'>) => {
@@ -36,13 +20,16 @@ export function useWishlist(tripId: string) {
       setItems((prev) => [...prev, item])
       return item
     },
-    [tripId],
+    [tripId, setItems],
   )
 
-  const remove = useCallback(async (id: string) => {
-    await deleteWishlistItem(id)
-    setItems((prev) => prev.filter((i) => i.id !== id))
-  }, [])
+  const remove = useCallback(
+    async (id: string) => {
+      await deleteWishlistItem(id)
+      setItems((prev) => prev.filter((i) => i.id !== id))
+    },
+    [setItems],
+  )
 
   const confirmBought = useCallback(
     async (item: WishlistItem, actualStore: string | null, actualAmt: number | null) => {
@@ -50,14 +37,17 @@ export function useWishlist(tripId: string) {
       setItems((prev) => prev.map((i) => (i.id === wishlistItem.id ? wishlistItem : i)))
       return wishlistItem
     },
-    [tripId],
+    [tripId, setItems],
   )
 
-  const undoBought = useCallback(async (id: string) => {
-    const updated = await markUnbought(id)
-    setItems((prev) => prev.map((i) => (i.id === id ? updated : i)))
-    return updated
-  }, [])
+  const undoBought = useCallback(
+    async (id: string) => {
+      const updated = await markUnbought(id)
+      setItems((prev) => prev.map((i) => (i.id === id ? updated : i)))
+      return updated
+    },
+    [setItems],
+  )
 
   return {
     items,
@@ -67,6 +57,6 @@ export function useWishlist(tripId: string) {
     deleteItem: remove,
     confirmBought,
     undoBought,
-    refetch: load,
+    refetch,
   }
 }

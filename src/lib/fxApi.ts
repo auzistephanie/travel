@@ -1,3 +1,5 @@
+import { warnApiFailure } from './apiWarn'
+
 interface ExchangeRateResponse {
   rates?: Record<string, number>
 }
@@ -7,11 +9,15 @@ export async function fetchExchangeRateToHKD(currency: string): Promise<number |
 
   try {
     const response = await fetch(`https://open.er-api.com/v6/latest/${currency}`)
-    if (!response.ok) return null
+    if (!response.ok) {
+      warnApiFailure('fxApi', `HTTP ${response.status}`)
+      return null
+    }
 
     const body = (await response.json()) as ExchangeRateResponse
     return body.rates?.HKD ?? null
-  } catch {
+  } catch (error) {
+    warnApiFailure('fxApi', error)
     return null
   }
 }

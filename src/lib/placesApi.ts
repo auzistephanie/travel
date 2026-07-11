@@ -1,3 +1,5 @@
+import { warnApiFailure } from './apiWarn'
+
 export interface PlaceResult {
   name: string
   address: string
@@ -42,7 +44,10 @@ async function searchTomTom(query: string, options?: SearchOptions): Promise<Pla
     const response = await fetch(
       `https://api.tomtom.com/search/2/search/${encodeURIComponent(query)}.json?${params.toString()}`,
     )
-    if (!response.ok) return []
+    if (!response.ok) {
+      warnApiFailure('placesApi', `HTTP ${response.status}`)
+      return []
+    }
 
     const body = (await response.json()) as TomTomSearchResponse
 
@@ -52,7 +57,8 @@ async function searchTomTom(query: string, options?: SearchOptions): Promise<Pla
       lat: result.position?.lat ?? 0,
       lng: result.position?.lon ?? 0,
     }))
-  } catch {
+  } catch (error) {
+    warnApiFailure('placesApi', error)
     return []
   }
 }

@@ -283,6 +283,12 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **⚠️ stale clone 事故**：同日有個 session 喺 `~/travel/`（home 下一份停留喺 7 月 3 號嘅舊 clone）升級 `github_push.py` 時，成棵舊樹 push 咗上 remote（commit 1a95443），冚走 19 個檔（ownerAuth/myTrips/showreel/審視報告/safeStorage 等）兼觸發 Vercel 部署舊版。已用本地完整樹還原（commit ebec7b8，dry-run 確認同步），並採納嗰邊升級咗嘅新版 `github_push.py`（會同步 refs/remotes/origin/main、提醒一次 run = 一次 deployment）。**舊 clone 已處置**：`git remote remove origin` + 改名 `~/travel-OLD-stale`。教訓：**push 前先 dry-run 對比遠端 tree，見到大量意料之外嘅 deletion 即停**；唯一正本係 `~/Documents/Claude/Projects/Travel App`。
 - Sandbox 實戰備忘：bash call 45s 硬限制兼 kill child process，vitest 要 3–7 檔一 chunk 跑；大量檔案 push 要斷點續傳式分 call 上 blob（blob 上咗 GitHub 就存在，最後一步先起 commit）。
 
+## 8aa. hooks 去重 + Api 層遙測（2026-07-11）
+- **hooks**：8w 審視技術債 #3——新增 `src/hooks/useTripCollection.ts` generic（load/loading/error/refetch 骨架 + ⚠️ loader 要 useCallback 嘅註釋），`useExpenses`／`useFlights`／`useGifts`／`useWishlist`／`usePackingChecklist` 改做薄 wrapper（**對外簽名完全不變**，各自保留 add/remove/toggle optimistic 更新）。`useItinerary` 結構唔同（days+stopsByDay 兩層）冇郁。
+- **Api 遙測**：8w 審視 #5——新增 `src/lib/apiWarn.ts`（`warnApiFailure`），8 個 `*Api.ts` 嘅 `!response.ok` 同 catch 降級前一律 `console.warn`，唔改變任何回傳行為；「靜默降級」convention 本身不變（見 `src/lib/README.md`）。
+- **測試**：consumer 頁面（Overview/Money/Prep/Itinerary）+ hooks + 相關 form/component test 全綠，8 個 Api test（53 條）全綠，`tsc -b` 零錯、`vite build` 乾淨；上線 smoke test 總覽／錢／準備分頁正常載入資料。
+- 至此 8w 審視報告嘅重構清單全部完成（#1–#5 + 文案），剩低嘅只有錦上添花項（activeTab 入 URL deep link）。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - 架構審視報告：`docs/ARCHITECTURE_REVIEW_2026-07-11.md`（+ 交接手記 `docs/HANDOVER_2026-07-11.md`）
@@ -290,4 +296,4 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-11（新增 8z 文案書面語統一 + stale clone push 事故記錄同處置）*
+*最後更新：2026-07-11（新增 8aa hooks 去重 useTripCollection + Api 層 console.warn 遙測——8w 審視清單全部完成）*

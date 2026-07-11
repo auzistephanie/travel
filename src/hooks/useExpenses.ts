@@ -1,41 +1,28 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { addExpense, deleteExpense, listExpenses, type AddExpenseInput } from '../lib/expenseRepo'
+import { useTripCollection } from './useTripCollection'
 import type { Expense } from '../types/models'
 
 export function useExpenses(tripId: string) {
-  const [expenses, setExpenses] = useState<Expense[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      setExpenses(await listExpenses(tripId))
-    } catch {
-      setError('讀取開支失敗')
-    } finally {
-      setLoading(false)
-    }
-  }, [tripId])
-
-  useEffect(() => {
-    load()
-  }, [load])
+  const loader = useCallback(() => listExpenses(tripId), [tripId])
+  const { items: expenses, setItems, loading, error, refetch } = useTripCollection<Expense>(loader, '讀取開支失敗')
 
   const create = useCallback(
     async (input: Omit<AddExpenseInput, 'tripId'>) => {
       const expense = await addExpense({ ...input, tripId })
-      setExpenses((prev) => [...prev, expense])
+      setItems((prev) => [...prev, expense])
       return expense
     },
-    [tripId],
+    [tripId, setItems],
   )
 
-  const remove = useCallback(async (id: string) => {
-    await deleteExpense(id)
-    setExpenses((prev) => prev.filter((e) => e.id !== id))
-  }, [])
+  const remove = useCallback(
+    async (id: string) => {
+      await deleteExpense(id)
+      setItems((prev) => prev.filter((e) => e.id !== id))
+    },
+    [setItems],
+  )
 
-  return { expenses, loading, error, addExpense: create, deleteExpense: remove, refetch: load }
+  return { expenses, loading, error, addExpense: create, deleteExpense: remove, refetch }
 }

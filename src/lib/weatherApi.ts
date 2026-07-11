@@ -1,3 +1,5 @@
+import { warnApiFailure } from './apiWarn'
+
 export interface HalfDayWeather {
   tempC: number
   rainProbability: number
@@ -59,7 +61,10 @@ export async function fetchWeather(
 
   try {
     const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`)
-    if (!response.ok) return []
+    if (!response.ok) {
+      warnApiFailure('weatherApi', `HTTP ${response.status}`)
+      return []
+    }
 
     const body = (await response.json()) as OpenMeteoResponse
     const hourly = body.hourly
@@ -88,7 +93,8 @@ export async function fetchWeather(
     }
 
     return days.sort((a, b) => a.date.localeCompare(b.date))
-  } catch {
+  } catch (error) {
+    warnApiFailure('weatherApi', error)
     return []
   }
 }

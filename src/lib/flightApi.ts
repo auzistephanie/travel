@@ -1,3 +1,5 @@
+import { warnApiFailure } from './apiWarn'
+
 export interface FlightLookupResult {
   fromAirport: string
   toAirport: string
@@ -20,7 +22,10 @@ export async function lookupFlight(code: string, date: string): Promise<FlightLo
 
   try {
     const response = await fetch(`https://api.aviationstack.com/v1/flights?${params}`)
-    if (!response.ok) return null
+    if (!response.ok) {
+      warnApiFailure('flightApi', `HTTP ${response.status}`)
+      return null
+    }
 
     const body = (await response.json()) as { data?: AviationStackFlight[] }
     const flight = body.data?.[0]
@@ -34,7 +39,8 @@ export async function lookupFlight(code: string, date: string): Promise<FlightLo
       gate: flight.departure?.gate ?? null,
       terminal: flight.departure?.terminal ?? null,
     }
-  } catch {
+  } catch (error) {
+    warnApiFailure('flightApi', error)
     return null
   }
 }

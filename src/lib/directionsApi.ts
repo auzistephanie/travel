@@ -1,3 +1,5 @@
+import { warnApiFailure } from './apiWarn'
+
 export type TransportMode = 'WALK' | 'TRANSIT' | 'DRIVE'
 
 export interface TransportEstimate {
@@ -28,14 +30,18 @@ async function fetchTomTomEstimate(from: LatLng, to: LatLng, mode: RoadTravelMod
       `https://api.tomtom.com/routing/1/calculateRoute/${from.lat},${from.lng}:${to.lat},${to.lng}/json` +
         `?key=${key}&travelMode=${travelMode}`,
     )
-    if (!response.ok) return null
+    if (!response.ok) {
+      warnApiFailure('directionsApi', `HTTP ${response.status}`)
+      return null
+    }
 
     const body = (await response.json()) as TomTomRouteResponse
     const seconds = body.routes?.[0]?.summary?.travelTimeInSeconds
     if (seconds == null) return null
 
     return { mode, durationMinutes: Math.round(seconds / 60) }
-  } catch {
+  } catch (error) {
+    warnApiFailure('directionsApi', error)
     return null
   }
 }

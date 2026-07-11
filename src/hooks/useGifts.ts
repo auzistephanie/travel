@@ -1,41 +1,28 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { addGift, deleteGift, listGifts, type AddGiftInput } from '../lib/giftRepo'
+import { useTripCollection } from './useTripCollection'
 import type { Gift } from '../types/models'
 
 export function useGifts(tripId: string) {
-  const [gifts, setGifts] = useState<Gift[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      setGifts(await listGifts(tripId))
-    } catch {
-      setError('讀取手信失敗')
-    } finally {
-      setLoading(false)
-    }
-  }, [tripId])
-
-  useEffect(() => {
-    load()
-  }, [load])
+  const loader = useCallback(() => listGifts(tripId), [tripId])
+  const { items: gifts, setItems, loading, error, refetch } = useTripCollection<Gift>(loader, '讀取手信失敗')
 
   const create = useCallback(
     async (input: Omit<AddGiftInput, 'tripId'>) => {
       const gift = await addGift({ ...input, tripId })
-      setGifts((prev) => [...prev, gift])
+      setItems((prev) => [...prev, gift])
       return gift
     },
-    [tripId],
+    [tripId, setItems],
   )
 
-  const remove = useCallback(async (id: string) => {
-    await deleteGift(id)
-    setGifts((prev) => prev.filter((g) => g.id !== id))
-  }, [])
+  const remove = useCallback(
+    async (id: string) => {
+      await deleteGift(id)
+      setItems((prev) => prev.filter((g) => g.id !== id))
+    },
+    [setItems],
+  )
 
-  return { gifts, loading, error, addGift: create, deleteGift: remove, refetch: load }
+  return { gifts, loading, error, addGift: create, deleteGift: remove, refetch }
 }

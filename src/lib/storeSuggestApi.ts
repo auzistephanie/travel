@@ -1,3 +1,5 @@
+import { warnApiFailure } from './apiWarn'
+
 export interface StoreSuggestion {
   name: string
   address: string
@@ -35,7 +37,10 @@ export async function searchStoresForItem(itemName: string, lat: number, lng: nu
     const response = await fetch(
       `https://api.tomtom.com/search/2/search/${encodeURIComponent(itemName)}.json?${params.toString()}`,
     )
-    if (!response.ok) return []
+    if (!response.ok) {
+      warnApiFailure('storeSuggestApi', `HTTP ${response.status}`)
+      return []
+    }
 
     const body = (await response.json()) as TomTomSearchResponse
 
@@ -51,7 +56,8 @@ export async function searchStoresForItem(itemName: string, lat: number, lng: nu
       }
       return suggestion
     })
-  } catch {
+  } catch (error) {
+    warnApiFailure('storeSuggestApi', error)
     return []
   }
 }
