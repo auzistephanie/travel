@@ -147,7 +147,7 @@ describe('CreateTrip', () => {
     await user.click(await screen.findByRole('button', { name: '用 Google 登入' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('登入失敗')
 
-    await user.click(screen.getByRole('button', { name: '遲啲先，直接入去行程' }))
+    await user.click(screen.getByRole('button', { name: '稍後再說，直接進入行程' }))
     expect(navigate).toHaveBeenCalledWith('/t/ABC234')
   })
 
@@ -170,7 +170,7 @@ describe('CreateTrip', () => {
     await user.type(screen.getByLabelText('你的名字'), '阿明')
     await user.click(screen.getByRole('button', { name: '建立行程' }))
 
-    await user.click(await screen.findByRole('button', { name: '遲啲先，直接入去行程' }))
+    await user.click(await screen.findByRole('button', { name: '稍後再說，直接進入行程' }))
     expect(navigate).toHaveBeenCalledWith('/t/ABC234')
     expect(signInWithGoogle).not.toHaveBeenCalled()
   })
@@ -229,7 +229,7 @@ describe('CreateTrip', () => {
     expect(screen.queryByRole('button', { name: '用 Google 登入' })).not.toBeInTheDocument()
     expect(screen.getByText(/已用 stephanie@example.com 登入/)).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: '入去行程' }))
+    await user.click(screen.getByRole('button', { name: '進入行程' }))
     expect(navigate).toHaveBeenCalledWith('/t/ABC234')
   })
 

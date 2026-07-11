@@ -90,7 +90,7 @@ export function Landing() {
     <p className="journal-login-status">已用 {authUser.email ?? 'Google'} 登入 · 行程會跨裝置同步</p>
   ) : (
     <div className="journal-login">
-      <p className="journal-login-hint">已有帳戶？跨裝置攞返你嘅行程</p>
+      <p className="journal-login-hint">已有帳戶？跨裝置取回你的行程</p>
       <button type="button" className="journal-login-btn" onClick={() => signInWithGoogle()}>
         <span className="journal-google-g" aria-hidden="true">
           G
@@ -203,11 +203,11 @@ export function Landing() {
           >
             <p className="journal-confirm-title">刪除「{confirmDelete.name}」？</p>
             <p className="journal-confirm-desc">
-              「從清單移除」淨係喺呢部裝置隱藏，資料仲喺。
+              「從清單移除」只會在此裝置隱藏，資料仍然保留。
               {confirmDelete.role === 'owner' && (
                 <>
                   <br />
-                  「徹底刪除」連夾錢、行李、行程全部清走，不可還原。
+                  「徹底刪除」會將夾錢、行李、行程全部刪除，無法還原。
                 </>
               )}
             </p>

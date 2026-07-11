@@ -103,7 +103,7 @@ export function SettingsPanel({
     try {
       await onSignInWithGoogle()
     } catch {
-      setSignInError('登入失敗，請遲啲再試')
+      setSignInError('登入失敗，請稍後再試')
       setSigningIn(false)
     }
   }
@@ -165,10 +165,10 @@ export function SettingsPanel({
           <>
             <h3>帳戶</h3>
             {authEmail ? (
-              <p className="settings-hint">已用 {authEmail} 登入，呢部裝置隨時都認得返你。</p>
+              <p className="settings-hint">已用 {authEmail} 登入，此裝置會自動識別你的身份。</p>
             ) : (
               <>
-                <p className="settings-hint">用 Google 登入，就算換裝置或瀏覽器都認得返你，唔使再揀名。</p>
+                <p className="settings-hint">以 Google 登入後，即使更換裝置或瀏覽器也能識別你的身份，無需再選擇名字。</p>
                 <button type="button" onClick={handleGoogleSignIn} disabled={signingIn}>
                   <LogIn size={16} aria-hidden="true" />
                   用 Google 登入
@@ -183,7 +183,7 @@ export function SettingsPanel({
           <>
             <h3>目的地</h3>
             <p className="settings-hint">
-              改咗目的地，地圖搜尋會篩返當地結果，行李／簽證／交通卡建議亦會跟住更新。
+              更改目的地後，地圖搜尋會篩選當地結果，行李、簽證及交通卡建議也會隨之更新。
             </p>
             <select
               aria-label="目的地國家"
@@ -221,7 +221,7 @@ export function SettingsPanel({
             ) : confirmingDelete ? (
               <>
                 <p className="settings-hint">
-                  徹底刪除「{trip.name}」？連夾錢、行李、行程、手信全部一次過清走，不可還原。
+                  徹底刪除「{trip.name}」？夾錢、行李、行程、手信將全部一併刪除，無法還原。
                 </p>
                 <button
                   type="button"
@@ -251,7 +251,7 @@ export function SettingsPanel({
                 }}
               >
                 <Trash2 size={16} aria-hidden="true" />
-                刪除呢個行程
+                刪除此行程
               </button>
             )}
             {deleteError && <p role="alert">{deleteError}</p>}
@@ -262,7 +262,7 @@ export function SettingsPanel({
           <>
             <h3>邀請朋友</h3>
             <p className="settings-hint">
-              把呢條連結傳畀朋友，佢哋撳開揀返自己個名就可以一齊編輯，唔使登入、唔使開帳戶。
+              把連結傳給朋友，開啟後選擇自己的名字即可一起編輯，無需登入或註冊帳戶。
             </p>
             <button type="button" className="settings-copy-link" onClick={handleCopyInviteLink}>
               {inviteCopied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
@@ -273,7 +273,7 @@ export function SettingsPanel({
 
         <h3>個人連結</h3>
         <p className="settings-hint">
-          喺主畫面圖示同瀏覽器打開見到唔同人？複製呢條連結，兩邊都用返同一條，就會記得你係邊個。
+          在主畫面圖示與瀏覽器開啟時身份不一致？複製此連結，兩邊使用同一條連結即可記住你的身份。
         </p>
         <button type="button" className="settings-copy-link" onClick={handleCopyLink}>
           {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}

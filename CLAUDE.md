@@ -278,6 +278,11 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **測試**：新增 `identityResolver.test.ts`(8)；`TripShell.test.tsx` 原有 14 條**零改動全過**（證明行為兼容）+1 條新 case（override 跨 reload 持續），連 CreateTrip/Landing/WhoAmIPicker/SettingsPanel/whoAmI/safeStorage/ownerAuth/pages/hooks/theme 全部相關 chunk 全綠；`tsc -b` 零錯、`vite build` 乾淨。
 - **上線實測**：切換身份 → 揀名畫面 → reload 後仍然停留喺揀名畫面（唔會被 Google 帳戶搶返）→ 揀返自己 → 正常入返 trip。
 
+## 8z. 文案書面語統一 + stale clone 事故（2026-07-11）
+- **文案**：8w 審視發現 CreateTrip 成功畫面／SettingsPanel hints／Landing 刪除確認／WhoAmIPicker 仲係口語，違反 §8「應用內文案一律書面語」。對照表 preview 批准後全部改書面語（「夾錢」係功能名保留；「遲啲先直接入去行程」→「稍後再說，直接進入行程」、「刪除呢個行程」→「刪除此行程」等 20 句）。相關 test 文案 assert 跟住改（SettingsPanel/CreateTrip），全綠、`tsc -b` 零錯、build 乾淨。
+- **⚠️ stale clone 事故**：同日有個 session 喺 `~/travel/`（home 下一份停留喺 7 月 3 號嘅舊 clone）升級 `github_push.py` 時，成棵舊樹 push 咗上 remote（commit 1a95443），冚走 19 個檔（ownerAuth/myTrips/showreel/審視報告/safeStorage 等）兼觸發 Vercel 部署舊版。已用本地完整樹還原（commit ebec7b8，dry-run 確認同步），並採納嗰邊升級咗嘅新版 `github_push.py`（會同步 refs/remotes/origin/main、提醒一次 run = 一次 deployment）。**舊 clone 已處置**：`git remote remove origin` + 改名 `~/travel-OLD-stale`。教訓：**push 前先 dry-run 對比遠端 tree，見到大量意料之外嘅 deletion 即停**；唯一正本係 `~/Documents/Claude/Projects/Travel App`。
+- Sandbox 實戰備忘：bash call 45s 硬限制兼 kill child process，vitest 要 3–7 檔一 chunk 跑；大量檔案 push 要斷點續傳式分 call 上 blob（blob 上咗 GitHub 就存在，最後一步先起 commit）。
+
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
 - 架構審視報告：`docs/ARCHITECTURE_REVIEW_2026-07-11.md`（+ 交接手記 `docs/HANDOVER_2026-07-11.md`）
@@ -285,4 +290,4 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-11（新增 8y Identity 重構：resolveIdentity 純函數 + useTripIdentity hook，切換身份 override 升級 sessionStorage、修幽靈身份）*
+*最後更新：2026-07-11（新增 8z 文案書面語統一 + stale clone push 事故記錄同處置）*

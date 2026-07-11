@@ -96,7 +96,7 @@ export function CreateTrip() {
     try {
       await signInWithGoogle(`${window.location.origin}/t/${created.trip.share_code}?m=${created.owner.id}`)
     } catch {
-      setLoginError('登入失敗，請遲啲入行程嘅「設定」度再試')
+      setLoginError('登入失敗，請稍後在行程的「設定」再試')
       setSigningIn(false)
     }
   }
@@ -108,29 +108,29 @@ export function CreateTrip() {
           <h1>行程建立成功！</h1>
 
           <h2>邀請朋友</h2>
-          <p>把呢條連結傳畀朋友，佢哋撳開揀返自己個名就可以一齊編輯，唔使登入、唔使開帳戶。</p>
+          <p>把連結傳給朋友，開啟後選擇自己的名字即可一起編輯，無需登入或註冊帳戶。</p>
           <button type="button" onClick={handleCopyInviteLink}>
             {inviteCopied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
             {inviteCopied ? '已複製' : '複製邀請連結'}
           </button>
 
-          <h2>你自己嘅登入</h2>
+          <h2>你的登入</h2>
           {authUser ? (
             <>
-              <p>已用 {authUser.email ?? 'Google'} 登入，呢個行程已經綁定咗你嘅帳戶，換裝置都認得返你。</p>
+              <p>已用 {authUser.email ?? 'Google'} 登入，此行程已綁定你的帳戶，更換裝置也能識別你的身份。</p>
               <button type="button" onClick={goToTrip}>
-                入去行程
+                進入行程
               </button>
             </>
           ) : (
             <>
-              <p>用 Google 登入，就算之後換裝置或瀏覽器都認得返你，唔使再揀名。呢步可以跳過，遲啲入 設定 都做得到。</p>
+              <p>以 Google 登入後，日後更換裝置或瀏覽器也能識別你的身份，無需再選擇名字。此步驟可跳過，稍後在「設定」也可完成。</p>
               <button type="button" onClick={handleGoogleSignIn} disabled={signingIn}>
                 用 Google 登入
               </button>
               {loginError && <p role="alert">{loginError}</p>}
               <button type="button" onClick={goToTrip}>
-                遲啲先，直接入去行程
+                稍後再說，直接進入行程
               </button>
             </>
           )}

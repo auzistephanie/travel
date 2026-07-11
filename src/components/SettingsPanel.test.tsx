@@ -163,7 +163,7 @@ describe('SettingsPanel', () => {
 
     await user.click(screen.getByRole('button', { name: '用 Google 登入' }))
 
-    expect(await screen.findByText('登入失敗，請遲啲再試')).toBeInTheDocument()
+    expect(await screen.findByText('登入失敗，請稍後再試')).toBeInTheDocument()
   })
 
   it('shows the logged-in email instead of the login form once the owner is authenticated', () => {
@@ -174,13 +174,13 @@ describe('SettingsPanel', () => {
 
   it('hides the delete button and shows a login hint when the owner is not signed in', () => {
     render(<Harness isOwner trip={sampleTrip} />)
-    expect(screen.queryByRole('button', { name: '刪除呢個行程' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '刪除此行程' })).not.toBeInTheDocument()
     expect(screen.getByText(/徹底刪除行程需要先在上面「帳戶」以 Google 登入/)).toBeInTheDocument()
   })
 
   it('shows the delete button once the owner is signed in', () => {
     render(<Harness isOwner authEmail="stephanie@example.com" trip={sampleTrip} />)
-    expect(screen.getByRole('button', { name: '刪除呢個行程' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '刪除此行程' })).toBeInTheDocument()
   })
 
   it('shows the destination selector prefilled from the trip for an owner', () => {

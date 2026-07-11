@@ -31,7 +31,7 @@ export function WhoAmIPicker({ members, onSelect, onAddNew }: WhoAmIPickerProps)
           <Compass size={22} />
         </span>
         <h2>哪位是你？</h2>
-        <p className="whoami-hint">揀返自己個名就可以入去，或者用新名字加入。</p>
+        <p className="whoami-hint">選擇自己的名字即可進入，或以新名字加入。</p>
 
         <ul className="whoami-member-list">
           {members.map((member) => (
