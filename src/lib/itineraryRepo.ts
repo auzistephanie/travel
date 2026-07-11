@@ -1,5 +1,4 @@
 import { supabase } from './supabaseClient'
-import { UNIQUE_VIOLATION } from './postgrestErrors'
 import type { ItineraryDay, ItineraryStop } from '../types/models'
 
 export async function listDays(tripId: string): Promise<ItineraryDay[]> {
@@ -12,6 +11,8 @@ export async function listDays(tripId: string): Promise<ItineraryDay[]> {
   if (error) throw error
   return (data ?? []) as ItineraryDay[]
 }
+
+const UNIQUE_VIOLATION = '23505'
 
 async function createDay(tripId: string, date: string, orderIndex: number): Promise<ItineraryDay> {
   const { data, error } = await supabase

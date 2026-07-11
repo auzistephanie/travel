@@ -97,8 +97,3 @@ export const DESTINATIONS: Record<string, DestinationInfo> = {
 export function getDestination(countryCode: string): DestinationInfo | undefined {
   return DESTINATIONS[countryCode]
 }
-
-// 「目的地國家」下拉揀項（CreateTrip 同 SettingsPanel 共用，以前各抄一份）。
-// HK 淨係做本地行程參考用，唔擺入揀項。SG/MY 未有自訂插畫（用返 Generic），
-// 之後想加插畫可以加落 src/theme/illustrations 同 DestinationIllustration.tsx 嘅 ILLUSTRATIONS map。
-export const DESTINATION_OPTIONS = ['JP', 'TH', 'KR', 'TW', 'VN', 'SG', 'MY'] as const

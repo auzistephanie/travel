@@ -16,8 +16,6 @@ export interface TripMember {
   name: string
   color: string | null
   is_owner: boolean
-  // optional：舊 fixture/test 唔需要跟住補呢個新欄位
-  auth_user_id?: string | null
 }
 
 export interface Flight {

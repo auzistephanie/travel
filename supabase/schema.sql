@@ -20,13 +20,8 @@ create table trip_members (
   trip_id uuid not null references trips(id) on delete cascade,
   name text not null,
   color text,
-  is_owner boolean not null default false,
-  -- 2026-07-04：得 owner 可以連結返自己嘅 Supabase Auth account（email magic link），
-  -- 令佢喺唔同瀏覽器 context（例如 iOS 主畫面圖示 vs Safari）都認得返自己，唔使淨係靠 localStorage/URL token。
-  -- 一般朋友唔使有 account，繼續用「揀名」機制。
-  auth_user_id uuid references auth.users(id) on delete set null
+  is_owner boolean not null default false
 );
-create index if not exists trip_members_auth_user_id_idx on trip_members(auth_user_id);
 
 -- ============ flights ============
 create table flights (
@@ -147,20 +142,7 @@ alter table expenses enable row level security;
 alter table gifts enable row level security;
 alter table settings enable row level security;
 
--- trips：讀/insert/update 照舊全開，但 DELETE 收窄（migration restrict_trips_delete_to_owner，2026-07-11）
--- ——以前一條 for all 令任何知 share code 嘅人可以匿名 cascade delete 成個 trip。
--- 而家徹底刪除只限「已用 Google 登入兼係該 trip owner」嘅人；朋友免登入共編完全唔受影響。
-create policy "trips open select" on trips for select using (true);
-create policy "trips open insert" on trips for insert with check (true);
-create policy "trips open update" on trips for update using (true) with check (true);
-create policy "trips owner delete" on trips for delete using (
-  exists (
-    select 1 from trip_members m
-    where m.trip_id = trips.id
-      and m.is_owner
-      and m.auth_user_id = auth.uid()
-  )
-);
+create policy "public access" on trips for all using (true) with check (true);
 create policy "public access" on trip_members for all using (true) with check (true);
 create policy "public access" on flights for all using (true) with check (true);
 create policy "public access" on itinerary_days for all using (true) with check (true);

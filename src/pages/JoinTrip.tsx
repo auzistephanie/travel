@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { findTripByShareCode } from '../lib/tripApi'
-import { addMyTrip } from '../lib/myTrips'
 import '../styles/journalCard.css'
 
 export function JoinTrip() {
@@ -22,13 +21,6 @@ export function JoinTrip() {
         setSubmitting(false)
         return
       }
-      addMyTrip({
-        shareCode: code,
-        name: result.trip.name,
-        role: 'member',
-        startDate: result.trip.start_date,
-        endDate: result.trip.end_date,
-      })
       navigate(`/t/${code}`)
     } catch {
       setError('讀取失敗，請再試一次')

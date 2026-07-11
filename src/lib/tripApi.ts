@@ -1,9 +1,9 @@
 import { supabase } from './supabaseClient'
 import { generateShareCode } from './shareCode'
-import { UNIQUE_VIOLATION } from './postgrestErrors'
 import type { Trip, TripMember } from '../types/models'
 
 const MAX_SHARE_CODE_ATTEMPTS = 5
+const UNIQUE_VIOLATION = '23505'
 
 export interface CreateTripInput {
   name: string
@@ -77,74 +77,6 @@ export async function findTripByShareCode(shareCode: string): Promise<FindTripRe
   if (membersError) throw membersError
 
   return { trip: trip as Trip, members: (members ?? []) as TripMember[] }
-}
-
-export interface AuthUserTrip {
-  shareCode: string
-  name: string
-  role: 'owner' | 'member'
-  startDate: string | null
-  endDate: string | null
-}
-
-// 登入後攞返呢個 auth user 連結咗嘅所有行程（跨裝置同步用）。
-// 靠 trip_members.auth_user_id 認人，join 返 trips 攞名／日期／分享碼。
-export async function getTripsForAuthUser(authUserId: string): Promise<AuthUserTrip[]> {
-  const { data, error } = await supabase
-    .from('trip_members')
-    .select('is_owner, trips(share_code, name, start_date, end_date)')
-    .eq('auth_user_id', authUserId)
-
-  if (error) throw error
-
-  type TripJoin = { share_code: string; name: string; start_date: string | null; end_date: string | null }
-  // Supabase 將 join 出嚟嘅 trips 型別成 array（其實一對一），統一先正規化成單一物件。
-  const rows = (data ?? []) as unknown as Array<{ is_owner: boolean; trips: TripJoin | TripJoin[] | null }>
-
-  return rows
-    .map((row) => ({ is_owner: row.is_owner, trip: Array.isArray(row.trips) ? row.trips[0] : row.trips }))
-    .filter((row): row is { is_owner: boolean; trip: TripJoin } => !!row.trip)
-    .map((row) => ({
-      shareCode: row.trip.share_code,
-      name: row.trip.name,
-      role: row.is_owner ? 'owner' : 'member',
-      startDate: row.trip.start_date,
-      endDate: row.trip.end_date,
-    }))
-}
-
-export interface UpdateTripInput {
-  name?: string
-  startDate?: string
-  endDate?: string
-  destinationCountry?: string | null
-}
-
-// 更新行程基本資料（改名／日期／目的地）。owner 喺設定度用。
-export async function updateTrip(tripId: string, patch: UpdateTripInput): Promise<Trip> {
-  const row: Record<string, unknown> = {}
-  if (patch.name !== undefined) row.name = patch.name
-  if (patch.startDate !== undefined) row.start_date = patch.startDate
-  if (patch.endDate !== undefined) row.end_date = patch.endDate
-  if (patch.destinationCountry !== undefined) row.destination_country = patch.destinationCountry
-
-  const { data, error } = await supabase.from('trips').update(row).eq('id', tripId).select().single()
-  if (error) throw error
-  return data as Trip
-}
-
-// 刪除被 RLS 擋住嗰陣，Supabase 唔會報錯，只係「靜默刪咗 0 行」——
-// 所以要 .select() 攞返實際刪咗嘅行嚟驗證，先知道成唔成功。
-export const TRIP_DELETE_DENIED = 'TRIP_DELETE_DENIED'
-
-// 徹底刪除行程：schema 所有子表 trip_id 都係 on delete cascade，
-// 所以刪 trips 一行就連 members/flights/itinerary/packing/wishlist/expenses/gifts/settings 全部清走。不可還原。
-// RLS（migration restrict_trips_delete_to_owner，2026-07-11）：DELETE 只限「已用 Google 登入
-// 兼係該 trip owner」嘅人；未登入／唔係 owner 會刪到 0 行 → throw TRIP_DELETE_DENIED。
-export async function deleteTripByShareCode(shareCode: string): Promise<void> {
-  const { data, error } = await supabase.from('trips').delete().eq('share_code', shareCode).select()
-  if (error) throw error
-  if (!data || data.length === 0) throw new Error(TRIP_DELETE_DENIED)
 }
 
 export async function addTripMember(tripId: string, name: string): Promise<TripMember> {

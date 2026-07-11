@@ -3,20 +3,25 @@
 github_push.py — 直接經 GitHub API 把整個 working tree 同步上 GitHub main。
 
 點解唔用 git CLI：
-  Cowork sandbox 跑 `git add/commit/push` 會留低 stale `.git/index.lock` /
+  Sandbox 跑 `git add/commit/push` 會留低 stale `.git/index.lock` /
   `HEAD.lock`，之後所有 commit 都被擋。呢個 script 完全繞過 git CLI，
   用 GitHub Git Data API（blobs / trees / commits / refs）直接寫上 GitHub。
 
 偵測方式（重要）：
   同 **遠端 origin/main 的實際 tree** 比對，而唔係本地 HEAD——
   計每個工作檔的 git blob sha，只上傳有差異的檔，並刪除遠端多出的檔。
-  所以就算本地有未 push 的 commit，一樣會正確同步，且可重複執行（idempotent）。
+  所以就算本地 git 歷史舊咗/未同步，一樣會正確同步，且可重複執行（idempotent）。
+
+⚠️ 一次 run = 一個 commit = 一次 Vercel deployment（2026-07-02 教訓：舊版逐個檔案 PUT
+會整十幾個 commit，一次 push 撞爆 Vercel 免費 plan「100 deployments/日」上限）。呢個 script
+無論改幾多檔案，都係一個 tree + 一個 commit + 一次郁 ref，天生只觸發一次 build。
+唔好喺短時間內連環 run，慳返 deployment 額度。
 
 用法：
   python3 github_push.py "你的 commit message"
 
-Token 來源：.env（GITHUB_TOKEN）→ 環境變數 GITHUB_TOKEN/GH_TOKEN → .gh-token 檔（gitignored）→
-remote URL 內嵌（唔建議，只作向後兼容）。Token 只喺本機讀，唔會 print。
+Token 來源：.env（GITHUB_TOKEN）→ 環境變數 GITHUB_TOKEN/GH_TOKEN → .gh-token 檔（gitignored）。
+Token 只喺本機讀，唔會 print。
 """
 import base64
 import hashlib
@@ -120,6 +125,21 @@ def remote_tree_map(base, tree_sha, token):
     return {e["path"]: e["sha"] for e in data.get("tree", []) if e["type"] == "blob"}
 
 
+def sync_local_head(commit_sha, owner, repo, token):
+    """Push 成功後，fast-forward 本地 main 到啱 push 嘅 commit，
+    令 git status 唔再顯示假改動（本 script 經 GitHub API 寫入、唔會 advance 本地 HEAD）。
+    token 只用喺 fetch URL、唔寫入任何檔、唔 print；任何一步失敗都唔阻塞
+    （已 push 上 GitHub 嘅內容唔受影響）。用 --mixed：只郁 HEAD+index，唔掂 working tree。"""
+    auth_url = f"https://{token}@github.com/{owner}/{repo}.git"
+    if run(["git", "fetch", auth_url, "main"]).returncode != 0:
+        print("   (本地 HEAD 未同步：fetch 失敗，唔影響已 push 內容)")
+        return
+    if run(["git", "reset", "--mixed", commit_sha]).returncode == 0:
+        print("   本地 HEAD 已對齊 remote — git status 現時乾淨 ✨")
+    else:
+        print("   (本地 HEAD reset 失敗，唔影響已 push 內容)")
+
+
 def main():
     if len(sys.argv) < 2 or not sys.argv[1].strip():
         raise SystemExit('用法：python3 github_push.py "commit message"')
@@ -170,6 +190,7 @@ def main():
 
     print(f"✅ Pushed to GitHub — {message}")
     print(f"   {uploaded} 更新 / {len(deletions)} 刪除 · commit {commit['sha'][:7]}")
+    sync_local_head(commit["sha"], owner, repo, token)
 
 
 if __name__ == "__main__":
