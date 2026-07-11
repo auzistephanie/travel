@@ -218,6 +218,69 @@
   stroke-dasharray: 4 3;
 }
 
+/* ①-花磚：Hero 卡相片／內容分隔條（菱格細紋，跟主題 4 色） */
+[data-theme='cartography'] .hero-body::before {
+  content: '';
+  display: block;
+  height: 14px;
+  margin: -14px -15px 12px;
+  background-repeat: repeat-x;
+  background-size: 40px 14px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='14' viewBox='0 0 40 14'><rect width='40' height='14' fill='%23fff8ea'/><path d='M20 1 L37 7 L20 13 L3 7Z' fill='none' stroke='%232f4a3e' stroke-width='1.4' opacity='.55'/><rect x='17' y='4.5' width='5' height='5' fill='%23c99a3c' transform='rotate(45 20 7)'/></svg>");
+}
+
+/* ①-花磚：Settings 主題卡，現用緊嗰張加角落花磚點綴 */
+[data-theme='cartography'] .settings-sheet ul[aria-label='主題選擇'] button {
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme='cartography'] .settings-sheet ul[aria-label='主題選擇'] button[aria-pressed='true']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 26px;
+  height: 26px;
+  opacity: 0.85;
+  pointer-events: none;
+  background-size: cover;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'><path d='M15 5 C18 10 18 13 15 15 C12 13 12 10 15 5Z' fill='%232f4a3e'/><path d='M8 8 C12 9 14 11 15 15 C11 14 9 12 8 8Z' fill='%23c1683a'/><circle cx='15' cy='15' r='2.2' fill='%23c99a3c'/></svg>");
+}
+
+/* ②-花磚：Hero 卡分隔條，配東京霓虹夜色（底#1f1830／邊#ff3ec9／心#2ee6d6） */
+[data-theme='neon'] .hero-body::before {
+  content: '';
+  display: block;
+  height: 14px;
+  margin: -14px -15px 12px;
+  background-repeat: repeat-x;
+  background-size: 40px 14px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='14' viewBox='0 0 40 14'><rect width='40' height='14' fill='%231f1830'/><path d='M20 1 L37 7 L20 13 L3 7Z' fill='none' stroke='%23ff3ec9' stroke-width='1.4' opacity='.7'/><rect x='17' y='4.5' width='5' height='5' fill='%232ee6d6' transform='rotate(45 20 7)'/></svg>");
+}
+
+/* ③-花磚：Hero 卡分隔條，配和風藍染色（底#1f4166／邊#d4af37／心#c0392b） */
+[data-theme='indigo'] .hero-body::before {
+  content: '';
+  display: block;
+  height: 14px;
+  margin: -14px -15px 12px;
+  background-repeat: repeat-x;
+  background-size: 40px 14px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='14' viewBox='0 0 40 14'><rect width='40' height='14' fill='%231f4166'/><path d='M20 1 L37 7 L20 13 L3 7Z' fill='none' stroke='%23d4af37' stroke-width='1.4' opacity='.7'/><rect x='17' y='4.5' width='5' height='5' fill='%23c0392b' transform='rotate(45 20 7)'/></svg>");
+}
+
+/* ④-花磚：Hero 卡分隔條，配明信片剪貼簿色（底#ffffff／邊#c2434a／心#e8a33d） */
+[data-theme='scrapbook'] .hero-body::before {
+  content: '';
+  display: block;
+  height: 14px;
+  margin: -14px -15px 12px;
+  background-repeat: repeat-x;
+  background-size: 40px 14px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='14' viewBox='0 0 40 14'><rect width='40' height='14' fill='%23ffffff'/><path d='M20 1 L37 7 L20 13 L3 7Z' fill='none' stroke='%23c2434a' stroke-width='1.4' opacity='.7'/><rect x='17' y='4.5' width='5' height='5' fill='%23e8a33d' transform='rotate(45 20 7)'/></svg>");
+}
+
 /* ② 東京霓虹夜 Neon：標題霓虹閃爍、背景掃描線、按鈕發光脈動 */
 [data-theme='neon'].theme-root {
   background-image: repeating-linear-gradient(
@@ -378,7 +441,8 @@
   text-overflow: ellipsis;
 }
 
-.theme-root button.trip-settings {
+.theme-root button.trip-settings,
+.theme-root button.trip-switch-identity {
   background: rgba(255, 255, 255, 0.2);
   color: #fff;
   border: none;
@@ -457,6 +521,131 @@
   display: grid;
   place-items: center;
   line-height: 0;
+}
+
+/* ---- 「哪位是你？」揀名畫面 ---- */
+.whoami-page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 18px;
+}
+
+.whoami-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 28px 22px 24px;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(47, 61, 51, 0.07);
+}
+
+.whoami-brand {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: var(--color-heading);
+  color: #fff;
+}
+
+.whoami-card h2 {
+  margin: 0 0 6px;
+  font-size: 19px;
+}
+
+.whoami-hint {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: var(--color-text);
+  opacity: 0.75;
+}
+
+.whoami-member-list {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.whoami-member-list button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  font-weight: 700;
+  text-align: left;
+}
+
+.whoami-avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.whoami-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 16px;
+  color: var(--color-text);
+  opacity: 0.55;
+  font-size: 12px;
+}
+
+.whoami-divider::before,
+.whoami-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.whoami-card label {
+  display: block;
+  text-align: left;
+  font-size: 12px;
+  color: var(--color-text);
+  opacity: 0.75;
+  margin: 0 0 6px;
+}
+
+.whoami-new-row {
+  display: flex;
+  gap: 8px;
+}
+
+.whoami-new-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.whoami-new-row button {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
 }
 
 /* ---- Hero 卡 ---- */
@@ -710,6 +899,17 @@
   margin: 16px 0 8px;
 }
 
+.settings-sheet select.settings-dest-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
 .settings-sheet ul[aria-label='主題選擇'] {
   list-style: none;
   padding: 0;
@@ -747,6 +947,27 @@
   margin-top: 18px;
 }
 
+.settings-sheet h3.settings-danger-head {
+  color: #a1341f;
+  margin-top: 22px;
+}
+
+.theme-root button.settings-danger-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #a1341f;
+  color: #fff;
+  border: 2px solid #a1341f;
+  margin-top: 4px;
+}
+
+.theme-root button.settings-danger-btn:disabled {
+  opacity: 0.6;
+}
+
 /* =======================================================================
    行程 Itinerary（redesign 2026-07-02）
    ======================================================================= */
@@ -765,7 +986,7 @@
   line-height: 0;
 }
 
-.map-canvas svg {
+.map-canvas > svg {
   width: 100%;
   height: 100%;
 }

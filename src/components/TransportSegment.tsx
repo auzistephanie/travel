@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchTransportEstimate, type TransportEstimate, type TransportMode } from '../lib/directionsApi'
+import { fetchTransportEstimate, googleMapsTransitUrl, type TransportEstimate, type TransportMode } from '../lib/directionsApi'
 
 const MODES: TransportMode[] = ['WALK', 'TRANSIT', 'DRIVE']
 const MODE_LABELS: Record<TransportMode, string> = { WALK: '步行', TRANSIT: '電車', DRIVE: '自駕' }
@@ -26,6 +26,11 @@ export function TransportSegment({ from, to }: TransportSegmentProps) {
         </button>
       ))}
       {estimate && <span>{estimate.durationMinutes} 分鐘</span>}
+      {mode === 'TRANSIT' && (
+        <a href={googleMapsTransitUrl(from, to)} target="_blank" rel="noopener noreferrer">
+          喺 Google Maps 睇電車路線
+        </a>
+      )}
     </div>
   )
 }

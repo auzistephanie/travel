@@ -71,7 +71,7 @@ export function Itinerary({ trip }: TripPageProps) {
     setPlaceSearching(true)
     setPlaceHint(null)
     try {
-      const found = await searchPlaces(query)
+      const found = await searchPlaces(query, trip.destination_country)
       setPlaceResults(found)
       if (found.length === 0) setPlaceHint('找不到相關地點')
     } finally {
@@ -112,7 +112,7 @@ export function Itinerary({ trip }: TripPageProps) {
           </svg>
           <div className="map-note">
             <MapPin size={13} aria-hidden="true" />
-            {stops.length} 個景點 · 連 Google Maps key 後顯示 pin 同路線
+            {stops.length} 個景點
           </div>
         </div>
         <form className="map-search" onSubmit={handlePlaceSearch}>

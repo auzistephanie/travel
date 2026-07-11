@@ -30,41 +30,24 @@ export async function findNearbyRestroom(lat: number, lng: number): Promise<Faci
   }
 }
 
-interface PlacesSearchNearbyResponse {
-  places?: { displayName?: { text?: string }; location?: { latitude?: number; longitude?: number } }[]
-}
-
+// 便利店都改用 Overpass（同洗手間一致）—— TomTom 嘅 POI 資料喺呢類日常小店覆蓋好弱
+// （實測搵到錯嘅充電站），OSM 對日本 7-Eleven/FamilyMart/Lawson 呢類 shop=convenience 標註反而齊全準確，
+// 而且完全免 key。
 export async function findNearbyConvenienceStore(lat: number, lng: number): Promise<FacilityResult | null> {
-  const key = import.meta.env.VITE_GOOGLE_MAPS_KEY
-  if (!key) return null
+  const query = `[out:json];node["shop"="convenience"](around:${NEARBY_RADIUS_METERS},${lat},${lng});out 1;`
 
   try {
-    const response = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+    const response = await fetch('https://overpass-api.de/api/interpreter', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': key,
-        'X-Goog-FieldMask': 'places.displayName,places.location',
-      },
-      body: JSON.stringify({
-        includedTypes: ['convenience_store'],
-        maxResultCount: 1,
-        locationRestriction: {
-          circle: { center: { latitude: lat, longitude: lng }, radius: NEARBY_RADIUS_METERS },
-        },
-      }),
+      body: `data=${encodeURIComponent(query)}`,
     })
     if (!response.ok) return null
 
-    const body = (await response.json()) as PlacesSearchNearbyResponse
-    const first = body.places?.[0]
+    const body = (await response.json()) as OverpassResponse
+    const first = body.elements?.[0]
     if (!first) return null
 
-    return {
-      name: first.displayName?.text ?? '便利店',
-      lat: first.location?.latitude ?? lat,
-      lng: first.location?.longitude ?? lng,
-    }
+    return { name: first.tags?.name ?? '便利店', lat: first.lat, lng: first.lon }
   } catch {
     return null
   }

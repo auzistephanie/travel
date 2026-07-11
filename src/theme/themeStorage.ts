@@ -1,3 +1,4 @@
+import { localGet, localSet } from '../lib/safeStorage'
 import type { ThemeId } from '../types/models'
 
 const VALID_THEME_IDS: ThemeId[] = ['cartography', 'neon', 'scrapbook', 'indigo']
@@ -12,18 +13,18 @@ function accentKey(shareCode: string): string {
 }
 
 export function getStoredThemeId(shareCode: string): ThemeId {
-  const stored = localStorage.getItem(themeKey(shareCode))
+  const stored = localGet(themeKey(shareCode))
   return (VALID_THEME_IDS as string[]).includes(stored ?? '') ? (stored as ThemeId) : DEFAULT_THEME_ID
 }
 
 export function setStoredThemeId(shareCode: string, themeId: ThemeId): void {
-  localStorage.setItem(themeKey(shareCode), themeId)
+  localSet(themeKey(shareCode), themeId)
 }
 
 export function getStoredAccent(shareCode: string): string | null {
-  return localStorage.getItem(accentKey(shareCode))
+  return localGet(accentKey(shareCode))
 }
 
 export function setStoredAccent(shareCode: string, accent: string): void {
-  localStorage.setItem(accentKey(shareCode), accent)
+  localSet(accentKey(shareCode), accent)
 }
