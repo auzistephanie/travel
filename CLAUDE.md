@@ -1,7 +1,7 @@
 # 旅行規劃 App — CLAUDE.md
 
 > Session context。完整規格見 `TRAVEL_APP_BUILD_SPEC.md`。重大更新後自動更新此檔 + push GitHub。
-> **注意**：App 本體由 Claude Code CLI 開發，專案資料夾在 `/Users/stephanieau/Documents/Claude/Projects/Travel App`（2026-07-02 由 `/Users/stephanieau/Desktop/Work-Google Drive/Travel` 搬過嚟）。
+> **注意**：App 本體由 Claude Code CLI 開發，專案資料夾在 `~/Desktop/Stephanie-Google Drive/dev/Travel App`（2026-07-12 由 `~/Travel App` 搬去 Google Drive Mirror 做長期 local drive；node_modules 冇搬、本地 rsync 重生；`.gh-token` 已換新，push 確認成功；舊 folder 未刪，加咗 `_MIGRATED_TO_GOOGLE_DRIVE.txt` 標記）。
 
 ---
 
