@@ -295,7 +295,7 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **測試**：`TripShell.test.tsx` +2（deep link 直達錢分頁 aria-selected；切換分頁寫入 `tab=prep`、返總覽清走），共 17 條全綠；BottomNav 唔使改；`tsc -b` 零錯、`vite build` 乾淨；上線實測 `?tab=prep` 直達準備分頁 + 切換分頁 URL 跟住變。
 
 ## 9. 相關連結
-- 建置規格：`TRAVEL_APP_BUILD_SPEC_1.md`
+- 建置規格：`TRAVEL_APP_BUILD_SPEC.md`
 - 架構審視報告：`docs/ARCHITECTURE_REVIEW_2026-07-11.md`（+ 交接手記 `docs/HANDOVER_2026-07-11.md`）
 - GitHub repo：https://github.com/auzistephanie/travel
 - 部署網址：https://travel-ochre-rho.vercel.app
