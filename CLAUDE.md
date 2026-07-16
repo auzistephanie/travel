@@ -66,7 +66,7 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 每個 phase / 功能完成 → 實際跑一次(唔止睇 code) confirm 行為，成功先報告。
 - 用戶設定(主題/匯率)一律放 Settings，唔散落其他分頁。設定以全螢幕蓋面(bottom sheet)開啟，唔可以疊喺頁底。
 - 插畫全原創，唔扒真實圖。
-- 重大更新後更新 CLAUDE.md + push GitHub。
+- 重大更新後更新 CLAUDE.md + push GitHub（`python3 scripts/github_push.py "<msg>"`；未裝過 push 機制 → 裝機步驟正本 `stephanie-personal/docs/PUSH-SETUP.md`）。
 - **應用內所有文案一律用書面語繁體中文**（唔用廣東話口語）。
 - 對話溝通：繁體中文。
 
