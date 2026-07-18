@@ -3,9 +3,10 @@
 > 手機優先旅行規劃 PWA（行程／地圖／行李／夾錢／手信，朋友免登入共編）。完整規格見 `TRAVEL_APP_BUILD_SPEC.md`；改動記錄見 `CHANGELOG.md`。
 > **位置**：`~/Desktop/Stephanie-Google Drive/dev/Travel App`（唯一正本，2026-07-12 搬入 Google Drive Mirror）。App 本體由 Claude Code CLI 開發。
 
-## ⚙️ Standards（MANDATORY — 正本：`stephanie-personal/docs/ai-governance/06-STANDARDS.md`，改規則只改正本）
+## ✍️ 寫入分流（MANDATORY — 想更新本檔前先讀）
 
-Push（`github_push.py` 永不 git CLI・HTTPS・一次 run 一 commit）・寫入分流（改動記錄 → `CHANGELOG.md` **頂部**，唔准 append 落本檔；本檔上限 100 行/6KB）・清理 mv `_to_delete/`・改舊檔先 `.bak-YYYYMMDD`・方向性決定先 preview・改完以用家身份 run 一次先報完成・governance 00–05（派 subagent 先讀 01+03；報完成前過 02 §R2；冇 mount stephanie-personal → 叫 Stephanie 連埋）。詳文＋例外表 → 正本。
+- **改動記錄／開發史** → root `CHANGELOG.md` **頂部**，唔准 append 落本檔；本檔硬上限 **100 行／6KB**
+- 本檔只准改：路由行、現行規則本身變咗。完整分流表 → `stephanie-personal/docs/ai-governance/04-MAINTENANCE.md` §0
 
 ---
 
@@ -60,13 +61,14 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 4. **P4 視覺系統**：4 主題 token 化、目的地插畫、Settings 揀色 persist、印章/撕紙邊/ripple。
 5. **P5 打磨**：PWA manifest、分享連結測試、效能/離線。
 
-## 8. 工作規則＋完成前檢查 DoD（preview-first／run-first／push → ⚙️ Standards；通用四格 → 02-JUDGMENT §R2）
+## 8. 工作規則
+- 方向性決定 → 先 preview，批准先執行。
+- 每個 phase / 功能完成 → 實際跑一次(唔止睇 code) confirm 行為，成功先報告。
 - 用戶設定(主題/匯率)一律放 Settings，唔散落其他分頁。設定以全螢幕蓋面(bottom sheet)開啟，唔可以疊喺頁底。
 - 插畫全原創，唔扒真實圖。
+- 重大更新後更新 CLAUDE.md + push GitHub（`python3 scripts/github_push.py "<msg>"`；未裝過 push 機制 → 裝機步驟正本 `stephanie-personal/docs/PUSH-SETUP.md`）。
 - **應用內所有文案一律用書面語繁體中文**（唔用廣東話口語）。
 - 對話溝通：繁體中文。
-- 前端有改 → `npm run build` 過到＋實開部署網址或本機 `npm run dev` 行一次受影響 flow。
-- Push 用 `python3 scripts/github_push.py`（正本；root 嗰份係舊 copy，唔好用）＋核實 GitHub HEAD。
 
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC.md`
@@ -75,4 +77,4 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - 部署網址：https://travel-ochre-rho.vercel.app
 
 ---
-*最後更新：2026-07-18（§8 加 DoD 兩條：build/dev 實跑＋push 正本路徑）*
+*最後更新：2026-07-13（CLAUDE.md 瘦身：§8a–§8ab dated log 搬去 CHANGELOG.md）*

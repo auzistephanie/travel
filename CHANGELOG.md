@@ -2,6 +2,13 @@
 
 > 最新喺頂。CLAUDE.md 只放現行狀態；歷史改動（原 CLAUDE.md §8a–§8ab）記呢度。
 
+## 2026-07-18 CLAUDE.md §8 加 DoD 兩條（第二輪）
+
+- §8 改名「工作規則＋完成前檢查 DoD」，加「`npm run build` 過到＋實開 deploy／本機 dev 行受影響 flow」＋「push 用 `scripts/github_push.py`（正本；root 嗰份係舊 copy 唔好用）＋核實 GitHub HEAD」。已核實 scripts/ 版（8935B、較新）先係生效嗰份。
+
+## 2026-07-18 CLAUDE.md 換 ⚙️ Standards block
+- CLAUDE.md 重複規則段（寫入分流／Git push／AI 制度 router）換做 5 行「⚙️ Standards」block，正本 → `stephanie-personal/docs/ai-governance/06-STANDARDS.md`（skill 系統重整 session）；改前備份 `CLAUDE.md.bak-20260718`。
+
 ## 8ab. activeTab 入 URL：分頁 deep link（2026-07-11）
 - 8w 審視最後一項錦上添花：`TripShell` 嘅 `activeTab` 由 useState 改成直接由 URL `?tab=`（`overview`/`itinerary`/`prep`/`money`）導出——deep link 可以直達指定分頁、reload 唔會彈返總覽、條連結可以分享。
 - 細節：`overview` 係預設值唔寫入 URL（保持乾淨）；寫 URL 用 `setSearchParams` **functional updater**，避免同 `useTripIdentity` 寫 `?m=` 嗰下用咗 stale snapshot 互相冚；無效 `?tab=` 值 fallback 返總覽。
