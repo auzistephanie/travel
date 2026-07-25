@@ -2,6 +2,13 @@
 
 > 最新喺頂。CLAUDE.md 只放現行狀態；歷史改動（原 CLAUDE.md §8a–§8ab）記呢度。
 
+## 2026-07-25 `github_push.py` 全 repo 統一放 `scripts/`，刪走 root 重複 copy
+
+- **問題**：`sales-trainer`／`Travel App`／`daily-novel` 各有兩份 `github_push.py`（root ＋ `scripts/`），內容唔同版本；`novel-web` 就淨得 root 一份。而 `auto_push.sh` 搵 script 係 **root 優先**，制度正本（`PUSH-SETUP.md`／`repo-setup` skill／`06-STANDARDS` §S1）**三處都寫 `<repo>/scripts/github_push.py`**——即係 daemon 同 session 各行各路，drift 咗都冇人知（同日先撞到 4 份仲留住已拆嘅 `sync_local_head()`）。
+- **修**：① root 嗰份 mv 入 `_to_delete/`；② `novel-web` 由 root 搬去 `scripts/`（同時換返 `scripts/` 版嘅 `REPO = dirname(dirname(__file__))`，root 版計法放錯位會指去上一層）；③ `auto_push.sh` 第 40–41 行次序反轉做 **`scripts/` 優先、root 做 fallback**；④ 各 repo CLAUDE.md 嘅 push 路徑記錄同步改（Travel App 原本寫「root 嗰份係舊 copy」——實情當時 root 先係新版，記錄一直係反嘅）。
+- **核實**：全 `dev/` 12 份 `github_push.py` 全部喺 `scripts/`、`REPO` 路徑計法逐個對過；`bash -n auto_push.sh` 過。
+- **餘下良性差異**（唔動）：`catnu-app` 多 `bootstrap_empty_repo`（空 repo 首推）、`venturenix-lab-seminar` 多 `parse_args`、`AI for elderly`／`stephanie-portfolio`／`MakeMyHome`／`fable-prompt` 只差註釋長短。
+
 ## 2026-07-25 `github_push.py` 版本 drift → 同步返正本，拆走 `sync_local_head()`
 
 - **問題**：`scripts/github_push.py`（CLAUDE.md 指名嘅正本，反而係舊版；root 嗰份先係新版） 仲行緊舊版 script——有 `sync_local_head()`（push 完 `git fetch` + `git reset --mixed` 令 `git status` 睇落乾淨），亦冇 2026-07-15 加嘅 concurrent-push 警報。但正本喺 **2026-07-15 已經拆走 `sync_local_head()`**：`.git` 住喺 Google Drive streaming 資料夾，嗰兩個 git **寫入**指令成日撞 stale ref lock（`refs/heads/main.lock`），一卡幾十個鐘，令人誤以為「push 唔到」。呢幾個檔等於仲留住當初出事嗰條路徑。

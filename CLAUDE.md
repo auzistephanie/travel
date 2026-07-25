@@ -66,7 +66,7 @@ Tables：`trips` `trip_members` `flights` `itinerary_days` `itinerary_stops` `pa
 - **應用內所有文案一律用書面語繁體中文**（唔用廣東話口語）。
 - 對話溝通：繁體中文。
 - 前端有改 → `npm run build` 過到＋實開部署網址或本機 `npm run dev` 行一次受影響 flow。
-- Push 用 `python3 scripts/github_push.py`（正本；root 嗰份係舊 copy，唔好用）＋核實 GitHub HEAD。
+- Push 用 `python3 scripts/github_push.py`（全 repo 唯一位置；2026-07-25 已刪走 root 嗰份重複 copy）＋核實 GitHub HEAD。
 
 ## 9. 相關連結
 - 建置規格：`TRAVEL_APP_BUILD_SPEC.md`
