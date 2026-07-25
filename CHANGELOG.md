@@ -2,6 +2,13 @@
 
 > 最新喺頂。CLAUDE.md 只放現行狀態；歷史改動（原 CLAUDE.md §8a–§8ab）記呢度。
 
+## 2026-07-25 `.active-session.lock*` 冇入 .gitignore → session 鎖檔一直推上 GitHub
+
+- **問題**：`session-lock.sh` 喺每個 repo 根寫 `.active-session.lock`；release 嗰陣 Drive mount `rm` 唔到（device bridge 冇 rm 權限），會 fallback 改名做 `.active-session.lock.DELETE-ME-<epoch>`。兩種檔全部 repo 都**冇入 `.gitignore`**，所以 `github_push.py` 照推——最舊一個殘留檔 timestamp 係 **2026-07-14**，即係呢個洩漏行咗成十日。
+- **修**：12 個 repo（含 `novel-web`）`.gitignore` 全部加 `.active-session.lock*`（一條 pattern 蓋埋活鎖同 `.DELETE-ME-*`）；現存 16 個殘留檔 mv 入各自 `_to_delete/`。
+- **同類第三宗**：同日先修咗 ①`_to_delete/` 冇入 ignore、②`.bak-*` 冇入回收筒，今次係 ③鎖檔。三宗共通根因＝**新產生嘅暫存檔冇人幫佢配 ignore rule**。
+- ⚠️ **未做（要 Stephanie 拍板）**：真正治本係改 `session-lock.sh`，唔好將鎖寫入 repo 樹，改寫去 `stephanie-personal/scripts/.session-locks/<repo>.lock` 集中管——咁就冇檔會落 repo，亦唔使靠 12 份 `.gitignore` 各自記得。
+
 ## 2026-07-25 `github_push.py` 全 repo 統一放 `scripts/`，刪走 root 重複 copy
 
 - **問題**：`sales-trainer`／`Travel App`／`daily-novel` 各有兩份 `github_push.py`（root ＋ `scripts/`），內容唔同版本；`novel-web` 就淨得 root 一份。而 `auto_push.sh` 搵 script 係 **root 優先**，制度正本（`PUSH-SETUP.md`／`repo-setup` skill／`06-STANDARDS` §S1）**三處都寫 `<repo>/scripts/github_push.py`**——即係 daemon 同 session 各行各路，drift 咗都冇人知（同日先撞到 4 份仲留住已拆嘅 `sync_local_head()`）。
