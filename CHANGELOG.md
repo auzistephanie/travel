@@ -2,6 +2,13 @@
 
 > 最新喺頂。CLAUDE.md 只放現行狀態；歷史改動（原 CLAUDE.md §8a–§8ab）記呢度。
 
+## 2026-07-25 散喺 repo 嘅 `.bak-*` 備份推咗上 GitHub → 搬入 `_to_delete/`
+
+- **問題**：本 repo `.gitignore` 已經有 `_to_delete/`，但備份檔冇搬入去、留咗喺原位，所以 `github_push.py` 照當普通檔上傳。GitHub Git Trees API 核實 remote `main` 實際有：`CLAUDE.md.bak-20260718`（repo 根）。
+- **修**：`mv` 入 `_to_delete/`（跟全局規則「清理一律 mv 去該 project 根目錄 `_to_delete/`」）；push 後 `github_push.py` 嘅 `deletions` 邏輯自動由 remote 樹刪走，14 日後由 `stephanie-personal/scripts/clean_to_delete.sh` 真刪。
+- **背景**：同日先修咗 6 個 repo `.gitignore` 漏咗 `_to_delete/`；跟手全 repo 掃多次，發現呢批係另一種漏法——**回收筒 ignore 咗，但檔案根本冇入過回收筒**。
+- ⚠️ 只由 HEAD 移除，舊 commit 歷史仍然有；已 grep 過冇 token／secret 值。
+
 ## 2026-07-18 CLAUDE.md §8 加 DoD 兩條（第二輪）
 
 - §8 改名「工作規則＋完成前檢查 DoD」，加「`npm run build` 過到＋實開 deploy／本機 dev 行受影響 flow」＋「push 用 `scripts/github_push.py`（正本；root 嗰份係舊 copy 唔好用）＋核實 GitHub HEAD」。已核實 scripts/ 版（8935B、較新）先係生效嗰份。
