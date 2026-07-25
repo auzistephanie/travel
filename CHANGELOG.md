@@ -2,6 +2,14 @@
 
 > 最新喺頂。CLAUDE.md 只放現行狀態；歷史改動（原 CLAUDE.md §8a–§8ab）記呢度。
 
+## 2026-07-25 `github_push.py` 版本 drift → 同步返正本，拆走 `sync_local_head()`
+
+- **問題**：`scripts/github_push.py`（CLAUDE.md 指名嘅正本，反而係舊版；root 嗰份先係新版） 仲行緊舊版 script——有 `sync_local_head()`（push 完 `git fetch` + `git reset --mixed` 令 `git status` 睇落乾淨），亦冇 2026-07-15 加嘅 concurrent-push 警報。但正本喺 **2026-07-15 已經拆走 `sync_local_head()`**：`.git` 住喺 Google Drive streaming 資料夾，嗰兩個 git **寫入**指令成日撞 stale ref lock（`refs/heads/main.lock`），一卡幾十個鐘，令人誤以為「push 唔到」。呢幾個檔等於仲留住當初出事嗰條路徑。
+- **修**：用正本 `stephanie-personal/scripts/github_push.py` 覆蓋。 改前版本 → `_to_delete/scripts-github_push.py.bak-20260725`。
+- **核實**：全 `dev/` grep `sync_local_head` 已歸零；`REPO = ` 路徑計法逐個對過（`scripts/` 版用 `dirname(dirname(__file__))`，root 版用 `dirname(__file__)`，放錯位會指去上一層）。
+- **背景**：全 `dev/` 15 份 `github_push.py` 共 7 個版本。其餘差異屬良性（catnu-app 多 `bootstrap_empty_repo`、venturenix 多 `parse_args`、其他淨係註釋長短），今次只動有 `sync_local_head` 嗰批。
+- ⚠️ 提醒：`auto_push.sh` 搵 script 嘅次序係 **root 優先、`scripts/` 做 fallback**（第 40–41 行）。
+
 ## 2026-07-25 散喺 repo 嘅 `.bak-*` 備份推咗上 GitHub → 搬入 `_to_delete/`
 
 - **問題**：本 repo `.gitignore` 已經有 `_to_delete/`，但備份檔冇搬入去、留咗喺原位，所以 `github_push.py` 照當普通檔上傳。GitHub Git Trees API 核實 remote `main` 實際有：`CLAUDE.md.bak-20260718`（repo 根）。
