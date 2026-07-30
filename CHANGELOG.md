@@ -2,6 +2,14 @@
 
 > 最新喺頂。CLAUDE.md 只放現行狀態；歷史改動（原 CLAUDE.md §8a–§8ab）記呢度。
 
+## 2026-07-30 Node v26 撞死 22 個 test → setup.ts 加 Web Storage shim
+
+- **真正原因**（唔係 jsdom 壞，唔係 vitest 壞）：Node 26 內置咗 Web Storage，`globalThis.localStorage` / `sessionStorage` 一開機就存在。但**唔加 `--localstorage-file` 嘅時候佢淨係個空殼**（`setItem`、`clear` 全部 undefined），而且定義喺 globalThis 上面，**直接蓋過 jsdom 真正嗰個**。所以 `localGet` 永遠回 null、`localStorage.clear is not a function`，一次過拖冧 `safeStorage`／`myTrips`／`themeStorage`／`whoAmI`／`Landing` 共 22 個 test。
+- **點解揀 shim 而唔係 pin Node**：個 property descriptor 係 `configurable: true`，所以喺 `src/test/setup.ts` 覆蓋得。Pin Node 22–24 要每部機／每個 CI 都跟得住；shim 係 repo 入面自帶，邊個版本都行。
+- **實作**：`ensureStorage()` 先偵測現有嗰個有冇 `setItem` + `clear`，**係空殼先**換成 in-memory 版（`length` / `key` / `getItem` / `setItem` / `removeItem` / `clear` 齊全）。Node 22–24 上面 jsdom 嗰個正常，shim 會自動唔出手。
+- **反向驗證**（唔係淨係睇綠燈）：暫時停用 shim → 打回原形 **22 failed / 377 passed**；還原 → **399 passed / 399**，83 個 test file 全綠。證實係呢個 shim 修好，唔係其他改動順手蓋過。
+- `npm run build` 照過（setup.ts 只喺 vitest `setupFiles`，唔會入 app bundle）。
+
 ## 2026-07-30 天氣：出發日超過 16 日就一片空白 → 加歷年同期平均 fallback
 
 - **點揾到**：驗 placesApi 嗰陣，console 連環出 `[weatherApi] HTTP 400`。原本以為天氣 API 壞咗，查落係**範圍限制**：Open-Meteo `/v1/forecast` 只准「過去約 92 日 ～ 未來 16 日」（實測當日 allowed range = 2026-04-28 → 2026-08-14）。
