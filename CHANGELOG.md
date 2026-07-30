@@ -2,6 +2,16 @@
 
 > 最新喺頂。CLAUDE.md 只放現行狀態；歷史改動（原 CLAUDE.md §8a–§8ab）記呢度。
 
+## 2026-07-30 天氣：出發日超過 16 日就一片空白 → 加歷年同期平均 fallback
+
+- **點揾到**：驗 placesApi 嗰陣，console 連環出 `[weatherApi] HTTP 400`。原本以為天氣 API 壞咗，查落係**範圍限制**：Open-Meteo `/v1/forecast` 只准「過去約 92 日 ～ 未來 16 日」（實測當日 allowed range = 2026-04-28 → 2026-08-14）。
+- **真正影響**：出發日喺 16 日之後嘅行程，天氣卡、`autoClothing` 自動衣物、雨具建議、雨天室內推介**全部空白**，而且靜默降級，用家淨係見到冇嘢、唔知點解。偏偏提早一兩個月 plan 先至最想知「帶咩衫」。（過去日子嘅行程一直正常，所以之前冇人為意。）
+- **修**：`fetchWeather` 攞唔到預報就退做 `archive-api` **過去 3 年同期**平均 —— 溫度取平均，`rainProbability` 改用「有雨時數比例」（每小時降雨 > 0.1mm 當落雨）。日期用**行程第幾日**對齊而唔係日曆日期，跨年行程唔會錯位；2 月 29 日喺平年退做 28 日（唔係嘅話 archive 會 400）。
+- **一定要講清楚係咩**：`DayWeather` 加 `source?: 'forecast' | 'climate'`（optional，唔逼現存 caller 改）；`climate` 時 WeatherCard 出「歷年同期平均，並非天氣預報。出發前 16 日內會自動更新為實際預報。」
+- **順手修埋 API 濫用**：實測 Itinerary 一次載入，`useDestinationWeather` 觸發 **4 次** —— 即係 4 次 forecast ＋ 最多 12 次 archive 打兩個免費公共 API。加咗 module-level cache（同 `placesApi` 一致，key = lat|lng|start|end；攞唔到嘢唔會 cache 個空結果）。**實測由 16 個 request 減到 4 個。**
+- **核實（以用家身份實跑）**：開 `TEST-天氣fallback-可刪`（2026-09-01→03，日本）→ Day 1 出「上午 27°C 25% ‧ 下午 30°C 14%」＋免責字句，Day 2 出「27°C 17% ‧ 27°C 44%」（逐日資料唔同，證明唔係硬碼）；network 見 1 forecast(400) + 3 archive(200)。`vitest` 377 passed（新增 6 個）‧`tsc -b` 0 error ‧`npm run build` 過。
+- ⚠️ **踩過嘅坑（下次慳時間）**：① `.weather-note` 一開始被 flex 逼窄成一條 —— 天氣 section 係 `display:flex` **`nowrap`**，加咗 `flex-wrap: wrap` ＋ `.weather-note { flex: 0 0 100% }` 先跌落新一行。② 改完 CSS 一直唔生效，**唔係 Vite 冇 reload，係瀏覽器 cache 咗 stylesheet**，要 hard reload（cmd+shift+R）；用 `getComputedStyle` 對返先確認到。
+
 ## 2026-07-29 地點搜尋 TomTom → Nominatim；雨天室內推介 TomTom → Overpass
 
 - **問題**：TomTom 亞洲中文 POI 覆蓋近乎零，即係「加行程景點」搜尋實質上係壞嘅。實測（同一條 key、已經用埋最好嘅 `poiSearch` endpoint）：「淺草寺」→ 滋賀縣一間超市 ‧「東京鐵塔」→ EV 充電站 ‧「Sensoji」→ 0 結果。

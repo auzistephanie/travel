@@ -34,6 +34,9 @@ export function WeatherCard({ weather }: WeatherCardProps) {
     <section aria-label="天氣">
       <HalfDay label="上午" data={weather.am} />
       <HalfDay label="下午" data={weather.pm} />
+      {weather.source === 'climate' && (
+        <p className="weather-note">歷年同期平均，並非天氣預報。出發前 16 日內會自動更新為實際預報。</p>
+      )}
     </section>
   )
 }

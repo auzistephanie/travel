@@ -11,7 +11,7 @@ Push（`github_push.py` 永不 git CLI・HTTPS・一次 run 一 commit）・寫�
 
 ## Gotchas（本 repo 特有，估唔到／估錯會出事）
 
-- **API 選型有原因，唔好自作主張換**：地點搜尋 **Nominatim（OSM）為主、TomTom 做 fallback**（2026-07-29 換；TomTom 亞洲中文 POI 幾乎零覆蓋，實測理由寫喺 `placesApi.ts` 檔頭，唔好因為舊文字改返轉頭）、TomTom **Routing**（步行/駕車，**免信用卡**）、Open-Meteo（**免 key**）、匯率 open.er-api.com（免費、可手動覆蓋）、洗手間/便利店/雨天室內推介用 OSM Overpass；公共交通**只出 Google Maps 連結，唔叫 API**（畀用戶自己查）。
+- **API 選型有原因，唔好自作主張換**：地點搜尋 **Nominatim（OSM）為主、TomTom 做 fallback**（2026-07-29 換；TomTom 亞洲中文 POI 幾乎零覆蓋，實測理由寫喺 `placesApi.ts` 檔頭，唔好因為舊文字改返轉頭）、TomTom **Routing**（步行/駕車，**免信用卡**）、Open-Meteo（**免 key**；預報只覆蓋未來 16 日，再遠會 400 → 自動退做 `archive-api` 歷年同期平均並喺卡上標明）、匯率 open.er-api.com（免費、可手動覆蓋）、洗手間/便利店/雨天室內推介用 OSM Overpass；公共交通**只出 Google Maps 連結，唔叫 API**（畀用戶自己查）。
 - **`MapPage.tsx` / `MapPage.test` 係 dead code** —— 2026-07-02 地圖併入行程頁（原 5 分頁 → 4 分頁）之後已無 route 引用；mount 唔俾 sandbox 刪，要手動移除。
 - **主題必須 token 化（CSS variables）**，唔可以逐頁 hardcode 顏色 —— 4 個主題全部靠佢，散咗就冧。
 - **App 內所有文案一律書面語繁體中文**（唔用廣東話口語）；同 Stephanie 對話先用廣東話。

@@ -1107,6 +1107,7 @@
 /* 天氣兩格 */
 .theme-root section[aria-label='天氣'] {
   display: flex;
+  flex-wrap: wrap; /* 註腳（.weather-note）要跌落新一行，唔好同兩格天氣爭闊度 */
   gap: 8px;
   padding: 0;
   border: none;
@@ -1151,6 +1152,15 @@
   font-style: italic;
   font-size: 17px;
   font-weight: 600;
+}
+
+.weather-note {
+  flex: 0 0 100%;
+  margin: 2px 2px 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-text);
+  opacity: 0.7;
 }
 
 .weather-half .wh-rain {

@@ -18,6 +18,16 @@ describe('WeatherCard', () => {
     expect(screen.getByText('70%')).toBeInTheDocument()
   })
 
+  it('唔標示來源時當係真預報，唔出免責字句', () => {
+    render(<WeatherCard weather={{ ...weather, source: 'forecast' }} />)
+    expect(screen.queryByText(/歷年同期平均/)).not.toBeInTheDocument()
+  })
+
+  it('source=climate 時明確講明係歷年平均而非預報', () => {
+    render(<WeatherCard weather={{ ...weather, source: 'climate' }} />)
+    expect(screen.getByText(/歷年同期平均，並非天氣預報/)).toBeInTheDocument()
+  })
+
   it('renders nothing when weather data is unavailable', () => {
     const { container } = render(<WeatherCard weather={null} />)
     expect(container).toBeEmptyDOMElement()
