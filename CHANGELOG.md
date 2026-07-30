@@ -10,6 +10,10 @@
 - **Nominatim 使用條款**（新 gotcha）：最多每秒 1 次、唔准逐個字母 autocomplete。已加串行閘（1.1 秒間隔，test mode 跳過）＋記憶體 cache；本 app 只喺用戶撳「搜尋」時打一次，安全喺 policy 之內。
 - **核實**：`placesApi.test.ts` 全份重寫（**17 tests 全過**；舊版斷言 TomTom，已 mv → `_to_delete/placesApi.test.ts.bak-20260730`）‧`npx tsc -b` 0 error ‧`npm run build` 過。
 - ⚠️ **未做，要 Stephanie 拍板**：`storeSuggestApi.ts`（手信「邊度買」建議）仲用 TomTom 文字搜尋，**極可能有同一個中文覆蓋問題**，但屬另一個 feature，本次冇動。
+- **真 API 實測（2026-07-30 補做）**：Nominatim 四條 query 全中 —— 「淺草寺」→ 淺草寺 (35.7134,139.7955) ‧「東京鐵塔」→ 東京鐵塔 (35.6584,139.7455) ‧「Sensoji」→ 淺草寺 ‧「台北101」→ 台北101 (25.0338,121.5645)，全部出繁體名＋中文地址。Overpass 淺草 5km 內回 6 間博物館/美術館，tag 分類正常。
+- **新 gotcha（Overpass 406）**：Node/CLI 打 Overpass **冇 `User-Agent` 一定 406 Not Acceptable**（現行 `facilitiesApi` 嗰條 query 一樣中，即係唔關 query 語法事；瀏覽器一定有 UA 所以 app 內冇事）。**以後喺 terminal 驗 Overpass 記住加 UA**，唔好誤判成 code bug。
+- **Overpass 504 好常見**：實測第一次 504、第二次先成功。兩個 API 都係「跛咗就靜默回 []」，符合本 repo「搜尋/天氣屬錦上添花」嘅分層，冇加 retry。
+- ⚠️ **UX 觀察，未改**：日本 OSM 好少有 `name:zh-Hant` tag，所以雨天室內推介實際會出日文名（例：アーティゾン美術館）。另外 `out 6` 係整批一齊切，實測 6 個位全部係博物館/美術館、`shop=mall` 一個都排唔到 —— 如果想商場/博物館各有幾個，要分開兩條 query 各自 limit。兩樣都要 Stephanie 拍板先改。
 - ⚠️ **process 事故（記錄畀下次）**：改 `placesApi.ts` 期間 device bridge 中途斷線，`write_file` 分段 append 寫到一半死，令 repo 有一段時間 **build 唔過**（`searchIndoorPlaces` 冇寫完，`IndoorSuggestionCard.tsx` import 唔到），跟住重連後重覆 append 一次仲造成函數定義重複。**教訓：Drive mount 上寫檔唔好用多次 append 砌，改用一次過 atomic 寫入（python 一個 `open().write()`）。**
 
 ## 2026-07-29 ⚠️ 未修：Node v26 撞死 22 個 storage test（同上面改動無關）
