@@ -2,6 +2,23 @@
 
 > 最新喺頂。CLAUDE.md 只放現行狀態；歷史改動（原 CLAUDE.md §8a–§8ab）記呢度。
 
+## 2026-07-29 地點搜尋 TomTom → Nominatim；雨天室內推介 TomTom → Overpass
+
+- **問題**：TomTom 亞洲中文 POI 覆蓋近乎零，即係「加行程景點」搜尋實質上係壞嘅。實測（同一條 key、已經用埋最好嘅 `poiSearch` endpoint）：「淺草寺」→ 滋賀縣一間超市 ‧「東京鐵塔」→ EV 充電站 ‧「Sensoji」→ 0 結果。
+- **修**：① `searchPlaces` 主來源改 **Nominatim（OSM）**，`accept-language=zh-Hant` 直接出繁體名＋中文地址；退讓次序 **Nominatim(限國) → Nominatim(唔限國) → TomTom(限國)**（「唔限國」嗰步保住舊行為：目的地國家存錯唔會鎖死搜尋）。② `searchIndoorPlaces` 由 TomTom 中文文字 query「商場 博物館 水族館」改用 **Overpass tag 分類**（`tourism=museum|aquarium|gallery`、`shop=mall`），同洗手間/便利店同一個 API。
+- **免信用卡嘅原則保住**：Nominatim／Overpass 一樣免 key 免信用卡 —— 當初揀 TomTom 嗰個理由冇犧牲。**TomTom Routing（`directionsApi`）完全冇郁。**
+- **Nominatim 使用條款**（新 gotcha）：最多每秒 1 次、唔准逐個字母 autocomplete。已加串行閘（1.1 秒間隔，test mode 跳過）＋記憶體 cache；本 app 只喺用戶撳「搜尋」時打一次，安全喺 policy 之內。
+- **核實**：`placesApi.test.ts` 全份重寫（**17 tests 全過**；舊版斷言 TomTom，已 mv → `_to_delete/placesApi.test.ts.bak-20260730`）‧`npx tsc -b` 0 error ‧`npm run build` 過。
+- ⚠️ **未做，要 Stephanie 拍板**：`storeSuggestApi.ts`（手信「邊度買」建議）仲用 TomTom 文字搜尋，**極可能有同一個中文覆蓋問題**，但屬另一個 feature，本次冇動。
+- ⚠️ **process 事故（記錄畀下次）**：改 `placesApi.ts` 期間 device bridge 中途斷線，`write_file` 分段 append 寫到一半死，令 repo 有一段時間 **build 唔過**（`searchIndoorPlaces` 冇寫完，`IndoorSuggestionCard.tsx` import 唔到），跟住重連後重覆 append 一次仲造成函數定義重複。**教訓：Drive mount 上寫檔唔好用多次 append 砌，改用一次過 atomic 寫入（python 一個 `open().write()`）。**
+
+## 2026-07-29 ⚠️ 未修：Node v26 撞死 22 個 storage test（同上面改動無關）
+
+- **現象**：`npx vitest run` → 5 個檔 22 個 test 死（`safeStorage`／`myTrips`／`whoAmI`／`themeStorage`／`Landing`），全部係 localStorage/sessionStorage 相關。
+- **根因**：本機 Node **v26.0.0** 自帶 `localStorage` global，蓋咗 jsdom 提供嗰個；而 Node 版嗰個冇開 `--localstorage-file` 就係 inert 嘅（會出 `ExperimentalWarning: localStorage is not available because --localstorage-file was not provided`）。所以 `localStorage.clear()` → `undefined.clear()`。
+- **唔關本次改動事**：placesApi 完全冇碰 storage；`npm run build` 同 `tsc -b` 都過。
+- **未拍板**：三條路 —— ① pin Node 落 22/24（最穩陣，但要改本機／CI）② `src/test/setup.ts` 加 shim 覆蓋返 jsdom storage（最慳功夫）③ vitest 傳 `--localstorage-file`。等 Stephanie 揀。
+
 ## 2026-07-25 CLAUDE.md 瘦身（跟 Anthropic《new rules of context engineering for Claude 5》）
 
 - **原則**：CLAUDE.md 要輕，token 主力花喺 **gotchas**（模型預設判斷會做相反嘅嘢），能推斷／已寫喺 spec 嘅嘢一律唔好抄多次。
