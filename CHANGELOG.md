@@ -1,5 +1,7 @@
 # Travel App — CHANGELOG
 
+- 2026-07-31：repo 搬出 Google Drive Mirror，新位置 `~/Desktop/dev/Travel App`。原因：node_modules 嘅 npm `.bin` symlink 令 Drive 持續報 sync error。換機唔再靠 Drive 帶 secrets，詳見 `stephanie-personal/docs/NEW-MACHINE-SETUP.md` §9。
+
 > 最新喺頂。CLAUDE.md 只放現行狀態；歷史改動（原 CLAUDE.md §8a–§8ab）記呢度。
 
 ## 2026-07-30 Node v26 撞死 22 個 test → setup.ts 加 Web Storage shim
