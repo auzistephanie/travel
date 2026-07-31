@@ -4,6 +4,11 @@
 
 > 最新喺頂。CLAUDE.md 只放現行狀態；歷史改動（原 CLAUDE.md §8a–§8ab）記呢度。
 
+## 2026-07-31 CLAUDE.md ⚙️ Standards block 事實更正（Opus 5 制度複檢連帶）
+
+- `governance 00–05（派 subagent 先讀 01+03…）` → `governance 00–06（派工跟 01 §1 門檻表，要派先抄 03 模板…）`。
+- 原因：06-STANDARDS.md 2026-07-18 已加入但 router 行仲寫 00–05；「先讀 01+03」2026-07-31 鬆綁（為派一個 agent 先燒 230 行本身就係 context 稅）。正本改動見 stephanie-personal CHANGELOG 同日條目。
+
 ## 2026-07-30 Node v26 撞死 22 個 test → setup.ts 加 Web Storage shim
 
 - **真正原因**（唔係 jsdom 壞，唔係 vitest 壞）：Node 26 內置咗 Web Storage，`globalThis.localStorage` / `sessionStorage` 一開機就存在。但**唔加 `--localstorage-file` 嘅時候佢淨係個空殼**（`setItem`、`clear` 全部 undefined），而且定義喺 globalThis 上面，**直接蓋過 jsdom 真正嗰個**。所以 `localGet` 永遠回 null、`localStorage.clear is not a function`，一次過拖冧 `safeStorage`／`myTrips`／`themeStorage`／`whoAmI`／`Landing` 共 22 個 test。
