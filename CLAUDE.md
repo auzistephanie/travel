@@ -19,7 +19,7 @@ Push（`github_push.py`，永不 git CLI・HTTPS・一 run 一 commit・**開工
 - **用戶設定（主題/匯率）一律入 Settings 頁**，用全螢幕蓋面 bottom sheet 開，唔可以疊喺頁底。
 - **插畫全原創 SVG/CSS**，唔扒真實圖（版權）。
 
-## ✅ 完成前檢查（本 repo 專屬 DoD；通用四格 → 02-JUDGMENT §R2）
+## ✅ 完成前檢查（本 repo 專屬 DoD；通用四格 → STANDARDS.md §S2）
 
 1. 前端有改 → `npm run build` 過到 ＋ 實開部署網址或本機 `npm run dev` 行一次受影響 flow
 2. Push：`python3 scripts/github_push.py "<msg>"`＋核實 GitHub HEAD（→ Standards §S1）
