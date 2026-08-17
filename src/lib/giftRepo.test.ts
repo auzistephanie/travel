@@ -4,7 +4,7 @@ import { makeQuery } from '../test/supabaseQueryMock'
 const { supabase } = vi.hoisted(() => ({ supabase: { from: vi.fn() } }))
 vi.mock('./supabaseClient', () => ({ supabase }))
 
-import { addGift, deleteGift, listGifts } from './giftRepo'
+import { addGift, deleteGift, listGifts, updateGift } from './giftRepo'
 
 describe('listGifts', () => {
   beforeEach(() => supabase.from.mockReset())
@@ -33,6 +33,64 @@ describe('addGift', () => {
     })
 
     expect(result).toEqual(created)
+  })
+})
+
+describe('addGift with currency', () => {
+  beforeEach(() => supabase.from.mockReset())
+
+  it('inserts a gift with a currency', async () => {
+    const created = {
+      id: 'g1',
+      trip_id: 't1',
+      item: '曲奇',
+      store: '銀座曲奇',
+      amount: 1280,
+      to_member: '阿珍',
+      source: 'manual',
+      currency: 'JPY',
+    }
+    supabase.from.mockImplementation(() => makeQuery({ data: created, error: null }))
+
+    const result = await addGift({
+      tripId: 't1',
+      item: '曲奇',
+      store: '銀座曲奇',
+      amount: 1280,
+      toMember: '阿珍',
+      source: 'manual',
+      currency: 'JPY',
+    })
+
+    expect(result).toEqual(created)
+  })
+})
+
+describe('updateGift', () => {
+  beforeEach(() => supabase.from.mockReset())
+
+  it('updates a gift by id', async () => {
+    const updated = {
+      id: 'g1',
+      trip_id: 't1',
+      item: '曲奇（大盒）',
+      store: '銀座曲奇',
+      amount: 1500,
+      to_member: '阿珍',
+      source: 'manual',
+      currency: 'JPY',
+    }
+    supabase.from.mockImplementation(() => makeQuery({ data: updated, error: null }))
+
+    const result = await updateGift('g1', {
+      item: '曲奇（大盒）',
+      store: '銀座曲奇',
+      amount: 1500,
+      toMember: '阿珍',
+      currency: 'JPY',
+    })
+
+    expect(result).toEqual(updated)
   })
 })
 

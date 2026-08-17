@@ -1663,6 +1663,21 @@
   flex: none;
 }
 
+.gi-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.theme-root button.gi-edit {
+  background: transparent;
+  color: var(--color-text);
+  opacity: 0.5;
+  border: none;
+  padding: 3px;
+}
+
 /* =======================================================================
    準備 Prep（redesign 2026-07-02）
    ======================================================================= */

@@ -1,5 +1,12 @@
 import { useCallback } from 'react'
-import { addGift, deleteGift, listGifts, type AddGiftInput } from '../lib/giftRepo'
+import {
+  addGift,
+  deleteGift,
+  listGifts,
+  updateGift,
+  type AddGiftInput,
+  type UpdateGiftInput,
+} from '../lib/giftRepo'
 import { useTripCollection } from './useTripCollection'
 import type { Gift } from '../types/models'
 
@@ -16,6 +23,15 @@ export function useGifts(tripId: string) {
     [tripId, setItems],
   )
 
+  const update = useCallback(
+    async (id: string, input: UpdateGiftInput) => {
+      const gift = await updateGift(id, input)
+      setItems((prev) => prev.map((g) => (g.id === id ? gift : g)))
+      return gift
+    },
+    [setItems],
+  )
+
   const remove = useCallback(
     async (id: string) => {
       await deleteGift(id)
@@ -24,5 +40,5 @@ export function useGifts(tripId: string) {
     [setItems],
   )
 
-  return { gifts, loading, error, addGift: create, deleteGift: remove, refetch }
+  return { gifts, loading, error, addGift: create, updateGift: update, deleteGift: remove, refetch }
 }

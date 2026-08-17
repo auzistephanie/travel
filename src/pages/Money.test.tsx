@@ -35,7 +35,7 @@ describe('Money', () => {
     useExchangeRates.mockReset()
     useExchangeRates.mockReturnValue({})
     useGifts.mockReset()
-    useGifts.mockReturnValue({ gifts: [], loading: false, error: null, addGift: vi.fn() })
+    useGifts.mockReturnValue({ gifts: [], loading: false, error: null, addGift: vi.fn(), updateGift: vi.fn() })
   })
 
   it('shows the 夾錢 sub-tab by default', () => {
@@ -99,12 +99,13 @@ describe('Money', () => {
     const user = userEvent.setup()
     useGifts.mockReturnValue({
       gifts: [
-        { id: 'g1', trip_id: 't1', item: '曲奇', store: null, amount: 100, to_member: '自己', source: 'manual' },
-        { id: 'g2', trip_id: 't1', item: '手信糖', store: null, amount: 50, to_member: '阿珍', source: 'manual' },
+        { id: 'g1', trip_id: 't1', item: '曲奇', store: null, amount: 100, to_member: '自己', source: 'manual', currency: null },
+        { id: 'g2', trip_id: 't1', item: '手信糖', store: null, amount: 50, to_member: '阿珍', source: 'manual', currency: null },
       ],
       loading: false,
       error: null,
       addGift: vi.fn(),
+      updateGift: vi.fn(),
     })
 
     render(<Money trip={trip} members={members} />)
@@ -117,7 +118,7 @@ describe('Money', () => {
   it('adds a new gift via the form', async () => {
     const user = userEvent.setup()
     const addGift = vi.fn()
-    useGifts.mockReturnValue({ gifts: [], loading: false, error: null, addGift })
+    useGifts.mockReturnValue({ gifts: [], loading: false, error: null, addGift, updateGift: vi.fn() })
 
     render(<Money trip={trip} members={members} />)
     await user.click(screen.getByRole('tab', { name: '手信' }))
@@ -128,5 +129,88 @@ describe('Money', () => {
     expect(addGift).toHaveBeenCalledWith(
       expect.objectContaining({ item: '曲奇', toMember: '自己', source: 'manual' }),
     )
+  })
+
+  it('opens a prefilled edit form when tapping a past gift, and saves via updateGift', async () => {
+    const user = userEvent.setup()
+    const updateGift = vi.fn()
+    useGifts.mockReturnValue({
+      gifts: [
+        {
+          id: 'g1',
+          trip_id: 't1',
+          item: '曲奇',
+          store: '銀座曲奇',
+          amount: 100,
+          to_member: '自己',
+          source: 'manual',
+          currency: 'JPY',
+        },
+      ],
+      loading: false,
+      error: null,
+      addGift: vi.fn(),
+      updateGift,
+    })
+
+    render(<Money trip={trip} members={members} />)
+    await user.click(screen.getByRole('tab', { name: '手信' }))
+    await user.click(screen.getByRole('button', { name: '編輯 曲奇' }))
+
+    expect(screen.getByRole('heading', { name: '編輯手信' })).toBeInTheDocument()
+    expect(screen.getByLabelText('品項')).toHaveValue('曲奇')
+    expect(screen.getByLabelText('貨幣')).toHaveValue('JPY')
+
+    await user.click(screen.getByRole('button', { name: '儲存' }))
+
+    expect(updateGift).toHaveBeenCalledWith(
+      'g1',
+      expect.objectContaining({ item: '曲奇', currency: 'JPY' }),
+    )
+  })
+
+  it('resets the edit form when switching from one gift to another without saving', async () => {
+    const user = userEvent.setup()
+    useGifts.mockReturnValue({
+      gifts: [
+        {
+          id: 'g1',
+          trip_id: 't1',
+          item: '曲奇',
+          store: null,
+          amount: 100,
+          to_member: '自己',
+          source: 'manual',
+          currency: 'JPY',
+        },
+        {
+          id: 'g2',
+          trip_id: 't1',
+          item: '手信糖',
+          store: null,
+          amount: 50,
+          to_member: '自己',
+          source: 'manual',
+          currency: 'TWD',
+        },
+      ],
+      loading: false,
+      error: null,
+      addGift: vi.fn(),
+      updateGift: vi.fn(),
+    })
+
+    render(<Money trip={trip} members={members} />)
+    await user.click(screen.getByRole('tab', { name: '手信' }))
+    await user.click(screen.getByRole('button', { name: '編輯 曲奇' }))
+
+    const itemInput = screen.getByLabelText('品項')
+    await user.clear(itemInput)
+    await user.type(itemInput, '未儲存嘅改動')
+
+    await user.click(screen.getByRole('button', { name: '編輯 手信糖' }))
+
+    expect(screen.getByLabelText('品項')).toHaveValue('手信糖')
+    expect(screen.getByLabelText('貨幣')).toHaveValue('TWD')
   })
 })

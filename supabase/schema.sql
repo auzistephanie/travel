@@ -120,7 +120,8 @@ create table gifts (
   store text,
   amount numeric,
   to_member text not null,
-  source text not null default 'manual' check (source in ('manual', 'wishlist', 'ocr'))
+  source text not null default 'manual' check (source in ('manual', 'wishlist', 'ocr')),
+  currency text
 );
 
 -- ============ settings ============

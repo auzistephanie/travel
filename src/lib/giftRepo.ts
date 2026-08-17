@@ -14,6 +14,7 @@ export interface AddGiftInput {
   amount: number | null
   toMember: string
   source: GiftSource
+  currency?: string | null
 }
 
 export async function addGift(input: AddGiftInput): Promise<Gift> {
@@ -26,7 +27,34 @@ export async function addGift(input: AddGiftInput): Promise<Gift> {
       amount: input.amount,
       to_member: input.toMember,
       source: input.source,
+      currency: input.currency ?? null,
     })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as Gift
+}
+
+export interface UpdateGiftInput {
+  item: string
+  store: string | null
+  amount: number | null
+  toMember: string
+  currency?: string | null
+}
+
+export async function updateGift(id: string, input: UpdateGiftInput): Promise<Gift> {
+  const { data, error } = await supabase
+    .from('gifts')
+    .update({
+      item: input.item,
+      store: input.store,
+      amount: input.amount,
+      to_member: input.toMember,
+      currency: input.currency ?? null,
+    })
+    .eq('id', id)
     .select()
     .single()
 

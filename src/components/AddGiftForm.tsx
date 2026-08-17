@@ -1,7 +1,9 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Camera } from 'lucide-react'
 import { scanReceipt } from '../lib/ocrApi'
-import type { GiftSource, TripMember } from '../types/models'
+import type { Gift, GiftSource, TripMember } from '../types/models'
+
+const CURRENCIES = ['HKD', 'JPY', 'THB', 'KRW', 'TWD', 'VND']
 
 interface AddGiftInputFields {
   item: string
@@ -9,19 +11,33 @@ interface AddGiftInputFields {
   amount: number | null
   toMember: string
   source: GiftSource
+  currency: string | null
+}
+
+interface UpdateGiftFields {
+  item: string
+  store: string | null
+  amount: number | null
+  toMember: string
+  currency: string | null
 }
 
 interface AddGiftFormProps {
   members: TripMember[]
+  editingGift?: Gift | null
   onAdd: (input: AddGiftInputFields) => void
+  onUpdate?: (id: string, input: UpdateGiftFields) => void
+  onCancel?: () => void
 }
 
-export function AddGiftForm({ members, onAdd }: AddGiftFormProps) {
-  const [item, setItem] = useState('')
-  const [store, setStore] = useState('')
-  const [amount, setAmount] = useState('')
-  const [toMember, setToMember] = useState('自己')
-  const [source, setSource] = useState<GiftSource>('manual')
+export function AddGiftForm({ members, editingGift, onAdd, onUpdate, onCancel }: AddGiftFormProps) {
+  const isEditing = !!editingGift
+  const [item, setItem] = useState(editingGift?.item ?? '')
+  const [store, setStore] = useState(editingGift?.store ?? '')
+  const [amount, setAmount] = useState(editingGift?.amount != null ? String(editingGift.amount) : '')
+  const [currency, setCurrency] = useState(editingGift?.currency ?? 'HKD')
+  const [toMember, setToMember] = useState(editingGift?.to_member ?? '自己')
+  const [source, setSource] = useState<GiftSource>(editingGift?.source ?? 'manual')
   const [scanning, setScanning] = useState(false)
   const [scanHint, setScanHint] = useState<string | null>(null)
 
@@ -48,7 +64,18 @@ export function AddGiftForm({ members, onAdd }: AddGiftFormProps) {
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!item.trim() || !toMember.trim()) return
-    onAdd({ item, store: store || null, amount: amount ? Number(amount) : null, toMember, source })
+    const parsedAmount = amount ? Number(amount) : null
+    if (isEditing && editingGift) {
+      onUpdate?.(editingGift.id, {
+        item,
+        store: store || null,
+        amount: parsedAmount,
+        toMember,
+        currency,
+      })
+      return
+    }
+    onAdd({ item, store: store || null, amount: parsedAmount, toMember, source, currency })
     setItem('')
     setStore('')
     setAmount('')
@@ -57,7 +84,7 @@ export function AddGiftForm({ members, onAdd }: AddGiftFormProps) {
 
   return (
     <form className="wl-form" onSubmit={handleSubmit}>
-      <h3 className="wl-title">加入手信</h3>
+      <h3 className="wl-title">{isEditing ? '編輯手信' : '加入手信'}</h3>
 
       <div className="wl-field">
         <label htmlFor="gift-receipt-photo" className="wl-ocr">
@@ -96,6 +123,17 @@ export function AddGiftForm({ members, onAdd }: AddGiftFormProps) {
       </div>
 
       <div className="wl-field">
+        <label htmlFor="gift-currency">貨幣</label>
+        <select id="gift-currency" value={currency} onChange={(e) => setCurrency(e.target.value)}>
+          {CURRENCIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="wl-field">
         <label htmlFor="gift-to-member">買給誰</label>
         <input
           id="gift-to-member"
@@ -112,9 +150,16 @@ export function AddGiftForm({ members, onAdd }: AddGiftFormProps) {
         </datalist>
       </div>
 
-      <button type="submit" className="wl-submit">
-        加入手信
-      </button>
+      <div className="modal-actions">
+        {onCancel && (
+          <button type="button" className="wl-cancel" onClick={onCancel}>
+            取消
+          </button>
+        )}
+        <button type="submit" className="wl-submit">
+          {isEditing ? '儲存' : '加入手信'}
+        </button>
+      </div>
     </form>
   )
 }

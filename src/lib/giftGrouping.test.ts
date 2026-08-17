@@ -11,6 +11,7 @@ function gift(overrides: Partial<Gift>): Gift {
     amount: 100,
     to_member: '自己',
     source: 'manual',
+    currency: null,
     ...overrides,
   }
 }

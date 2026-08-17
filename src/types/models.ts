@@ -108,6 +108,7 @@ export interface Gift {
   amount: number | null
   to_member: string
   source: GiftSource
+  currency: string | null
 }
 
 export type ThemeId = 'cartography' | 'neon' | 'scrapbook' | 'indigo'

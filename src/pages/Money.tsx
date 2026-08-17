@@ -4,6 +4,7 @@ import {
   Coins,
   Gift,
   Heart,
+  Pencil,
   Receipt,
   ShoppingBag,
   Train,
@@ -16,7 +17,7 @@ import { AddGiftForm } from '../components/AddGiftForm'
 import { useExpenses } from '../hooks/useExpenses'
 import { useGifts } from '../hooks/useGifts'
 import { groupGiftsByRecipient } from '../lib/giftGrouping'
-import type { Expense } from '../types/models'
+import type { Expense, Gift as GiftModel } from '../types/models'
 import type { TripPageProps } from '../types/props'
 
 const TABS = [
@@ -111,8 +112,9 @@ function SplitView({ trip, members }: TripPageProps) {
 }
 
 function GiftView({ trip, members }: TripPageProps) {
-  const { gifts, loading, error, addGift } = useGifts(trip.id)
+  const { gifts, loading, error, addGift, updateGift } = useGifts(trip.id)
   const [showAdd, setShowAdd] = useState(false)
+  const [editingGift, setEditingGift] = useState<GiftModel | null>(null)
 
   if (loading) return <p>載入中…</p>
   if (error) return <p role="alert">{error}</p>
@@ -159,22 +161,57 @@ function GiftView({ trip, members }: TripPageProps) {
                     {gift.store ?? ''}
                   </small>
                 </span>
-                {gift.amount != null && <span className="gi-amt">${gift.amount.toLocaleString()}</span>}
+                <span className="gi-actions">
+                  {gift.amount != null && (
+                    <span className="gi-amt">
+                      {gift.currency ? `${gift.currency} ` : '$'}
+                      {gift.amount.toLocaleString()}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    className="gi-edit"
+                    onClick={() => {
+                      setEditingGift(gift)
+                      setShowAdd(false)
+                    }}
+                    aria-label={`編輯 ${gift.item}`}
+                  >
+                    <Pencil size={14} aria-hidden="true" />
+                  </button>
+                </span>
               </li>
             ))}
           </ul>
         </section>
       ))}
 
-      <button type="button" className="money-add" onClick={() => setShowAdd(true)}>
+      <button
+        type="button"
+        className="money-add"
+        onClick={() => {
+          setShowAdd(true)
+          setEditingGift(null)
+        }}
+      >
         ＋加手信
       </button>
-      {showAdd && (
+      {(showAdd || editingGift) && (
         <AddGiftForm
+          key={editingGift?.id ?? 'new'}
           members={members}
+          editingGift={editingGift}
           onAdd={(input) => {
             addGift(input)
             setShowAdd(false)
+          }}
+          onUpdate={(id, input) => {
+            updateGift(id, input)
+            setEditingGift(null)
+          }}
+          onCancel={() => {
+            setShowAdd(false)
+            setEditingGift(null)
           }}
         />
       )}
