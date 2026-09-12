@@ -7,7 +7,7 @@
 
 ## ⚙️ Standards（MANDATORY — 正本：`stephanie-personal/docs/ai-governance/STANDARDS.md`，改規則只改正本）
 
-Push（`github_push.py`，永不 git CLI・HTTPS・一 run 一 commit・**開工前 `--check`**・**收工即推**・三道閘 刪檔／SHA／交叉 review，撞閘唔好即刻 `--force`）・寫入分流（改動記錄 → `CHANGELOG.md` **頂部**；本檔上限 100 行/6KB）・清理 mv `_to_delete/`・方向性決定先 preview（STANDARDS §S3）・改完以用家身份 run 一次先報完成・governance DIAGNOSIS+STANDARDS（完成前過 STANDARDS §S2；冇 mount stephanie-personal 就叫 Stephanie 連埋）。**Codex 讀同層 `AGENTS.md`**。詳文＋例外表 → 正本。
+Push（`github_push.py`，永不 git CLI・HTTPS・一 run 一 commit・**開工前 `--check`**・**收工即推**・三道閘 刪檔／SHA／交叉 review，撞閘唔好即刻 `--force`）・寫入分流（改動記錄 → `CHANGELOG.md` **頂部**；本檔上限 100 行/6KB）・清理 mv `_to_delete/`・方向性決定先 preview（02 §R3）・改完以用家身份 run 一次先報完成・governance 00–06（派工 01 §1＋03 模板；完成前過 02 §R2；冇 mount stephanie-personal 就叫 Stephanie 連埋）。**Codex 讀同層 `AGENTS.md`**。詳文＋例外表 → 正本。
 
 ## Gotchas（本 repo 特有，估唔到／估錯會出事）
 
@@ -19,7 +19,7 @@ Push（`github_push.py`，永不 git CLI・HTTPS・一 run 一 commit・**開工
 - **用戶設定（主題/匯率）一律入 Settings 頁**，用全螢幕蓋面 bottom sheet 開，唔可以疊喺頁底。
 - **插畫全原創 SVG/CSS**，唔扒真實圖（版權）。
 
-## ✅ 完成前檢查（本 repo 專屬 DoD；通用四格 → STANDARDS.md §S2）
+## ✅ 完成前檢查（本 repo 專屬 DoD；通用四格 → 02-JUDGMENT §R2）
 
 1. 前端有改 → `npm run build` 過到 ＋ 實開部署網址或本機 `npm run dev` 行一次受影響 flow
 2. Push：`python3 scripts/github_push.py "<msg>"`＋核實 GitHub HEAD（→ Standards §S1）
