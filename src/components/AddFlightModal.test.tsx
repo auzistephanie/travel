@@ -4,26 +4,31 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AddFlightModal } from './AddFlightModal'
 import type { TripMember } from '../types/models'
 
-const lookupFlight = vi.fn()
-vi.mock('../lib/flightApi', () => ({ lookupFlight: (...a: unknown[]) => lookupFlight(...a) }))
+const lookupFlightDetailed = vi.fn()
+vi.mock('../lib/flightApi', () => ({
+  lookupFlightDetailed: (...a: unknown[]) => lookupFlightDetailed(...a),
+}))
 
 const members: TripMember[] = [{ id: 'm1', trip_id: 't1', name: '阿明', color: null, is_owner: true }]
 
 describe('AddFlightModal', () => {
   beforeEach(() => {
-    lookupFlight.mockReset()
+    lookupFlightDetailed.mockReset()
   })
 
   it('prefills route fields from a successful lookup without saving yet', async () => {
     const user = userEvent.setup()
     const onAdd = vi.fn()
-    lookupFlight.mockResolvedValue({
-      fromAirport: 'HKG',
-      toAirport: 'NRT',
-      fromTime: '2026-08-01T10:00:00Z',
-      toTime: '2026-08-01T15:00:00Z',
-      gate: 'A1',
-      terminal: '1',
+    lookupFlightDetailed.mockResolvedValue({
+      status: 'ok',
+      value: {
+        fromAirport: 'HKG',
+        toAirport: 'NRT',
+        fromTime: '2026-08-01T10:00:00Z',
+        toTime: '2026-08-01T15:00:00Z',
+        gate: 'A1',
+        terminal: '1',
+      },
     })
 
     render(<AddFlightModal members={members} onAdd={onAdd} onClose={() => {}} />)
@@ -32,7 +37,7 @@ describe('AddFlightModal', () => {
     await user.type(screen.getByLabelText('日期'), '2026-08-01')
     await user.click(screen.getByRole('button', { name: '查詢' }))
 
-    expect(lookupFlight).toHaveBeenCalledWith('CX123', '2026-08-01')
+    expect(lookupFlightDetailed).toHaveBeenCalledWith('CX123', '2026-08-01')
     expect(await screen.findByDisplayValue('HKG')).toBeInTheDocument()
     expect(screen.getByDisplayValue('NRT')).toBeInTheDocument()
     expect(onAdd).not.toHaveBeenCalled()
@@ -40,7 +45,7 @@ describe('AddFlightModal', () => {
 
   it('shows a hint instead of an error when lookup finds nothing', async () => {
     const user = userEvent.setup()
-    lookupFlight.mockResolvedValue(null)
+    lookupFlightDetailed.mockResolvedValue({ status: 'empty' })
 
     render(<AddFlightModal members={members} onAdd={vi.fn()} onClose={() => {}} />)
 
@@ -49,6 +54,19 @@ describe('AddFlightModal', () => {
     await user.click(screen.getByRole('button', { name: '查詢' }))
 
     expect(await screen.findByText('查不到，請手動輸入')).toBeInTheDocument()
+  })
+
+  it('says the flight database is not configured instead of a generic miss', async () => {
+    const user = userEvent.setup()
+    lookupFlightDetailed.mockResolvedValue({ status: 'unconfigured' })
+
+    render(<AddFlightModal members={members} onAdd={vi.fn()} onClose={() => {}} />)
+
+    await user.type(screen.getByLabelText('航班號'), 'CX123')
+    await user.type(screen.getByLabelText('日期'), '2026-08-01')
+    await user.click(screen.getByRole('button', { name: '查詢' }))
+
+    expect(await screen.findByText('航班資料庫未設定，請手動輸入')).toBeInTheDocument()
   })
 
   it('saves the manually entered flight and closes on confirm', async () => {

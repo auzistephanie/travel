@@ -1,10 +1,13 @@
 import { useState } from 'react'
-import { PlaneTakeoff } from 'lucide-react'
+import { PlaneTakeoff, Share2 } from 'lucide-react'
 import { HeroCard } from '../components/HeroCard'
 import { FlightCard } from '../components/FlightCard'
 import { AddFlightModal } from '../components/AddFlightModal'
+import { AffiliateSlots } from '../components/AffiliateSlots'
+import { ShareTripButton } from '../components/ShareTripButton'
 import { SpendingSummaryCard } from '../components/SpendingSummaryCard'
 import { TornEdgeDivider } from '../components/TornEdgeDivider'
+import { tripInviteUrl } from '../lib/shareTrip'
 import { useFlights } from '../hooks/useFlights'
 import type { TripPageProps } from '../types/props'
 
@@ -15,6 +18,16 @@ export function Overview({ trip, members }: TripPageProps) {
   return (
     <div>
       <HeroCard trip={trip} members={members} />
+
+      <section aria-label="分享行程">
+        <h2 className="sec-title">
+          <Share2 size={18} aria-hidden="true" />
+          分享給朋友
+        </h2>
+        <p className="sec-empty">朋友開啟連結後選擇自己的名字即可一起編輯，無需登入。</p>
+        <p className="share-url">{tripInviteUrl(trip.share_code)}</p>
+        <ShareTripButton shareCode={trip.share_code} tripName={trip.name} className="sec-add" />
+      </section>
 
       <section>
         <h2 className="sec-title">
@@ -39,6 +52,8 @@ export function Overview({ trip, members }: TripPageProps) {
           onClose={() => setShowAddFlight(false)}
         />
       )}
+
+      <AffiliateSlots />
 
       <TornEdgeDivider />
 

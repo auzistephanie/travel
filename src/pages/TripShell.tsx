@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState, type ComponentType } from 'react'
 import { Compass, Repeat, Settings } from 'lucide-react'
+import { ShareTripButton } from '../components/ShareTripButton'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useTrip } from '../hooks/useTrip'
 import { useTripIdentity } from '../hooks/useTripIdentity'
@@ -90,6 +91,12 @@ export function TripShell() {
             <Compass size={18} />
           </span>
           <span className="trip-title">{trip.name}</span>
+          <ShareTripButton
+            shareCode={trip.share_code}
+            tripName={trip.name}
+            className="trip-share"
+            iconOnly
+          />
           <button
             type="button"
             className="trip-switch-identity"

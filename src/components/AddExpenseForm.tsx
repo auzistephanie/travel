@@ -15,7 +15,8 @@ export function AddExpenseForm({ members, onAdd }: AddExpenseFormProps) {
   const [amount, setAmount] = useState('')
   const [currency, setCurrency] = useState('HKD')
   const [payerId, setPayerId] = useState(members[0]?.id ?? '')
-  const [splitMemberIds, setSplitMemberIds] = useState<string[]>([])
+  const [splitMemberIds, setSplitMemberIds] = useState<string[]>(() => members.map((member) => member.id))
+  const [splitError, setSplitError] = useState<string | null>(null)
   const [category, setCategory] = useState<ExpenseCategory>('其他')
   const [isTripBase, setIsTripBase] = useState(false)
 
@@ -27,7 +28,12 @@ export function AddExpenseForm({ members, onAdd }: AddExpenseFormProps) {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!title.trim() || splitMemberIds.length === 0) return
+    if (!title.trim()) return
+    if (splitMemberIds.length === 0) {
+      setSplitError('請選擇至少一位分攤的人')
+      return
+    }
+    setSplitError(null)
     onAdd({
       title,
       amount: Number(amount),
@@ -85,6 +91,7 @@ export function AddExpenseForm({ members, onAdd }: AddExpenseFormProps) {
 
       <fieldset className="wl-checks">
         <legend>哪幾位分攤</legend>
+        {splitError && <p role="alert">{splitError}</p>}
         <div className="wl-check-grid">
           {members.map((m) => (
             <label key={m.id} htmlFor={`split-${m.id}`} className="wl-check">

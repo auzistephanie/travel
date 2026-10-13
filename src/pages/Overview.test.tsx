@@ -85,4 +85,14 @@ describe('Overview', () => {
     await user.click(screen.getByRole('button', { name: '＋加入航班' }))
     expect(screen.getByRole('heading', { name: '加入航班' })).toBeInTheDocument()
   })
+
+  it('shows a one-tap share action and empty affiliate slots', () => {
+    useFlights.mockReturnValue({ flights: [], loading: false, error: null, addFlight: vi.fn() })
+    renderOverview()
+
+    expect(screen.getByRole('button', { name: '分享給朋友' })).toBeInTheDocument()
+    expect(screen.getByText(`${window.location.origin}/t/ABC234`)).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: '連結待填' })).toHaveLength(2)
+    expect(screen.getByText('以下是介紹連結的位置。網址尚未填入，暫時不能開啟。')).toBeInTheDocument()
+  })
 })

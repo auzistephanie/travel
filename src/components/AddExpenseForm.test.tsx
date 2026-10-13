@@ -20,8 +20,6 @@ describe('AddExpenseForm', () => {
     await user.type(screen.getByLabelText('金額'), '500')
     await user.selectOptions(screen.getByLabelText('貨幣'), 'JPY')
     await user.selectOptions(screen.getByLabelText('付款人'), 'm1')
-    await user.click(screen.getByLabelText('阿明'))
-    await user.click(screen.getByLabelText('阿珍'))
     await user.selectOptions(screen.getByLabelText('分類'), '餐飲')
     await user.click(screen.getByRole('button', { name: '加入開支' }))
 
@@ -45,10 +43,24 @@ describe('AddExpenseForm', () => {
 
     await user.type(screen.getByLabelText('項目'), '機票')
     await user.type(screen.getByLabelText('金額'), '3000')
-    await user.click(screen.getByLabelText('阿明'))
     await user.click(screen.getByLabelText('旅行基本費（不計入逐日）'))
     await user.click(screen.getByRole('button', { name: '加入開支' }))
 
     expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ isTripBase: true }))
+  })
+
+  it('asks for at least one person when every split box is cleared', async () => {
+    const user = userEvent.setup()
+    const onAdd = vi.fn()
+    render(<AddExpenseForm members={members} onAdd={onAdd} />)
+
+    await user.type(screen.getByLabelText('項目'), '午餐')
+    await user.type(screen.getByLabelText('金額'), '500')
+    await user.click(screen.getByLabelText('阿明'))
+    await user.click(screen.getByLabelText('阿珍'))
+    await user.click(screen.getByRole('button', { name: '加入開支' }))
+
+    expect(onAdd).not.toHaveBeenCalled()
+    expect(screen.getByRole('alert')).toHaveTextContent('請選擇至少一位分攤的人')
   })
 })

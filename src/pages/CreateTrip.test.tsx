@@ -92,10 +92,10 @@ describe('CreateTrip', () => {
     await user.type(screen.getByLabelText('你的名字'), '阿明')
     await user.click(screen.getByRole('button', { name: '建立行程' }))
 
-    await user.click(await screen.findByRole('button', { name: '複製邀請連結' }))
+    await user.click(await screen.findByRole('button', { name: '分享給朋友' }))
 
     expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/t/ABC234`)
-    expect(await screen.findAllByText('已複製')).toHaveLength(1)
+    expect(await screen.findByRole('button', { name: '已複製連結' })).toBeInTheDocument()
     expect(signInWithGoogle).not.toHaveBeenCalled()
   })
 
@@ -250,5 +250,24 @@ describe('CreateTrip', () => {
     await user.click(screen.getByRole('button', { name: '建立行程' }))
 
     expect(await screen.findByText('建立失敗，請再試一次')).toBeInTheDocument()
+  })
+
+  it('refuses an end date that is earlier than the start date', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <CreateTrip />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByLabelText('行程名'), '東京五日')
+    await user.type(screen.getByLabelText('開始日期'), '2026-08-05')
+    await user.type(screen.getByLabelText('結束日期'), '2026-08-01')
+    await user.type(screen.getByLabelText('你的名字'), '阿明')
+    await user.click(screen.getByRole('button', { name: '建立行程' }))
+
+    expect(await screen.findByText('結束日期不可早於開始日期')).toBeInTheDocument()
+    expect(createTrip).not.toHaveBeenCalled()
   })
 })
