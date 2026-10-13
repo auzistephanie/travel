@@ -11,18 +11,18 @@ describe('fetchTransportEstimate — WALK/DRIVE (TomTom)', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals()
-    vi.unstubAllEnvs()
   })
 
-  it('returns null without calling the API when no TomTom key is configured', async () => {
-    vi.stubEnv('VITE_TOMTOM_KEY', '')
+  it('returns null when the proxy says the key is not configured', async () => {
+    vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ error: 'not_configured' }), { status: 503 }))
     const result = await fetchTransportEstimate(from, to, 'WALK')
     expect(result).toBeNull()
-    expect(fetch).not.toHaveBeenCalled()
+    const [url] = vi.mocked(fetch).mock.calls[0]
+    expect(url as string).toContain('/api/tomtom-route?')
+    expect(url as string).not.toContain('key=')
   })
 
   it('returns the duration in minutes, rounded', async () => {
-    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
     vi.mocked(fetch).mockResolvedValue(
       new Response(JSON.stringify({ routes: [{ summary: { travelTimeInSeconds: 754 } }] }), { status: 200 }),
     )
@@ -31,12 +31,16 @@ describe('fetchTransportEstimate — WALK/DRIVE (TomTom)', () => {
 
     expect(result).toEqual({ mode: 'DRIVE', durationMinutes: 13 })
     const [url] = vi.mocked(fetch).mock.calls[0]
-    expect(url as string).toContain('https://api.tomtom.com/routing/1/calculateRoute/35.71,139.79:35.72,139.8/json')
+    expect(url as string).toContain('/api/tomtom-route?')
+    expect(url as string).toContain('fromLat=35.71')
+    expect(url as string).toContain('fromLng=139.79')
+    expect(url as string).toContain('toLat=35.72')
+    expect(url as string).toContain('toLng=139.8')
     expect(url as string).toContain('travelMode=car')
+    expect(url as string).not.toContain('key=')
   })
 
   it('uses pedestrian travel mode for WALK', async () => {
-    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
     vi.mocked(fetch).mockResolvedValue(
       new Response(JSON.stringify({ routes: [{ summary: { travelTimeInSeconds: 600 } }] }), { status: 200 }),
     )
@@ -48,19 +52,16 @@ describe('fetchTransportEstimate — WALK/DRIVE (TomTom)', () => {
   })
 
   it('returns null when the API responds with a non-ok status', async () => {
-    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
     vi.mocked(fetch).mockResolvedValue(new Response('', { status: 500 }))
     expect(await fetchTransportEstimate(from, to, 'WALK')).toBeNull()
   })
 
   it('returns null when no route is found', async () => {
-    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
     vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ routes: [] }), { status: 200 }))
     expect(await fetchTransportEstimate(from, to, 'WALK')).toBeNull()
   })
 
   it('returns null when the fetch call throws', async () => {
-    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
     vi.mocked(fetch).mockRejectedValue(new Error('network down'))
     expect(await fetchTransportEstimate(from, to, 'WALK')).toBeNull()
   })
@@ -73,7 +74,6 @@ describe('fetchTransportEstimate — TRANSIT', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals()
-    vi.unstubAllEnvs()
   })
 
   it('returns null without calling any API — 電車冇 in-app 估算，改用連結', async () => {

@@ -17,18 +17,17 @@ export type ReceiptScanStatus =
   | { status: 'failed' }
 
 export async function scanReceiptDetailed(file: File): Promise<ReceiptScanStatus> {
-  const key = import.meta.env.VITE_TAGGUN_API_KEY
-  if (!key) return { status: 'unconfigured' }
-
   try {
     const formData = new FormData()
     formData.append('file', file)
 
-    const response = await fetch('https://api.taggun.io/api/receipt/v1/simple/file', {
+    const response = await fetch('/api/taggun', {
       method: 'POST',
-      headers: { apikey: key },
       body: formData,
+      cache: 'no-store',
     })
+    // 503 = server 未設定 TAGGUN_API_KEY。
+    if (response.status === 503) return { status: 'unconfigured' }
     if (!response.ok) {
       warnApiFailure('ocrApi', `HTTP ${response.status}`)
       return { status: 'failed' }
