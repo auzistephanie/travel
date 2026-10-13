@@ -1,6 +1,6 @@
 # Travel App — CHANGELOG
 
-- 2026-10-13：**收返 main 原本首頁**。Stephanie 揀咗 main 嗰版封面（冇 3D 地球），三個新預覽全部唔用。已刪 `/preview/hero/1`–`3`、地球元件（`GlobeCanvas`／`GlobeSlot`）、`three`、`@react-three/fiber`、`framer-motion`，同埋封面傾斜、分頁過渡、卡片加深陰影。`index.html` 嘅 `notranslate` 亦一併收走（只係預覽頁先需要）。留低嘅係功能同 bug fix，見下一條。
+- 2026-10-13：**收返 main 原本首頁**。Stephanie 揀咗 main 嗰版封面（冇 3D 地球），三個新預覽全部唔用。已刪 `/preview/hero/1`–`3`、地球元件（`GlobeCanvas`／`GlobeSlot`）、`three`、`@react-three/fiber`、`framer-motion`，同埋封面傾斜、分頁過渡、卡片加深陰影。`index.html` 嘅 `notranslate` 亦一併收走（只係預覽頁先需要）。vitest 排除 `_to_delete/`，避免清理檔入面舊 test 被跑到。留低嘅係功能同 bug fix，見下一條。
 
 - 2026-10-13：**補齊半成品功能**。
   - 冇 Supabase 設定時改行本機示範模式（`localDemoClient`），可以建立行程、用分享碼開啟、排行程、記帳、手信同行李；資料只留喺呢部瀏覽器。有設定時仍然行真 Supabase，安全改動冇郁。
