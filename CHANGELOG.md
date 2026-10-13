@@ -1,13 +1,12 @@
 # Travel App — CHANGELOG
 
-- 2026-10-13：**首頁英雄區三個預覽概念**（未取代現有地球首頁，`/` 仍然係而家個 3D 地球）。路徑 `/preview/hero/1` 登機證同明信片扇開、`/preview/hero/2` 目的地插畫卡片立體輪播、`/preview/hero/3` 手繪地圖航線由香港經台北畫到大阪，小飛機沿住條線飛並停喺大阪。減少動態時停喺靜態完成狀態。預覽頁加 `notranslate`，避免瀏覽器翻譯列蓋住畫面。
+- 2026-10-13：**收返 main 原本首頁**。Stephanie 揀咗 main 嗰版封面（冇 3D 地球），三個新預覽全部唔用。已刪 `/preview/hero/1`–`3`、地球元件（`GlobeCanvas`／`GlobeSlot`）、`three`、`@react-three/fiber`、`framer-motion`，同埋封面傾斜、分頁過渡、卡片加深陰影。`index.html` 嘅 `notranslate` 亦一併收走（只係預覽頁先需要）。留低嘅係功能同 bug fix，見下一條。
 
-- 2026-10-13：**介面加深、補齊半成品功能**。
+- 2026-10-13：**補齊半成品功能**。
   - 冇 Supabase 設定時改行本機示範模式（`localDemoClient`），可以建立行程、用分享碼開啟、排行程、記帳、手信同行李；資料只留喺呢部瀏覽器。有設定時仍然行真 Supabase，安全改動冇郁。
   - 行程頁地圖由示意 SVG 換成 OpenStreetMap（Leaflet，免 key）。景點可以上移／下移，手機唔使靠拖放。
   - 手信「邊度買」主搜尋改 Nominatim（限住附近），TomTom 只做 fallback。雨天室內推介分開留商場同博物館，並讀 way 嘅 center 座標。
   - 航班查詢、收據掃描如果 server 未設定 key，畫面會寫明「未設定，請手動輸入」，唔再同一句「查不到」。建立行程會擋結束日早過開始日。加開支預設全體分攤；一個人都冇揀會出提示，唔會靜靜冇反應。
-  - 首頁加懶載入 3D 地球（`prefers-reduced-motion` 或冇 WebGL 就用靜態球）、卡片視差同分頁過渡。
 
 - 2026-10-13：**鎖 RLS + 第三方 key 移去 server**。
   - 分享連結用法唔變（朋友仍然唔使註冊）。瀏覽器靜靜 `signInAnonymously`，再用分享碼呼叫 `claim_trip_by_share_code` 寫入 `trip_access`。RLS 只放行已 claim 嘅行程，或者 `trip_members.auth_user_id` 已經綁咗嘅 Google 用戶。建立行程改經 `create_trip`。Anonymous session 唔當 owner 帳戶，唔會綁 `auth_user_id`、亦刪唔到成個 trip。

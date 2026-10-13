@@ -2507,7 +2507,7 @@
   font-size: 12px;
 }
 
-/* 2026-10：深度卡片、真地圖、觸控排序 */
+/* 2026-10：真地圖、觸控排序、示範模式提示 */
 .demo-banner {
   margin: 0;
   padding: 8px 14px;
@@ -2576,37 +2576,4 @@
 
 .theme-root button.stop-move:disabled {
   opacity: 0.35;
-}
-
-.theme-root section.hero-card,
-.theme-root .money-summary,
-.theme-root .gift-summary,
-.theme-root .wish-summary,
-.theme-root .stop-card {
-  box-shadow:
-    0 12px 28px rgba(20, 30, 24, 0.12),
-    0 1px 0 rgba(255, 255, 255, 0.28) inset;
-}
-
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .theme-root .stop-card,
-  .theme-root .expense-row,
-  .theme-root .journal-trip-card {
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-  }
-
-  .theme-root .stop-card:hover,
-  .theme-root .expense-row:hover {
-    transform: translateY(-2px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .theme-root .stop-card,
-  .theme-root .expense-row,
-  .journal-compass,
-  .globe-fallback {
-    animation: none;
-    transition: none;
-  }
 }

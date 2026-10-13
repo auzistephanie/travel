@@ -1,5 +1,4 @@
 import { lazy, Suspense, useEffect, useState, type ComponentType } from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
 import { Compass, Repeat, Settings } from 'lucide-react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useTrip } from '../hooks/useTrip'
@@ -57,7 +56,6 @@ export function TripShell() {
   const [themeId, setThemeId] = useState<ThemeId>(() => getStoredThemeId(shareCode))
   const [accent, setAccent] = useState<string | null>(() => getStoredAccent(shareCode))
   const [showSettings, setShowSettings] = useState(false)
-  const reducedMotion = useReducedMotion()
 
   // 身份確定後，將呢個行程記入「我的行程」本地清單（首頁列得返），
   // 令經朋友連結入嚟嘅行程都會出現，唔使死記條 URL。
@@ -111,16 +109,9 @@ export function TripShell() {
         </header>
         <TornEdgeDivider />
         <main>
-          <motion.div
-            key={activeTab}
-            initial={reducedMotion ? false : { opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.32, ease: 'easeOut' }}
-          >
-            <Suspense fallback={<p>載入中…</p>}>
-              <ActivePage trip={trip} members={members} />
-            </Suspense>
-          </motion.div>
+          <Suspense fallback={<p>載入中…</p>}>
+            <ActivePage trip={trip} members={members} />
+          </Suspense>
         </main>
         <BottomNav active={activeTab} onChange={setActiveTab} />
         {showSettings && (

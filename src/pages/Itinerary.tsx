@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react'
 import { ChevronDown, ChevronUp, MapPin, Navigation, Plus, Search, Trash2 } from 'lucide-react'
-import { motion, useReducedMotion } from 'framer-motion'
 import { useItinerary } from '../hooks/useItinerary'
 import { useDestinationWeather } from '../hooks/useDestinationWeather'
 import { DayTabs } from '../components/DayTabs'
@@ -33,7 +32,6 @@ export function Itinerary({ trip }: TripPageProps) {
   const [placeResults, setPlaceResults] = useState<PlaceResult[]>([])
   const [placeSearching, setPlaceSearching] = useState(false)
   const [placeHint, setPlaceHint] = useState<string | null>(null)
-  const reducedMotion = useReducedMotion()
 
   if (loading) return <p>載入中…</p>
   if (error) return <p role="alert">{error}</p>
@@ -167,7 +165,7 @@ export function Itinerary({ trip }: TripPageProps) {
             next && hasCoords && next.lat != null && next.lng != null
 
           return (
-            <motion.li
+            <li
               key={stop.id}
               className="stop-item"
               draggable
@@ -177,9 +175,6 @@ export function Itinerary({ trip }: TripPageProps) {
                 e.preventDefault()
                 handleDrop(index)
               }}
-              initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.28, delay: Math.min(index, 8) * 0.04 }}
             >
               <span className="stop-num" aria-hidden="true">
                 {index + 1}
@@ -239,7 +234,7 @@ export function Itinerary({ trip }: TripPageProps) {
                   to={{ lat: next.lat as number, lng: next.lng as number }}
                 />
               )}
-            </motion.li>
+            </li>
           )
         })}
       </ul>
