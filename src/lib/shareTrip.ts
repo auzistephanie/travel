@@ -25,6 +25,25 @@ export async function shareTripInvite(options: {
     await navigator.clipboard.writeText(url)
     return 'copied'
   } catch {
+    if (copyWithSelection(url)) return 'copied'
     return 'failed'
+  }
+}
+
+function copyWithSelection(text: string): boolean {
+  try {
+    const input = document.createElement('textarea')
+    input.value = text
+    input.setAttribute('readonly', '')
+    input.style.position = 'fixed'
+    input.style.top = '0'
+    input.style.left = '-9999px'
+    document.body.appendChild(input)
+    input.select()
+    const copied = document.execCommand('copy')
+    input.remove()
+    return copied
+  } catch {
+    return false
   }
 }

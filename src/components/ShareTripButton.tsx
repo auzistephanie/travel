@@ -38,7 +38,7 @@ export function ShareTripButton({ shareCode, tripName, className, iconOnly = fal
         <Share2 size={16} aria-hidden="true" />
       )}
       {!iconOnly && label}
-      {status === 'failed' && <span className="share-fallback-url">{url}</span>}
+      {!iconOnly && status === 'failed' && <span className="share-fallback-url">{url}</span>}
     </button>
   )
 }

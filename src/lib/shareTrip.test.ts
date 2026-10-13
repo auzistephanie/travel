@@ -37,6 +37,17 @@ describe('shareTripInvite', () => {
     expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/t/ABC234`)
   })
 
+  it('falls back to a text selection copy when the clipboard API is blocked', async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error('denied'))
+    const execCommand = vi.fn().mockReturnValue(true)
+    Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    Object.defineProperty(document, 'execCommand', { value: execCommand, configurable: true })
+
+    await expect(shareTripInvite({ shareCode: 'ABC234' })).resolves.toBe('copied')
+    expect(execCommand).toHaveBeenCalledWith('copy')
+  })
+
   it('treats closing the share sheet as a cancel', async () => {
     const share = vi.fn().mockRejectedValue(new DOMException('cancel', 'AbortError'))
     Object.defineProperty(navigator, 'share', { value: share, configurable: true })
