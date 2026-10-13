@@ -1,5 +1,7 @@
 # Travel App — CHANGELOG
 
+- 2026-10-13：**首頁英雄區三個預覽概念**（未取代現有地球首頁）。路徑 `/preview/hero/1` 登機證扇開、`/preview/hero/2` 目的地卡片旋轉、`/preview/hero/3` 插畫地圖航線。減少動態時停喺靜態完成狀態。
+
 - 2026-10-13：**介面加深、補齊半成品功能**。
   - 冇 Supabase 設定時改行本機示範模式（`localDemoClient`），可以建立行程、用分享碼開啟、排行程、記帳、手信同行李；資料只留喺呢部瀏覽器。有設定時仍然行真 Supabase，安全改動冇郁。
   - 行程頁地圖由示意 SVG 換成 OpenStreetMap（Leaflet，免 key）。景點可以上移／下移，手機唔使靠拖放。
