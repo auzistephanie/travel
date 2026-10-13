@@ -53,6 +53,8 @@ describe('Itinerary', () => {
     useDestinationWeather.mockReturnValue({})
     searchIndoorPlaces.mockReset()
     searchIndoorPlaces.mockResolvedValue([])
+    searchPlaces.mockReset()
+    searchPlaces.mockResolvedValue([])
     findNearbyRestroom.mockReset()
     findNearbyRestroom.mockResolvedValue(null)
     findNearbyConvenienceStore.mockReset()
@@ -333,6 +335,74 @@ describe('Itinerary', () => {
     fireEvent.dragOver(items[1])
     fireEvent.drop(items[1])
 
+    expect(reorderStops).toHaveBeenCalledWith('d1', 0, 1)
+  })
+
+  it('plots a stop on the map when it already has coordinates', async () => {
+    useItinerary.mockReturnValue({
+      days,
+      stopsByDay: {
+        d1: [{ id: 's1', day_id: 'd1', time: null, title: '台北101', place_name: '信義區', lat: 25.033, lng: 121.565, order_index: 0, transport_mode_to_next: null, icon: null }],
+        d2: [],
+      },
+      loading: false,
+      error: null,
+      addStop: vi.fn(),
+      deleteStop: vi.fn(),
+      reorderStops: vi.fn(),
+      applyOrder: vi.fn(),
+    })
+
+    render(<Itinerary trip={trip} members={members} />)
+
+    expect(await screen.findByText('1. 台北101')).toBeInTheDocument()
+    expect(await screen.findByText('已標出 1 個景點')).toBeInTheDocument()
+    expect(searchPlaces).not.toHaveBeenCalled()
+  })
+
+  it('names a stop that cannot be placed instead of inventing a map position', async () => {
+    useItinerary.mockReturnValue({
+      days,
+      stopsByDay: {
+        d1: [{ id: 's1', day_id: 'd1', time: null, title: '某小店', place_name: null, lat: null, lng: null, order_index: 0, transport_mode_to_next: null, icon: null }],
+        d2: [],
+      },
+      loading: false,
+      error: null,
+      addStop: vi.fn(),
+      deleteStop: vi.fn(),
+      reorderStops: vi.fn(),
+      applyOrder: vi.fn(),
+    })
+
+    render(<Itinerary trip={trip} members={members} />)
+
+    expect(await screen.findByText(/地圖未標出：某小店/)).toBeInTheDocument()
+    expect(screen.queryByText('1. 某小店')).not.toBeInTheDocument()
+  })
+
+  it('moves a stop down from the on-screen buttons', async () => {
+    const user = userEvent.setup()
+    const reorderStops = vi.fn()
+    useItinerary.mockReturnValue({
+      days,
+      stopsByDay: {
+        d1: [
+          { id: 's1', day_id: 'd1', time: null, title: '淺草寺', place_name: null, lat: 35.7, lng: 139.8, order_index: 0, transport_mode_to_next: null, icon: null },
+          { id: 's2', day_id: 'd1', time: null, title: '晴空塔', place_name: null, lat: 35.71, lng: 139.81, order_index: 1, transport_mode_to_next: null, icon: null },
+        ],
+        d2: [],
+      },
+      loading: false,
+      error: null,
+      addStop: vi.fn(),
+      deleteStop: vi.fn(),
+      reorderStops,
+      applyOrder: vi.fn(),
+    })
+
+    render(<Itinerary trip={trip} members={members} />)
+    await user.click(screen.getByRole('button', { name: '下移 淺草寺' }))
     expect(reorderStops).toHaveBeenCalledWith('d1', 0, 1)
   })
 

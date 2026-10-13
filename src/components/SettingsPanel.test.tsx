@@ -134,10 +134,10 @@ describe('SettingsPanel', () => {
     render(<Harness shareCode="ABC234" />)
 
     expect(screen.getByText('邀請朋友')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: '複製邀請連結' }))
+    await user.click(screen.getByRole('button', { name: '分享給朋友' }))
 
     expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/t/ABC234`)
-    expect(screen.getByRole('button', { name: '已複製' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '已複製連結' })).toBeInTheDocument()
   })
 
   it('hides the account section for non-owner members', () => {

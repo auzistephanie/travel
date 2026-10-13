@@ -13,5 +13,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    // 清理檔放 _to_delete/（gitignore）。不排除的話 vitest 會執行裡面的舊測試。
+    exclude: ['**/node_modules/**', '**/.git/**', '**/_to_delete/**'],
   },
 })

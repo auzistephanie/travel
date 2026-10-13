@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -218,8 +218,9 @@ describe('TripShell', () => {
 
     await user.click(screen.getByRole('button', { name: '設定' }))
 
-    expect(screen.getByText('邀請朋友')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '複製邀請連結' })).toBeInTheDocument()
+    const dialog = screen.getByRole('dialog', { name: '設定' })
+    expect(within(dialog).getByText('邀請朋友')).toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: '分享給朋友' })).toBeInTheDocument()
   })
 
   it('lets a member switch identity, clearing the local record and returning to the who-am-i picker', async () => {

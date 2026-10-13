@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Search, X } from 'lucide-react'
-import { lookupFlight } from '../lib/flightApi'
+import { lookupFlightDetailed } from '../lib/flightApi'
 import type { AddFlightInput } from '../lib/flightRepo'
 import type { TripMember } from '../types/models'
 
@@ -31,17 +31,21 @@ export function AddFlightModal({ members, onAdd, onClose }: AddFlightModalProps)
     setLooking(true)
     setLookupHint(null)
     try {
-      const result = await lookupFlight(code, date)
-      if (!result) {
+      const result = await lookupFlightDetailed(code, date)
+      if (result.status === 'unconfigured') {
+        setLookupHint('航班資料庫未設定，請手動輸入')
+        return
+      }
+      if (result.status !== 'ok') {
         setLookupHint('查不到，請手動輸入')
         return
       }
-      setFromAirport(result.fromAirport)
-      setToAirport(result.toAirport)
-      setFromTime(result.fromTime)
-      setToTime(result.toTime)
-      setGate(result.gate ?? '')
-      setTerminal(result.terminal ?? '')
+      setFromAirport(result.value.fromAirport)
+      setToAirport(result.value.toAirport)
+      setFromTime(result.value.fromTime)
+      setToTime(result.value.toTime)
+      setGate(result.value.gate ?? '')
+      setTerminal(result.value.terminal ?? '')
     } finally {
       setLooking(false)
     }

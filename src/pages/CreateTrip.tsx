@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, Copy } from 'lucide-react'
+import { ShareTripButton } from '../components/ShareTripButton'
+import { tripInviteUrl } from '../lib/shareTrip'
 import { createTrip } from '../lib/tripApi'
 import { setWhoAmI } from '../lib/whoAmI'
 import { addMyTrip } from '../lib/myTrips'
@@ -21,7 +22,6 @@ export function CreateTrip() {
   const [created, setCreated] = useState<{ trip: Trip; owner: TripMember } | null>(null)
   const [signingIn, setSigningIn] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
-  const [inviteCopied, setInviteCopied] = useState(false)
   // 已登入嘅 owner：用嚟預填名 + 建立後即刻綁定，唔使再喺成功畫面撳一次「用 Google 登入」。
   const [authUser, setAuthUser] = useState<AuthUser | null>(null)
 
@@ -40,6 +40,10 @@ export function CreateTrip() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (endDate < startDate) {
+      setError('結束日期不可早於開始日期')
+      return
+    }
     setSubmitting(true)
     setError(null)
     try {
@@ -78,17 +82,6 @@ export function CreateTrip() {
     navigate(`/t/${created.trip.share_code}`)
   }
 
-  async function handleCopyInviteLink() {
-    if (!created) return
-    try {
-      await navigator.clipboard.writeText(`${window.location.origin}/t/${created.trip.share_code}`)
-      setInviteCopied(true)
-      setTimeout(() => setInviteCopied(false), 2000)
-    } catch {
-      // 攞唔到 clipboard 權限就靜靜哋唔做嘢，用戶可以自己揀網址列複製
-    }
-  }
-
   async function handleGoogleSignIn() {
     if (!created || signingIn) return
     setSigningIn(true)
@@ -109,10 +102,8 @@ export function CreateTrip() {
 
           <h2>邀請朋友</h2>
           <p>把連結傳給朋友，開啟後選擇自己的名字即可一起編輯，無需登入或註冊帳戶。</p>
-          <button type="button" onClick={handleCopyInviteLink}>
-            {inviteCopied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
-            {inviteCopied ? '已複製' : '複製邀請連結'}
-          </button>
+          <p className="share-url">{tripInviteUrl(created.trip.share_code)}</p>
+          <ShareTripButton shareCode={created.trip.share_code} tripName={created.trip.name} />
 
           <h2>你的登入</h2>
           {authUser ? (

@@ -2506,3 +2506,172 @@
 .theme-root .wl-field input[type='file'] {
   font-size: 12px;
 }
+
+/* 2026-10：真地圖、一鍵分享、介紹連結佔位、示範模式 */
+.demo-banner {
+  margin: 0;
+  padding: 8px 14px;
+  background: var(--color-heading);
+  color: var(--color-bg);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.map-canvas {
+  height: 280px;
+  line-height: normal;
+}
+
+.leaflet-host {
+  position: absolute;
+  inset: 0;
+}
+
+.leaflet-host .leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg);
+  font-family: var(--font-body);
+}
+
+.map-note {
+  z-index: 800;
+}
+
+.stop-pin {
+  background: transparent;
+  border: none;
+}
+
+.stop-pin-n {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid #fff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
+}
+
+.stop-move-group {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 2px;
+}
+
+.theme-root button.stop-move,
+.theme-root button.stop-del {
+  margin-left: 0;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.theme-root button.stop-move:disabled {
+  opacity: 0.35;
+}
+
+.theme-root button.trip-share {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+.share-url {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--color-bg);
+  border: 1px dashed var(--color-border);
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-all;
+  color: var(--color-text);
+}
+
+.share-fallback-url {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.affiliate-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.affiliate-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-bg);
+}
+
+.affiliate-ic {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--color-bg-alt);
+  color: var(--color-accent);
+  flex: none;
+}
+
+.affiliate-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.affiliate-copy strong {
+  font-size: 14px;
+}
+
+.affiliate-en {
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+.theme-root button.affiliate-go,
+.theme-root a.affiliate-go {
+  flex: none;
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+.theme-root button.affiliate-go:disabled {
+  opacity: 0.55;
+}

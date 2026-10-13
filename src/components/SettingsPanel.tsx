@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Check, Copy, LogIn, Trash2, X } from 'lucide-react'
+import { ShareTripButton } from './ShareTripButton'
+import { tripInviteUrl } from '../lib/shareTrip'
 import { THEMES } from '../theme/tokens'
 import { useTheme } from '../theme/ThemeContext'
 import { GenericIllustration } from '../theme/illustrations/GenericIllustration'
@@ -31,7 +33,6 @@ export function SettingsPanel({
   const { themeId, accent, setThemeId, setAccent } = useTheme()
   const currentTheme = THEMES[themeId]
   const [copied, setCopied] = useState(false)
-  const [inviteCopied, setInviteCopied] = useState(false)
   const [signingIn, setSigningIn] = useState(false)
   const [signInError, setSignInError] = useState<string | null>(null)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -82,17 +83,6 @@ export function SettingsPanel({
       setTimeout(() => setCopied(false), 2000)
     } catch {
       // 部分瀏覽器/情況攞唔到 clipboard 權限，靜靜哋唔做嘢，用戶可以自己揀網址列複製
-    }
-  }
-
-  async function handleCopyInviteLink() {
-    if (!shareCode) return
-    try {
-      await navigator.clipboard.writeText(`${window.location.origin}/t/${shareCode}`)
-      setInviteCopied(true)
-      setTimeout(() => setInviteCopied(false), 2000)
-    } catch {
-      // 同上，攞唔到 clipboard 權限就靜靜哋唔做嘢
     }
   }
 
@@ -264,10 +254,8 @@ export function SettingsPanel({
             <p className="settings-hint">
               把連結傳給朋友，開啟後選擇自己的名字即可一起編輯，無需登入或註冊帳戶。
             </p>
-            <button type="button" className="settings-copy-link" onClick={handleCopyInviteLink}>
-              {inviteCopied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
-              {inviteCopied ? '已複製' : '複製邀請連結'}
-            </button>
+            <p className="share-url">{tripInviteUrl(shareCode)}</p>
+            <ShareTripButton shareCode={shareCode} tripName={trip?.name} className="settings-copy-link" />
           </>
         )}
 
