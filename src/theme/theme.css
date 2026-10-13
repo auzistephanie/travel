@@ -2506,3 +2506,107 @@
 .theme-root .wl-field input[type='file'] {
   font-size: 12px;
 }
+
+/* 2026-10：深度卡片、真地圖、觸控排序 */
+.demo-banner {
+  margin: 0;
+  padding: 8px 14px;
+  background: var(--color-heading);
+  color: var(--color-bg);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.leaflet-host {
+  position: absolute;
+  inset: 0;
+}
+
+.leaflet-host .leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg);
+  font-family: var(--font-body);
+}
+
+.map-note {
+  z-index: 500;
+}
+
+.stop-pin {
+  background: transparent;
+  border: none;
+}
+
+.stop-pin-n {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid #fff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
+}
+
+.stop-move-group {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 2px;
+}
+
+.theme-root button.stop-move,
+.theme-root button.stop-del {
+  margin-left: 0;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.theme-root button.stop-move:disabled {
+  opacity: 0.35;
+}
+
+.theme-root section.hero-card,
+.theme-root .money-summary,
+.theme-root .gift-summary,
+.theme-root .wish-summary,
+.theme-root .stop-card {
+  box-shadow:
+    0 12px 28px rgba(20, 30, 24, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.28) inset;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .theme-root .stop-card,
+  .theme-root .expense-row,
+  .theme-root .journal-trip-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .theme-root .stop-card:hover,
+  .theme-root .expense-row:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-root .stop-card,
+  .theme-root .expense-row,
+  .journal-compass,
+  .globe-fallback {
+    animation: none;
+    transition: none;
+  }
+}

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
 import { BookOpen, Compass, KeyRound, MapPin, Trash2, Users } from 'lucide-react'
+import { GlobeSlot } from '../components/GlobeSlot'
 import { getMyTrips, mergeMyTrips, removeMyTrip, type MyTripEntry } from '../lib/myTrips'
 import { getCurrentAuthUser, onAuthUserChange, signInWithGoogle, type AuthUser } from '../lib/ownerAuth'
 import { deleteTripByShareCode, getTripsForAuthUser, TRIP_DELETE_DENIED } from '../lib/tripApi'
@@ -22,6 +24,8 @@ export function Landing() {
   const [confirmDelete, setConfirmDelete] = useState<MyTripEntry | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
+  const reducedMotion = useReducedMotion()
 
   // 登入咗嘅話由雲端攞返所有連結咗嘅行程，併入本地清單（跨裝置同步）。
   useEffect(() => {
@@ -86,6 +90,20 @@ export function Landing() {
 
   const hasTrips = trips.length > 0
 
+  function handleCardMove(event: React.PointerEvent<HTMLDivElement>) {
+    if (reducedMotion || event.pointerType === 'touch') return
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const px = (event.clientX - bounds.left) / bounds.width - 0.5
+    const py = (event.clientY - bounds.top) / bounds.height - 0.5
+    setTilt({ x: -py * 7, y: px * 8 })
+  }
+
+  const cardMotion = {
+    rotateX: reducedMotion ? 0 : tilt.x,
+    rotateY: reducedMotion ? 0 : tilt.y,
+    rotateZ: -1.1,
+  }
+
   const loginFooter = authUser ? (
     <p className="journal-login-status">已用 {authUser.email ?? 'Google'} 登入 · 行程會跨裝置同步</p>
   ) : (
@@ -103,7 +121,16 @@ export function Landing() {
   if (!hasTrips) {
     return (
       <div className="journal-page">
-        <div className="journal-card journal-cover-content">
+        <GlobeSlot />
+        <motion.div
+          className="journal-card journal-cover-content depth-card"
+          style={cardMotion}
+          onPointerMove={handleCardMove}
+          onPointerLeave={() => setTilt({ x: 0, y: 0 })}
+          initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: 'easeOut' }}
+        >
           <span className="journal-compass" aria-hidden="true">
             <Compass size={30} />
           </span>
@@ -126,14 +153,23 @@ export function Landing() {
             </Link>
           </div>
           {loginFooter}
-        </div>
+        </motion.div>
       </div>
     )
   }
 
   return (
     <div className="journal-page">
-      <div className="journal-card journal-cover-content">
+      <GlobeSlot />
+      <motion.div
+        className="journal-card journal-cover-content depth-card"
+        style={cardMotion}
+        onPointerMove={handleCardMove}
+        onPointerLeave={() => setTilt({ x: 0, y: 0 })}
+        initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: 'easeOut' }}
+      >
         <span className="journal-compass" aria-hidden="true">
           <Compass size={30} />
         </span>
@@ -191,7 +227,7 @@ export function Landing() {
           </Link>
         </div>
         {loginFooter}
-      </div>
+      </motion.div>
 
       {confirmDelete && (
         <div className="journal-confirm-overlay" onClick={() => !deleting && setConfirmDelete(null)}>

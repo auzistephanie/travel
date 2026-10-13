@@ -336,6 +336,32 @@ describe('Itinerary', () => {
     expect(reorderStops).toHaveBeenCalledWith('d1', 0, 1)
   })
 
+  it('moves a stop down from a button so touch screens can reorder', async () => {
+    const user = userEvent.setup()
+    const reorderStops = vi.fn()
+    useItinerary.mockReturnValue({
+      days,
+      stopsByDay: {
+        d1: [
+          { id: 's1', day_id: 'd1', time: null, title: '淺草寺', place_name: null, lat: null, lng: null, order_index: 0, transport_mode_to_next: null, icon: null },
+          { id: 's2', day_id: 'd1', time: null, title: '晴空塔', place_name: null, lat: null, lng: null, order_index: 1, transport_mode_to_next: null, icon: null },
+        ],
+        d2: [],
+      },
+      loading: false,
+      error: null,
+      addStop: vi.fn(),
+      deleteStop: vi.fn(),
+      reorderStops,
+      applyOrder: vi.fn(),
+    })
+
+    render(<Itinerary trip={trip} members={members} />)
+    await user.click(screen.getByRole('button', { name: '下移 淺草寺' }))
+    expect(reorderStops).toHaveBeenCalledWith('d1', 0, 1)
+    expect(screen.getByRole('button', { name: '上移 淺草寺' })).toBeDisabled()
+  })
+
   it('applies the suggested route order when offered', async () => {
     const user = userEvent.setup()
     const applyOrder = vi.fn()

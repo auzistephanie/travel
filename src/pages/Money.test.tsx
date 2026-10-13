@@ -84,7 +84,6 @@ describe('Money', () => {
     await user.click(screen.getByRole('button', { name: '＋加開支' }))
     await user.type(screen.getByLabelText('項目'), '午餐')
     await user.type(screen.getByLabelText('金額'), '500')
-    await user.click(screen.getByLabelText('阿明'))
     await user.click(screen.getByRole('button', { name: '加入開支' }))
 
     expect(addExpense).toHaveBeenCalledWith(expect.objectContaining({ title: '午餐', amount: 500 }))

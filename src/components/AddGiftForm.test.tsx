@@ -4,8 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AddGiftForm } from './AddGiftForm'
 import type { Gift, TripMember } from '../types/models'
 
-const scanReceipt = vi.fn()
-vi.mock('../lib/ocrApi', () => ({ scanReceipt: (...a: unknown[]) => scanReceipt(...a) }))
+const scanReceiptDetailed = vi.fn()
+vi.mock('../lib/ocrApi', () => ({
+  scanReceiptDetailed: (...a: unknown[]) => scanReceiptDetailed(...a),
+}))
 
 const members: TripMember[] = [{ id: 'm1', trip_id: 't1', name: '阿珍', color: null, is_owner: false }]
 
@@ -15,7 +17,7 @@ function fakeFile() {
 
 describe('AddGiftForm', () => {
   beforeEach(() => {
-    scanReceipt.mockReset()
+    scanReceiptDetailed.mockReset()
   })
 
   it('submits a gift with item, store, amount, currency, and recipient', async () => {
@@ -62,7 +64,10 @@ describe('AddGiftForm', () => {
 
   it('prefills store and amount from a successful scan without auto-submitting', async () => {
     const user = userEvent.setup()
-    scanReceipt.mockResolvedValue({ merchantName: '銀座曲奇', totalAmount: 1280 })
+    scanReceiptDetailed.mockResolvedValue({
+      status: 'ok',
+      value: { merchantName: '銀座曲奇', totalAmount: 1280 },
+    })
     const onAdd = vi.fn()
 
     render(<AddGiftForm members={members} onAdd={onAdd} />)
@@ -75,7 +80,10 @@ describe('AddGiftForm', () => {
 
   it('marks the submitted gift as OCR-sourced after a successful scan', async () => {
     const user = userEvent.setup()
-    scanReceipt.mockResolvedValue({ merchantName: '銀座曲奇', totalAmount: 1280 })
+    scanReceiptDetailed.mockResolvedValue({
+      status: 'ok',
+      value: { merchantName: '銀座曲奇', totalAmount: 1280 },
+    })
     const onAdd = vi.fn()
 
     render(<AddGiftForm members={members} onAdd={onAdd} />)
@@ -89,12 +97,22 @@ describe('AddGiftForm', () => {
 
   it('shows a hint instead of an error when the scan finds nothing', async () => {
     const user = userEvent.setup()
-    scanReceipt.mockResolvedValue(null)
+    scanReceiptDetailed.mockResolvedValue({ status: 'empty' })
 
     render(<AddGiftForm members={members} onAdd={vi.fn()} />)
     await user.upload(screen.getByLabelText('拍單據 OCR'), fakeFile())
 
     expect(await screen.findByText('讀取不到，請手動輸入')).toBeInTheDocument()
+  })
+
+  it('explains when receipt scanning is not configured', async () => {
+    const user = userEvent.setup()
+    scanReceiptDetailed.mockResolvedValue({ status: 'unconfigured' })
+
+    render(<AddGiftForm members={members} onAdd={vi.fn()} />)
+    await user.upload(screen.getByLabelText('拍單據 OCR'), fakeFile())
+
+    expect(await screen.findByText('收據辨識未設定，請手動輸入')).toBeInTheDocument()
   })
 })
 

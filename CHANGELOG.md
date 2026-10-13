@@ -1,5 +1,12 @@
 # Travel App — CHANGELOG
 
+- 2026-10-13：**介面加深、補齊半成品功能**。
+  - 冇 Supabase 設定時改行本機示範模式（`localDemoClient`），可以建立行程、用分享碼開啟、排行程、記帳、手信同行李；資料只留喺呢部瀏覽器。有設定時仍然行真 Supabase，安全改動冇郁。
+  - 行程頁地圖由示意 SVG 換成 OpenStreetMap（Leaflet，免 key）。景點可以上移／下移，手機唔使靠拖放。
+  - 手信「邊度買」主搜尋改 Nominatim（限住附近），TomTom 只做 fallback。雨天室內推介分開留商場同博物館，並讀 way 嘅 center 座標。
+  - 航班查詢、收據掃描如果 server 未設定 key，畫面會寫明「未設定，請手動輸入」，唔再同一句「查不到」。建立行程會擋結束日早過開始日。加開支預設全體分攤；一個人都冇揀會出提示，唔會靜靜冇反應。
+  - 首頁加懶載入 3D 地球（`prefers-reduced-motion` 或冇 WebGL 就用靜態球）、卡片視差同分頁過渡。
+
 - 2026-10-13：**鎖 RLS + 第三方 key 移去 server**。
   - 分享連結用法唔變（朋友仍然唔使註冊）。瀏覽器靜靜 `signInAnonymously`，再用分享碼呼叫 `claim_trip_by_share_code` 寫入 `trip_access`。RLS 只放行已 claim 嘅行程，或者 `trip_members.auth_user_id` 已經綁咗嘅 Google 用戶。建立行程改經 `create_trip`。Anonymous session 唔當 owner 帳戶，唔會綁 `auth_user_id`、亦刪唔到成個 trip。
   - 現有 project 要先開 Anonymous Sign-Ins（唔好開 CAPTCHA），再跑 `supabase/migrations/20261013_lock_rls_share_access.sql`，然後先部署。全新 project 跑更新後嘅 `supabase/schema.sql` 就得。

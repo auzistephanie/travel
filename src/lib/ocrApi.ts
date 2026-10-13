@@ -10,7 +10,13 @@ interface TaggunSimpleResponse {
   totalAmount?: { data?: number }
 }
 
-export async function scanReceipt(file: File): Promise<ReceiptOcrResult | null> {
+export type ReceiptScanStatus =
+  | { status: 'ok'; value: ReceiptOcrResult }
+  | { status: 'empty' }
+  | { status: 'unconfigured' }
+  | { status: 'failed' }
+
+export async function scanReceiptDetailed(file: File): Promise<ReceiptScanStatus> {
   try {
     const formData = new FormData()
     formData.append('file', file)
@@ -20,20 +26,26 @@ export async function scanReceipt(file: File): Promise<ReceiptOcrResult | null> 
       body: formData,
       cache: 'no-store',
     })
-    if (response.status === 503) return null
+    if (response.status === 503) return { status: 'unconfigured' }
     if (!response.ok) {
       warnApiFailure('ocrApi', `HTTP ${response.status}`)
-      return null
+      return { status: 'failed' }
     }
 
     const body = (await response.json()) as TaggunSimpleResponse
-
-    return {
+    const value = {
       merchantName: body.merchantName?.data ?? null,
       totalAmount: body.totalAmount?.data ?? null,
     }
+    if (!value.merchantName && value.totalAmount == null) return { status: 'empty' }
+    return { status: 'ok', value }
   } catch (error) {
     warnApiFailure('ocrApi', error)
-    return null
+    return { status: 'failed' }
   }
+}
+
+export async function scanReceipt(file: File): Promise<ReceiptOcrResult | null> {
+  const result = await scanReceiptDetailed(file)
+  return result.status === 'ok' ? result.value : null
 }

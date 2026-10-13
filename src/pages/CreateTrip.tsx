@@ -40,6 +40,10 @@ export function CreateTrip() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (endDate < startDate) {
+      setError('結束日期不可早於開始日期')
+      return
+    }
     setSubmitting(true)
     setError(null)
     try {

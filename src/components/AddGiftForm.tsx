@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Camera } from 'lucide-react'
-import { scanReceipt } from '../lib/ocrApi'
+import { scanReceiptDetailed } from '../lib/ocrApi'
 import type { Gift, GiftSource, TripMember } from '../types/models'
 
 const CURRENCIES = ['HKD', 'JPY', 'THB', 'KRW', 'TWD', 'VND']
@@ -47,13 +47,17 @@ export function AddGiftForm({ members, editingGift, onAdd, onUpdate, onCancel }:
     setScanning(true)
     setScanHint(null)
     try {
-      const result = await scanReceipt(file)
-      if (!result) {
+      const result = await scanReceiptDetailed(file)
+      if (result.status === 'unconfigured') {
+        setScanHint('收據辨識未設定，請手動輸入')
+        return
+      }
+      if (result.status !== 'ok') {
         setScanHint('讀取不到，請手動輸入')
         return
       }
-      if (result.merchantName) setStore(result.merchantName)
-      if (result.totalAmount != null) setAmount(String(result.totalAmount))
+      if (result.value.merchantName) setStore(result.value.merchantName)
+      if (result.value.totalAmount != null) setAmount(String(result.value.totalAmount))
       setSource('ocr')
     } finally {
       setScanning(false)

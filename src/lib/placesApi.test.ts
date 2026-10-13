@@ -215,6 +215,27 @@ describe('searchIndoorPlaces（雨天室內推介 / Overpass OSM）', () => {
     expect(result).toEqual([{ name: '正常', address: '商場', lat: 3, lng: 4 }])
   })
 
+  it('商場唔會被前面一排博物館擠走，而且 way 用 center 座標', async () => {
+    const museums = Array.from({ length: 8 }, (_, index) => ({
+      lat: index,
+      lon: index,
+      tags: { name: `館${index}`, tourism: 'museum' },
+    }))
+    vi.mocked(fetch).mockResolvedValue(
+      ok({
+        elements: [
+          ...museums,
+          { type: 'way', center: { lat: 35.6, lon: 139.7 }, tags: { name: 'AEON', shop: 'mall' } },
+        ],
+      }),
+    )
+
+    const result = await searchIndoorPlaces(35.6, 139.7)
+
+    expect(result.filter((place) => place.address === '博物館')).toHaveLength(3)
+    expect(result).toContainEqual({ name: 'AEON', address: '商場', lat: 35.6, lng: 139.7 })
+  })
+
   it('HTTP 非 2xx → 回 []', async () => {
     vi.mocked(fetch).mockResolvedValue(new Response('', { status: 504 }))
 

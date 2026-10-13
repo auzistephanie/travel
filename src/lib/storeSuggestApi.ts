@@ -1,4 +1,5 @@
 import { warnApiFailure } from './apiWarn'
+import { searchPlacesNearby } from './placesApi'
 
 export interface StoreSuggestion {
   name: string
@@ -8,51 +9,18 @@ export interface StoreSuggestion {
   lng?: number
 }
 
-interface TomTomSearchResponse {
-  results?: {
-    poi?: { name?: string }
-    address?: { freeformAddress?: string }
-    position?: { lat?: number; lon?: number }
-  }[]
-}
-
-const SEARCH_RADIUS_METERS = 10000
-const MAX_SUGGESTIONS = 3
-
-// TomTom Search API 冇價格等級資料（Google Places 先有 priceLevel），
-// 呢度恆定 null——UI（AddWishlistForm）本身已經識處理 null，唔會顯示參考價位，唔使改 UI。
+// 主來源係 Nominatim（限住座標附近），TomTom 只係 fallback。
+// 2026-07-29 已證實 TomTom 亞洲中文 POI 幾乎零覆蓋，手信「邊度買」一直用佢做主搜尋，中文貨名實質搵唔到。
 export async function searchStoresForItem(itemName: string, lat: number, lng: number): Promise<StoreSuggestion[]> {
   try {
-    const params = new URLSearchParams({
-      type: 'search',
-      query: itemName,
-      lat: String(lat),
-      lon: String(lng),
-      radius: String(SEARCH_RADIUS_METERS),
-      limit: String(MAX_SUGGESTIONS),
-    })
-
-    const response = await fetch(`/api/tomtom-search?${params}`, { cache: 'no-store' })
-    if (response.status === 503) return []
-    if (!response.ok) {
-      warnApiFailure('storeSuggestApi', `HTTP ${response.status}`)
-      return []
-    }
-
-    const body = (await response.json()) as TomTomSearchResponse
-
-    return (body.results ?? []).slice(0, MAX_SUGGESTIONS).map((result) => {
-      const suggestion: StoreSuggestion = {
-        name: result.poi?.name ?? '',
-        address: result.address?.freeformAddress ?? '',
-        priceLevel: null,
-      }
-      if (result.position?.lat != null && result.position?.lon != null) {
-        suggestion.lat = result.position.lat
-        suggestion.lng = result.position.lon
-      }
-      return suggestion
-    })
+    const places = await searchPlacesNearby(itemName, lat, lng)
+    return places.slice(0, 3).map((place) => ({
+      name: place.name,
+      address: place.address,
+      priceLevel: null,
+      lat: place.lat,
+      lng: place.lng,
+    }))
   } catch (error) {
     warnApiFailure('storeSuggestApi', error)
     return []

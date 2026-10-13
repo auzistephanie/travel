@@ -251,4 +251,23 @@ describe('CreateTrip', () => {
 
     expect(await screen.findByText('建立失敗，請再試一次')).toBeInTheDocument()
   })
+
+  it('rejects an end date that is earlier than the start date', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter>
+        <CreateTrip />
+      </MemoryRouter>,
+    )
+
+    await user.type(screen.getByLabelText('行程名'), '東京五日')
+    await user.type(screen.getByLabelText('開始日期'), '2026-08-05')
+    await user.type(screen.getByLabelText('結束日期'), '2026-08-01')
+    await user.type(screen.getByLabelText('你的名字'), '阿明')
+    await user.click(screen.getByRole('button', { name: '建立行程' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('結束日期不可早於開始日期')
+    expect(createTrip).not.toHaveBeenCalled()
+  })
 })

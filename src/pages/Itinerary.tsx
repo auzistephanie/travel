@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { MapPin, Navigation, Plus, Search, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, MapPin, Navigation, Plus, Search, Trash2 } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useItinerary } from '../hooks/useItinerary'
 import { useDestinationWeather } from '../hooks/useDestinationWeather'
 import { DayTabs } from '../components/DayTabs'
@@ -13,6 +14,7 @@ import { shouldSuggestIndoor } from '../lib/weatherApi'
 import { averageCoordinates } from '../lib/stopGeo'
 import { haversineDistanceKm } from '../lib/geo'
 import { searchPlaces, type PlaceResult } from '../lib/placesApi'
+import { StopMap } from '../components/StopMap'
 import type { TripPageProps } from '../types/props'
 
 export function Itinerary({ trip }: TripPageProps) {
@@ -31,6 +33,7 @@ export function Itinerary({ trip }: TripPageProps) {
   const [placeResults, setPlaceResults] = useState<PlaceResult[]>([])
   const [placeSearching, setPlaceSearching] = useState(false)
   const [placeHint, setPlaceHint] = useState<string | null>(null)
+  const reducedMotion = useReducedMotion()
 
   if (loading) return <p>載入中…</p>
   if (error) return <p role="alert">{error}</p>
@@ -100,16 +103,9 @@ export function Itinerary({ trip }: TripPageProps) {
     <div>
       <DayTabs days={days} activeDayId={currentDayId} onChange={setActiveDayId} />
 
-      <div className="map-area" aria-label="地圖">
-        <div className="map-canvas" aria-hidden="true">
-          <svg viewBox="0 0 344 180" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-            <rect width="344" height="180" fill="#e7ecdf" />
-            <g stroke="#cdd6c2" strokeWidth="6" fill="none">
-              <path d="M-10 50 H360 M-10 110 H360 M60 -10 V200 M180 -10 V200 M280 -10 V200" />
-            </g>
-            <rect x="70" y="58" width="80" height="42" fill="#d7e0cb" />
-            <rect x="190" y="112" width="70" height="52" fill="#d7e0cb" />
-          </svg>
+      <div className="map-area">
+        <div className="map-canvas" aria-label="地圖">
+          <StopMap stops={stops} />
           <div className="map-note">
             <MapPin size={13} aria-hidden="true" />
             {stops.length} 個景點
@@ -171,7 +167,7 @@ export function Itinerary({ trip }: TripPageProps) {
             next && hasCoords && next.lat != null && next.lng != null
 
           return (
-            <li
+            <motion.li
               key={stop.id}
               className="stop-item"
               draggable
@@ -181,6 +177,9 @@ export function Itinerary({ trip }: TripPageProps) {
                 e.preventDefault()
                 handleDrop(index)
               }}
+              initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.28, delay: Math.min(index, 8) * 0.04 }}
             >
               <span className="stop-num" aria-hidden="true">
                 {index + 1}
@@ -204,6 +203,26 @@ export function Itinerary({ trip }: TripPageProps) {
                 </div>
                 <div className="stop-chips">
                   {hasCoords && <FacilityChips lat={stop.lat as number} lng={stop.lng as number} />}
+                  <span className="stop-move-group">
+                    <button
+                      type="button"
+                      className="stop-move"
+                      onClick={() => reorderStops(currentDayId, index, index - 1)}
+                      disabled={index === 0}
+                      aria-label={`上移 ${stop.title}`}
+                    >
+                      <ChevronUp size={16} aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      className="stop-move"
+                      onClick={() => reorderStops(currentDayId, index, index + 1)}
+                      disabled={index === stops.length - 1}
+                      aria-label={`下移 ${stop.title}`}
+                    >
+                      <ChevronDown size={16} aria-hidden="true" />
+                    </button>
+                  </span>
                   <button
                     type="button"
                     className="stop-del"
@@ -220,7 +239,7 @@ export function Itinerary({ trip }: TripPageProps) {
                   to={{ lat: next.lat as number, lng: next.lng as number }}
                 />
               )}
-            </li>
+            </motion.li>
           )
         })}
       </ul>
