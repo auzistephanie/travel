@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient'
+import { ensureTripSession } from './tripAccess'
 import { generateShareCode } from './shareCode'
 import { UNIQUE_VIOLATION } from './postgrestErrors'
 import type { Trip, TripMember } from '../types/models'
@@ -19,20 +20,19 @@ export interface CreateTripResult {
 }
 
 export async function createTrip(input: CreateTripInput): Promise<CreateTripResult> {
+  await ensureTripSession()
   let lastError: unknown
 
   for (let attempt = 0; attempt < MAX_SHARE_CODE_ATTEMPTS; attempt++) {
-    const { data: trip, error } = await supabase
-      .from('trips')
-      .insert({
-        name: input.name,
-        start_date: input.startDate,
-        end_date: input.endDate,
-        share_code: generateShareCode(),
-        destination_country: input.destinationCountry ?? null,
-      })
-      .select()
-      .single()
+    // RLS 唔再容許瀏覽器直接 insert trips。呢條 function 會一併寫 owner 同 trip_access。
+    const { data, error } = await supabase.rpc('create_trip', {
+      p_name: input.name,
+      p_start_date: input.startDate,
+      p_end_date: input.endDate,
+      p_owner_name: input.ownerName,
+      p_destination_country: input.destinationCountry ?? null,
+      p_share_code: generateShareCode(),
+    })
 
     if (error) {
       lastError = error
@@ -40,15 +40,9 @@ export async function createTrip(input: CreateTripInput): Promise<CreateTripResu
       continue
     }
 
-    const { data: owner, error: memberError } = await supabase
-      .from('trip_members')
-      .insert({ trip_id: trip.id, name: input.ownerName, is_owner: true })
-      .select()
-      .single()
-
-    if (memberError) throw memberError
-
-    return { trip: trip as Trip, owner: owner as TripMember }
+    const payload = data as { trip?: Trip; owner?: TripMember } | null
+    if (!payload?.trip || !payload.owner) throw new Error('create_trip returned an empty payload')
+    return { trip: payload.trip, owner: payload.owner }
   }
 
   throw lastError
@@ -60,11 +54,14 @@ export interface FindTripResult {
 }
 
 export async function findTripByShareCode(shareCode: string): Promise<FindTripResult | null> {
-  const { data: trip, error } = await supabase
-    .from('trips')
-    .select()
-    .eq('share_code', shareCode)
-    .maybeSingle()
+  await ensureTripSession()
+  const { data: tripId, error: claimError } = await supabase.rpc('claim_trip_by_share_code', {
+    p_share_code: shareCode,
+  })
+  if (claimError) throw claimError
+  if (!tripId) return null
+
+  const { data: trip, error } = await supabase.from('trips').select().eq('id', tripId).maybeSingle()
 
   if (error) throw error
   if (!trip) return null

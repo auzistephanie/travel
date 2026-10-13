@@ -1,5 +1,10 @@
 # Travel App — CHANGELOG
 
+- 2026-10-13：**鎖 RLS + 第三方 key 移去 server**。
+  - 分享連結用法唔變（朋友仍然唔使註冊）。瀏覽器靜靜 `signInAnonymously`，再用分享碼呼叫 `claim_trip_by_share_code` 寫入 `trip_access`。RLS 只放行已 claim 嘅行程，或者 `trip_members.auth_user_id` 已經綁咗嘅 Google 用戶。建立行程改經 `create_trip`。Anonymous session 唔當 owner 帳戶，唔會綁 `auth_user_id`、亦刪唔到成個 trip。
+  - 現有 project 要先開 Anonymous Sign-Ins（唔好開 CAPTCHA），再跑 `supabase/migrations/20261013_lock_rls_share_access.sql`，然後先部署。全新 project 跑更新後嘅 `supabase/schema.sql` 就得。
+  - `AVIATIONSTACK_KEY`、`TOMTOM_KEY`、`TAGGUN_API_KEY` 唔再有 `VITE_` 前綴。瀏覽器打 `/api/flights`、`/api/tomtom-search`、`/api/tomtom-route`、`/api/taggun`；本機由 Vite middleware 轉發，正式環境由 Vercel functions 轉發。Nominatim／Overpass／Open-Meteo 繼續瀏覽器直連。
+
 - 2026-08-01（承 07-31 制度複檢）：**`scripts/github_push.py` 修靜默故障** — 舊版 `_PUSH_STATE_DIR` 用 `os.path.dirname(REPO)` 當 stephanie-personal 係隔籬 folder；04-MAINTENANCE §6 將 5 個 repo 搬出 Drive Mirror 後假設崩咗，`makedirs` 靜靜咁喺 `~/Desktop/dev`、`~/dev`、`daily-novel/` 開咗 3 個假 stephanie-personal，concurrent-push 偵測對 6 個 repo 死咗都冇人知（真 state 檔停留喺 7/26–7/30）。改為 `STEPHANIE_PERSONAL_DIR` 環境變數 → Drive 正本絕對路徑 → legacy sibling 三段 resolve，搵唔到就**唔寫兼出聲**（S5「死咗邊個會知」）。12 份 script 一齊改，py_compile 全過，sales-trainer 實跑驗證真 state 有更新。假 folder 已收入 `_to_delete/`。
 
 - 2026-07-31：`.gitignore` 加 `*.bak-*` 第二道防線 — 配合 06-STANDARDS §S3「備份一律開喺 `_to_delete/`」，就算漏咗 mv 都唔會畀 `github_push.py` 誤推上 GitHub（2026-07-25 事故嘅根治）。本 repo 冇 governance `backups/`，所以唔需要 negation 例外。

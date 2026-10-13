@@ -33,19 +33,35 @@ export async function signInWithGoogle(redirectTo: string = window.location.href
   if (error) throw error
 }
 
-/** 讀返而家呢個瀏覽器 context 已經有嘅 auth session（如果有）。 */
+interface SessionUser {
+  id: string
+  email?: string | null
+  is_anonymous?: boolean
+  app_metadata?: { provider?: string }
+  user_metadata?: Record<string, unknown>
+}
+
+/** Anonymous session 只係分享碼嘅通行證，唔當 Google 帳戶。否則會綁錯 owner、放寬刪除。 */
+function isAnonymousAuthUser(user: SessionUser): boolean {
+  if (user.is_anonymous === true) return true
+  return user.app_metadata?.provider === 'anonymous'
+}
+
+function toAuthUser(user: SessionUser | null | undefined): AuthUser | null {
+  if (!user || isAnonymousAuthUser(user)) return null
+  return { id: user.id, email: user.email ?? null, name: readDisplayName(user.user_metadata) }
+}
+
+/** 讀返而家呢個瀏覽器 context 已經有嘅 Google session（anonymous session 當未登入）。 */
 export async function getCurrentAuthUser(): Promise<AuthUser | null> {
   const { data } = await supabase.auth.getSession()
-  const user = data.session?.user
-  if (!user) return null
-  return { id: user.id, email: user.email ?? null, name: readDisplayName(user.user_metadata) }
+  return toAuthUser(data.session?.user)
 }
 
 /** 監聽 auth 狀態變化（例如撳咗 magic link 之後先至有 session）。返個 unsubscribe function。 */
 export function onAuthUserChange(callback: (user: AuthUser | null) => void): () => void {
   const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-    const user = session?.user
-    callback(user ? { id: user.id, email: user.email ?? null, name: readDisplayName(user.user_metadata) } : null)
+    callback(toAuthUser(session?.user))
   })
   return () => data.subscription.unsubscribe()
 }

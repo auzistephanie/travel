@@ -15,13 +15,11 @@ interface AviationStackFlight {
 }
 
 export async function lookupFlight(code: string, date: string): Promise<FlightLookupResult | null> {
-  const key = import.meta.env.VITE_AVIATIONSTACK_KEY
-  if (!key) return null
-
-  const params = new URLSearchParams({ access_key: key, flight_iata: code, flight_date: date })
+  const params = new URLSearchParams({ flight_iata: code, flight_date: date })
 
   try {
-    const response = await fetch(`https://api.aviationstack.com/v1/flights?${params}`)
+    const response = await fetch(`/api/flights?${params}`, { cache: 'no-store' })
+    if (response.status === 503) return null
     if (!response.ok) {
       warnApiFailure('flightApi', `HTTP ${response.status}`)
       return null

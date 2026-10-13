@@ -8,39 +8,36 @@ describe('lookupFlight', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals()
-    vi.unstubAllEnvs()
   })
 
-  it('returns null without calling the API when no key is configured', async () => {
-    vi.stubEnv('VITE_AVIATIONSTACK_KEY', '')
+  it('returns null when the proxy says the key is not configured', async () => {
+    vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ error: 'not_configured' }), { status: 503 }))
     const result = await lookupFlight('CX123', '2026-08-01')
     expect(result).toBeNull()
-    expect(fetch).not.toHaveBeenCalled()
+    const calledUrl = vi.mocked(fetch).mock.calls[0][0] as string
+    expect(calledUrl).toContain('/api/flights?')
+    expect(calledUrl).not.toContain('access_key')
   })
 
   it('returns null when the API responds with a non-ok status', async () => {
-    vi.stubEnv('VITE_AVIATIONSTACK_KEY', 'test-key')
     vi.mocked(fetch).mockResolvedValue(new Response('', { status: 500 }))
     const result = await lookupFlight('CX123', '2026-08-01')
     expect(result).toBeNull()
   })
 
   it('returns null when no matching flight is found', async () => {
-    vi.stubEnv('VITE_AVIATIONSTACK_KEY', 'test-key')
     vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ data: [] }), { status: 200 }))
     const result = await lookupFlight('CX123', '2026-08-01')
     expect(result).toBeNull()
   })
 
   it('returns null when the fetch call throws', async () => {
-    vi.stubEnv('VITE_AVIATIONSTACK_KEY', 'test-key')
     vi.mocked(fetch).mockRejectedValue(new Error('network down'))
     const result = await lookupFlight('CX123', '2026-08-01')
     expect(result).toBeNull()
   })
 
   it('maps the first matching flight to a lookup result', async () => {
-    vi.stubEnv('VITE_AVIATIONSTACK_KEY', 'test-key')
     const apiBody = {
       data: [
         {
@@ -63,8 +60,9 @@ describe('lookupFlight', () => {
     })
 
     const calledUrl = vi.mocked(fetch).mock.calls[0][0] as string
+    expect(calledUrl).toContain('/api/flights?')
     expect(calledUrl).toContain('flight_iata=CX123')
     expect(calledUrl).toContain('flight_date=2026-08-01')
-    expect(calledUrl).toContain('access_key=test-key')
+    expect(calledUrl).not.toContain('access_key')
   })
 })

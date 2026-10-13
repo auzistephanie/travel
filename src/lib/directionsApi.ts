@@ -21,15 +21,16 @@ interface TomTomRouteResponse {
 }
 
 async function fetchTomTomEstimate(from: LatLng, to: LatLng, mode: RoadTravelMode): Promise<TransportEstimate | null> {
-  const key = import.meta.env.VITE_TOMTOM_KEY
-  if (!key) return null
-
   try {
-    const travelMode = TOMTOM_TRAVEL_MODE[mode]
-    const response = await fetch(
-      `https://api.tomtom.com/routing/1/calculateRoute/${from.lat},${from.lng}:${to.lat},${to.lng}/json` +
-        `?key=${key}&travelMode=${travelMode}`,
-    )
+    const params = new URLSearchParams({
+      fromLat: String(from.lat),
+      fromLng: String(from.lng),
+      toLat: String(to.lat),
+      toLng: String(to.lng),
+      travelMode: TOMTOM_TRAVEL_MODE[mode],
+    })
+    const response = await fetch(`/api/tomtom-route?${params}`, { cache: 'no-store' })
+    if (response.status === 503) return null
     if (!response.ok) {
       warnApiFailure('directionsApi', `HTTP ${response.status}`)
       return null

@@ -12,6 +12,8 @@ Push（`github_push.py`，永不 git CLI・HTTPS・一 run 一 commit・**開工
 ## Gotchas（本 repo 特有，估唔到／估錯會出事）
 
 - **API 選型有原因，唔好自作主張換**：地點搜尋 **Nominatim（OSM）為主、TomTom 做 fallback**（2026-07-29 換；TomTom 亞洲中文 POI 幾乎零覆蓋，實測理由寫喺 `placesApi.ts` 檔頭，唔好因為舊文字改返轉頭）、TomTom **Routing**（步行/駕車，**免信用卡**）、Open-Meteo（**免 key**；預報只覆蓋未來 16 日，再遠會 400 → 自動退做 `archive-api` 歷年同期平均並喺卡上標明）、匯率 open.er-api.com（免費、可手動覆蓋）、洗手間/便利店/雨天室內推介用 OSM Overpass；公共交通**只出 Google Maps 連結，唔叫 API**（畀用戶自己查）。
+- **AviationStack／TomTom／Taggun 嘅 key 唔准加 `VITE_`**：瀏覽器只打 `/api/flights`、`/api/tomtom-search`、`/api/tomtom-route`、`/api/taggun`。Server env 名係 `AVIATIONSTACK_KEY`、`TOMTOM_KEY`、`TAGGUN_API_KEY`。
+- **RLS 唔准改返 `using (true)`**：朋友免登入靠 anonymous sign-in + `claim_trip_by_share_code` 寫入 `trip_access`。開行程前一定要 claim。徹底刪除仍然只限已綁 Google 嘅 owner。CAPTCHA 唔好開。
 - **`src/test/setup.ts` 有個 Web Storage shim，唔好當佢係死 code 刪** —— Node 26 內置嘅 `localStorage` 空殼會蓋過 jsdom，刪咗即刻死 22 個 test。
 - **`MapPage.tsx` / `MapPage.test` 係 dead code** —— 2026-07-02 地圖併入行程頁（原 5 分頁 → 4 分頁）之後已無 route 引用；mount 唔俾 sandbox 刪，要手動移除。
 - **主題必須 token 化（CSS variables）**，唔可以逐頁 hardcode 顏色 —— 4 個主題全部靠佢，散咗就冧。
