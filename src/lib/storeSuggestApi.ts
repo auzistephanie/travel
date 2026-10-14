@@ -11,6 +11,7 @@ export interface StoreSuggestion {
 
 // 主來源是 Nominatim（限制在座標附近），TomTom 只做後備。
 // 2026-07-29 已證實 TomTom 亞洲中文 POI 幾乎零覆蓋。
+// TomTom 後備經 /api/tomtom-search，key 留喺 server。
 export async function searchStoresForItem(itemName: string, lat: number, lng: number): Promise<StoreSuggestion[]> {
   try {
     const places = await searchPlacesNearby(itemName, lat, lng)

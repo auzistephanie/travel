@@ -71,6 +71,17 @@ describe('getCurrentAuthUser', () => {
     })
     expect(await getCurrentAuthUser()).toEqual({ id: 'u1', email: 'stephanie@example.com', name: null })
   })
+
+  it('treats an anonymous session as signed out', async () => {
+    supabase.auth.getSession.mockResolvedValue({
+      data: {
+        session: {
+          user: { id: 'anon-1', email: null, is_anonymous: true, app_metadata: { provider: 'anonymous' } },
+        },
+      },
+    })
+    expect(await getCurrentAuthUser()).toBeNull()
+  })
 })
 
 describe('onAuthUserChange', () => {
@@ -89,6 +100,11 @@ describe('onAuthUserChange', () => {
       user: { id: 'u1', email: 'stephanie@example.com', user_metadata: { name: 'Stephanie Au' } },
     })
     expect(callback).toHaveBeenCalledWith({ id: 'u1', email: 'stephanie@example.com', name: 'Stephanie Au' })
+
+    capturedHandler?.('SIGNED_IN', {
+      user: { id: 'anon-1', email: null, is_anonymous: true, app_metadata: { provider: 'anonymous' } },
+    })
+    expect(callback).toHaveBeenCalledWith(null)
 
     capturedHandler?.('SIGNED_OUT', null)
     expect(callback).toHaveBeenCalledWith(null)

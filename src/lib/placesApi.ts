@@ -12,11 +12,11 @@ export interface PlaceResult {
 //   「淺草寺」→ 滋賀縣一間超市 ‧「東京鐵塔」→ EV 充電站 ‧「Sensoji」→ 0 結果
 // 同一批 query Nominatim 全中，而且 accept-language=zh-Hant 直接出繁體名 + 中文地址。
 // 兩者一樣免 key、免信用卡（＝當初揀 TomTom 嗰個理由完全保住）。
-// TomTom 留低做 fallback；TomTom Routing（directionsApi）完全冇郁。
+// TomTom 留低做 fallback，但 key 只放 server，瀏覽器打 /api/tomtom-search。
+// Routing 同樣經 /api/tomtom-route，步行／駕車模式冇變。
 const SEARCH_LIMIT = 8
 
 const NOMINATIM_ENDPOINT = 'https://nominatim.openstreetmap.org/search'
-const TOMTOM_ENDPOINT = 'https://api.tomtom.com/search/2/poiSearch'
 const OVERPASS_ENDPOINT = 'https://overpass-api.de/api/interpreter'
 
 interface NominatimResult {
@@ -99,16 +99,12 @@ async function searchNominatim(query: string, countryCode?: string | null): Prom
 }
 
 async function searchTomTom(query: string, countryCode?: string | null): Promise<PlaceResult[]> {
-  const key = import.meta.env.VITE_TOMTOM_KEY
-  if (!key) return []
-
-  const params = new URLSearchParams({ key, limit: String(SEARCH_LIMIT) })
+  const params = new URLSearchParams({ type: 'poi', query, limit: String(SEARCH_LIMIT) })
   if (countryCode) params.set('countrySet', countryCode)
 
   try {
-    const response = await fetch(
-      `${TOMTOM_ENDPOINT}/${encodeURIComponent(query)}.json?${params.toString()}`,
-    )
+    const response = await fetch(`/api/tomtom-search?${params}`, { cache: 'no-store' })
+    if (response.status === 503) return []
     if (!response.ok) {
       warnApiFailure('placesApi/tomtom', `HTTP ${response.status}`)
       return []
@@ -228,11 +224,9 @@ function viewboxAround(lat: number, lng: number, radiusMeters: number): string {
 }
 
 async function searchTomTomNearby(query: string, lat: number, lng: number): Promise<PlaceResult[]> {
-  const key = import.meta.env.VITE_TOMTOM_KEY
-  if (!key) return []
-
   const params = new URLSearchParams({
-    key,
+    type: 'search',
+    query,
     lat: String(lat),
     lon: String(lng),
     radius: String(NEARBY_RADIUS_METERS),
@@ -240,9 +234,8 @@ async function searchTomTomNearby(query: string, lat: number, lng: number): Prom
   })
 
   try {
-    const response = await fetch(
-      `https://api.tomtom.com/search/2/search/${encodeURIComponent(query)}.json?${params.toString()}`,
-    )
+    const response = await fetch(`/api/tomtom-search?${params}`, { cache: 'no-store' })
+    if (response.status === 503) return []
     if (!response.ok) {
       warnApiFailure('placesApi/tomtom-nearby', `HTTP ${response.status}`)
       return []

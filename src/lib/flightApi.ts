@@ -21,13 +21,12 @@ export type RemoteStatus<T> =
   | { status: 'failed' }
 
 export async function lookupFlightDetailed(code: string, date: string): Promise<RemoteStatus<FlightLookupResult>> {
-  const key = import.meta.env.VITE_AVIATIONSTACK_KEY
-  if (!key) return { status: 'unconfigured' }
-
-  const params = new URLSearchParams({ access_key: key, flight_iata: code, flight_date: date })
+  const params = new URLSearchParams({ flight_iata: code, flight_date: date })
 
   try {
-    const response = await fetch(`https://api.aviationstack.com/v1/flights?${params}`)
+    const response = await fetch(`/api/flights?${params}`, { cache: 'no-store' })
+    // 503 = server 未設定 AVIATIONSTACK_KEY。唔好再喺瀏覽器睇 VITE_ key。
+    if (response.status === 503) return { status: 'unconfigured' }
     if (!response.ok) {
       warnApiFailure('flightApi', `HTTP ${response.status}`)
       return { status: 'failed' }

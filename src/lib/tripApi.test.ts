@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PostgrestError } from '@supabase/supabase-js'
 
-const { supabase } = vi.hoisted(() => ({ supabase: { from: vi.fn() } }))
+const { supabase } = vi.hoisted(() => ({ supabase: { from: vi.fn(), rpc: vi.fn() } }))
 vi.mock('./supabaseClient', () => ({ supabase }))
+vi.mock('./tripAccess', () => ({ ensureTripSession: vi.fn().mockResolvedValue(undefined) }))
 
 import {
   addTripMember,
@@ -26,17 +27,13 @@ const uniqueViolation = {
 describe('createTrip', () => {
   beforeEach(() => {
     supabase.from.mockReset()
+    supabase.rpc.mockReset()
   })
 
-  it('inserts a trip and an owner member, returning both', async () => {
+  it('calls create_trip and returns the trip plus owner', async () => {
     const trip = { id: 't1', name: '東京五日', share_code: 'ABC234' }
     const owner = { id: 'm1', trip_id: 't1', name: '阿明', is_owner: true }
-
-    supabase.from.mockImplementation((table: string) => {
-      if (table === 'trips') return makeQuery({ data: trip, error: null })
-      if (table === 'trip_members') return makeQuery({ data: owner, error: null })
-      throw new Error(`unexpected table ${table}`)
-    })
+    supabase.rpc.mockResolvedValue({ data: { trip, owner }, error: null })
 
     const result = await createTrip({
       name: '東京五日',
@@ -47,21 +44,24 @@ describe('createTrip', () => {
 
     expect(result.trip).toEqual(trip)
     expect(result.owner).toEqual(owner)
+    expect(supabase.rpc).toHaveBeenCalledWith(
+      'create_trip',
+      expect.objectContaining({
+        p_name: '東京五日',
+        p_start_date: '2026-08-01',
+        p_end_date: '2026-08-05',
+        p_owner_name: '阿明',
+        p_destination_country: null,
+      }),
+    )
+    const shareCode = supabase.rpc.mock.calls[0][1].p_share_code as string
+    expect(shareCode).toMatch(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/)
   })
 
   it('persists the chosen destination_country on the trip', async () => {
     const trip = { id: 't1', name: '東京五日', share_code: 'ABC234', destination_country: 'JP' }
     const owner = { id: 'm1', trip_id: 't1', name: '阿明', is_owner: true }
-    let tripQuery: ReturnType<typeof makeQuery> | undefined
-
-    supabase.from.mockImplementation((table: string) => {
-      if (table === 'trips') {
-        tripQuery = makeQuery({ data: trip, error: null })
-        return tripQuery
-      }
-      if (table === 'trip_members') return makeQuery({ data: owner, error: null })
-      throw new Error(`unexpected table ${table}`)
-    })
+    supabase.rpc.mockResolvedValue({ data: { trip, owner }, error: null })
 
     await createTrip({
       name: '東京五日',
@@ -71,25 +71,18 @@ describe('createTrip', () => {
       destinationCountry: 'JP',
     })
 
-    expect(tripQuery?.insert).toHaveBeenCalledWith(expect.objectContaining({ destination_country: 'JP' }))
+    expect(supabase.rpc).toHaveBeenCalledWith(
+      'create_trip',
+      expect.objectContaining({ p_destination_country: 'JP' }),
+    )
   })
 
-  it('retries with a new share code when the trip insert hits a unique violation', async () => {
+  it('retries with a new share code when create_trip hits a unique violation', async () => {
     const trip = { id: 't1', name: '東京五日', share_code: 'XYZ987' }
     const owner = { id: 'm1', trip_id: 't1', name: '阿明', is_owner: true }
-
-    let tripInsertCalls = 0
-    supabase.from.mockImplementation((table: string) => {
-      if (table === 'trips') {
-        tripInsertCalls += 1
-        if (tripInsertCalls === 1) {
-          return makeQuery({ data: null, error: uniqueViolation })
-        }
-        return makeQuery({ data: trip, error: null })
-      }
-      if (table === 'trip_members') return makeQuery({ data: owner, error: null })
-      throw new Error(`unexpected table ${table}`)
-    })
+    supabase.rpc
+      .mockResolvedValueOnce({ data: null, error: uniqueViolation })
+      .mockResolvedValueOnce({ data: { trip, owner }, error: null })
 
     const result = await createTrip({
       name: '東京五日',
@@ -98,16 +91,13 @@ describe('createTrip', () => {
       ownerName: '阿明',
     })
 
-    expect(tripInsertCalls).toBe(2)
+    expect(supabase.rpc).toHaveBeenCalledTimes(2)
     expect(result.trip).toEqual(trip)
   })
 
   it('throws immediately on a non-collision error', async () => {
     const otherError = { ...uniqueViolation, code: '23503', message: 'fk violation' }
-    supabase.from.mockImplementation((table: string) => {
-      if (table === 'trips') return makeQuery({ data: null, error: otherError })
-      throw new Error(`unexpected table ${table}`)
-    })
+    supabase.rpc.mockResolvedValue({ data: null, error: otherError })
 
     await expect(
       createTrip({ name: 'x', startDate: '2026-08-01', endDate: '2026-08-05', ownerName: 'y' }),
@@ -118,21 +108,21 @@ describe('createTrip', () => {
 describe('findTripByShareCode', () => {
   beforeEach(() => {
     supabase.from.mockReset()
+    supabase.rpc.mockReset()
   })
 
-  it('returns null when no trip matches the code', async () => {
-    supabase.from.mockImplementation((table: string) => {
-      if (table === 'trips') return makeQuery({ data: null, error: null })
-      throw new Error(`unexpected table ${table}`)
-    })
+  it('returns null when the share code is not claimed', async () => {
+    supabase.rpc.mockResolvedValue({ data: null, error: null })
 
     const result = await findTripByShareCode('NOPE99')
     expect(result).toBeNull()
+    expect(supabase.from).not.toHaveBeenCalled()
   })
 
-  it('returns the trip and its members when found', async () => {
+  it('claims the code, then returns the trip and its members', async () => {
     const trip = { id: 't1', share_code: 'ABC234' }
     const members = [{ id: 'm1', name: '阿明' }]
+    supabase.rpc.mockResolvedValue({ data: 't1', error: null })
     supabase.from.mockImplementation((table: string) => {
       if (table === 'trips') return makeQuery({ data: trip, error: null })
       if (table === 'trip_members') return makeQuery({ data: members, error: null })
@@ -140,7 +130,13 @@ describe('findTripByShareCode', () => {
     })
 
     const result = await findTripByShareCode('ABC234')
+    expect(supabase.rpc).toHaveBeenCalledWith('claim_trip_by_share_code', { p_share_code: 'ABC234' })
     expect(result).toEqual({ trip, members })
+  })
+
+  it('throws when claim fails', async () => {
+    supabase.rpc.mockResolvedValue({ data: null, error: { message: 'nope' } })
+    await expect(findTripByShareCode('ABC234')).rejects.toEqual({ message: 'nope' })
   })
 })
 

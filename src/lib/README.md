@@ -13,7 +13,8 @@
 （TomTom / Open-Meteo / Overpass / AviationStack / Taggun / open.er-api）
 - **錯誤處理：全部吞掉，回 `null` / `[]`**。呢啲係錦上添花功能（天氣、搜尋、OCR、匯率），
   第三方跛咗唔應該拖冧成個 app，UI 直接當「冇結果」降級。
-- 冇 API key（env 未設定）→ 一樣回 `null`/`[]`，唔 throw。
+- 冇 API key（server env 未設定，proxy 回 503）→ 一樣回 `null`/`[]`，唔 throw、唔 warn。
+  AviationStack／TomTom／Taggun 只經 `/api/*`，key 唔可以再出現喺 `VITE_`。
 - **已知取捨**：catch 連 `console.warn` 都冇，第三方 API 出事喺 dev 都唔會見到
   （改善計劃見 docs/ARCHITECTURE_REVIEW_2026-07-11.md #5）。
 

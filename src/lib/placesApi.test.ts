@@ -93,8 +93,7 @@ describe('searchPlaces（主來源 Nominatim / OSM）', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
   })
 
-  it('Nominatim 兩步都空 + 有 TomTom key → fallback 打 TomTom', async () => {
-    vi.stubEnv('VITE_TOMTOM_KEY', 'test-key')
+  it('Nominatim 兩步都空 → fallback 打 /api/tomtom-search，URL 冇 key', async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce(ok([]))
       .mockResolvedValueOnce(ok([]))
@@ -114,28 +113,31 @@ describe('searchPlaces（主來源 Nominatim / OSM）', () => {
 
     expect(result).toEqual([{ name: '淺草寺', address: 'Asakusa, Tokyo', lat: 35.7148, lng: 139.7967 }])
     expect(fetch).toHaveBeenCalledTimes(3)
-    expect(vi.mocked(fetch).mock.calls[2][0] as string).toContain('api.tomtom.com')
+    const fallbackUrl = vi.mocked(fetch).mock.calls[2][0] as string
+    expect(fallbackUrl).toContain('/api/tomtom-search?')
+    expect(fallbackUrl).toContain('type=poi')
+    expect(fallbackUrl).not.toContain('key=')
   })
 
-  it('Nominatim 空 + 冇 TomTom key → 回 []，唔會多打一次 fetch', async () => {
-    vi.stubEnv('VITE_TOMTOM_KEY', '')
-    vi.mocked(fetch).mockResolvedValue(ok([]))
+  it('Nominatim 空 + proxy 話未設定 key → 回 []', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(ok([]))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'not_configured' }), { status: 503 }))
 
     const result = await searchPlaces('冇結果-a9')
 
     expect(result).toEqual([])
-    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(vi.mocked(fetch).mock.calls[1][0] as string).toContain('/api/tomtom-search?')
   })
 
   it('HTTP 非 2xx → 回 []', async () => {
-    vi.stubEnv('VITE_TOMTOM_KEY', '')
     vi.mocked(fetch).mockResolvedValue(new Response('', { status: 500 }))
 
     await expect(searchPlaces('淺草寺-a10')).resolves.toEqual([])
   })
 
   it('fetch 拋錯 → 回 []（唔會炸上去）', async () => {
-    vi.stubEnv('VITE_TOMTOM_KEY', '')
     vi.mocked(fetch).mockRejectedValue(new Error('network down'))
 
     await expect(searchPlaces('淺草寺-a11')).resolves.toEqual([])
@@ -153,7 +155,6 @@ describe('searchIndoorPlaces（雨天室內推介 / Overpass OSM）', () => {
   })
 
   it('POST 去 Overpass，query 帶 around + 座標（免 key，冇 key 都要照打）', async () => {
-    vi.stubEnv('VITE_TOMTOM_KEY', '')
     vi.mocked(fetch).mockResolvedValue(ok({ elements: [] }))
 
     await searchIndoorPlaces(35.68, 139.69)
